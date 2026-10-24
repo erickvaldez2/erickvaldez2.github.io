@@ -272,8 +272,8 @@ body { margin: 0; }
             <span class="foot"><span class="b">Best <b data-best="2">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
           <button class="mode h" data-mode="3" role="radio" type="button">
-            <span class="mode-top"><span class="n">Zero Trust</span><span class="r">Hard &middot; +&frac12; + Shield</span></span>
-            <span class="d">3 hard questions per crash. Go 3 for 3 to get half a life back plus a firewall shield that blocks your next crash. Never trust, always verify.</span>
+            <span class="mode-top"><span class="n">Zero Trust</span><span class="r">Hard &middot; +1 + Shield</span></span>
+            <span class="d">3 hard questions per crash. Go 3 for 3 for a full life back, a firewall shield and +10 bonus points. Never trust, always verify.</span>
             <span class="foot"><span class="b">Best <b data-best="3">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
         </div>
@@ -1038,7 +1038,7 @@ body { margin: 0; }
       }).join("");
     } else {
       card.classList.remove("danger");
-      var goal = currentTier === 1 ? "Right answer restores the life" : currentTier === 2 ? "Get both right for half a life and a shield" : "Go 3 for 3 for half a life and a shield";
+      var goal = currentTier === 1 ? "Right answer restores the life" : currentTier === 2 ? "Get both right for half a life and a shield" : "Go 3 for 3 for a full life, a shield and +10 bonus";
       document.getElementById("q-label").textContent = round.need > 1 ? "Question " + (round.step + 1) + " of " + round.need + " \u00b7 " + goal : goal;
       if (round.need > 1) {
         steps.hidden = false;
@@ -1105,7 +1105,8 @@ body { margin: 0; }
         contBtn.textContent = "Next question"; contBtn.hidden = false; contBtn.focus({ preventScroll: true });
         return;
       }
-      var refund = right ? (currentTier === 1 ? 1 : 0.5) : 0;
+      var refund = right ? (currentTier === 2 ? 0.5 : 1) : 0;
+      if (right && currentTier === 3) { bonus += 10; score += 10; elScore.textContent = score; }
       lives = Math.min(3, Math.round((lives + refund) * 2) / 2);
       renderLives();
       var gotShield = right && currentTier >= 2 && shields < MAX_SHIELDS;
@@ -1114,8 +1115,8 @@ body { margin: 0; }
       var what = !right ? (round.need > 1 ? "Wrong. No reward this time, life lost" : "Wrong. Life lost")
         : currentTier === 1 ? "Correct. Life restored, +10 points"
         : currentTier === 2 ? (gotShield ? "2 for 2. Half a life back plus a firewall shield, +10 points" : "2 for 2. Half a life back (shields full), +10 points")
-        : gotShield ? "3 for 3. Half a life back plus a firewall shield, +10 points"
-        : "3 for 3. Half a life back (shields full), +10 points";
+        : gotShield ? "3 for 3. Full life back plus a firewall shield, +10 bonus points"
+        : "3 for 3. Full life back (shields full), +10 bonus points";
       if (lives > 0) { head = what; pendingOutcome = "resume"; }
       else if (!lastChanceUsed) { head = (right ? "Correct, but" : "Wrong, and") + " you're out of lives. Last chance: get 2 of 3 right"; pendingOutcome = "lastchance"; }
       else { head = "Out of lives"; pendingOutcome = "over"; }
