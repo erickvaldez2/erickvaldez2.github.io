@@ -9,6 +9,68 @@
   var root = document.documentElement;
   root.classList.add("fx-ready");
 
+  // ---------- palettes ----------
+  var PALETTES = [
+    { id: "signal", name: "Signal", note: "Default", c: ["#060a12", "#4fd1ff", "#a78bfa"] },
+    { id: "amber", name: "Amber CRT", note: "Warm terminal", c: ["#0e0b06", "#ffb000", "#ff6a3d"] },
+    { id: "red", name: "Red Team", note: "Bold", c: ["#0b0b0f", "#ff3b5c", "#c0c4cf"] },
+    { id: "teal", name: "Deep Teal", note: "Calm", c: ["#04121a", "#2dd4bf", "#fbbf24"] },
+    { id: "olive", name: "Ops Olive", note: "Tactical", c: ["#0d0f0a", "#b5d46a", "#e0b45a"] },
+    { id: "light", name: "Blue Team Light", note: "Light", c: ["#f4f7fb", "#1d5fd8", "#0d8a7e"] }
+  ];
+  var COL = { a: "79,209,255", v: "167,139,250" };
+  function readCol() {
+    var cs = getComputedStyle(root);
+    COL.a = (cs.getPropertyValue("--accent-rgb") || "79,209,255").trim();
+    COL.v = (cs.getPropertyValue("--violet-rgb") || "167,139,250").trim();
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", cs.getPropertyValue("--bg").trim() || "#060a12");
+  }
+  function setPalette(id) {
+    if (id === "signal") delete root.dataset.palette; else root.dataset.palette = id;
+    try { localStorage.setItem("site-pal", id); } catch (e) {}
+    readCol();
+    document.querySelectorAll(".pal-opt").forEach(function (o) { o.setAttribute("aria-checked", String(o.dataset.id === id)); });
+    paintPalBtn(id);
+  }
+  var palBtn = document.createElement("button");
+  palBtn.className = "pal-btn"; palBtn.type = "button"; palBtn.setAttribute("aria-expanded", "false"); palBtn.setAttribute("aria-haspopup", "true");
+  palBtn.innerHTML = '<span class="pal-dots"><i></i><i></i><i></i></span><span>Palette</span>';
+  function paintPalBtn(id) {
+    var p = PALETTES.filter(function (x) { return x.id === id; })[0] || PALETTES[0];
+    palBtn.querySelectorAll(".pal-dots i").forEach(function (d, k) { d.style.background = p.c[k]; });
+    palBtn.setAttribute("aria-label", "Color palette: " + p.name);
+  }
+  var palPanel = null;
+  function closePal() { if (palPanel) { palPanel.remove(); palPanel = null; palBtn.setAttribute("aria-expanded", "false"); } }
+  palBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (palPanel) { closePal(); return; }
+    palPanel = document.createElement("div");
+    palPanel.className = "pal-panel"; palPanel.setAttribute("role", "radiogroup"); palPanel.setAttribute("aria-label", "Color palette");
+    palPanel.innerHTML = '<div class="pal-title">Color palette</div>';
+    var cur = root.dataset.palette || "signal";
+    PALETTES.forEach(function (p) {
+      var o = document.createElement("button");
+      o.className = "pal-opt"; o.type = "button"; o.dataset.id = p.id; o.setAttribute("role", "radio"); o.setAttribute("aria-checked", String(p.id === cur));
+      o.innerHTML = '<span class="pal-dots"><i></i><i></i><i></i></span><span></span><small></small>';
+      o.querySelectorAll(".pal-dots i").forEach(function (d, k) { d.style.background = p.c[k]; });
+      o.children[1].textContent = p.name; o.children[2].textContent = p.note;
+      o.addEventListener("click", function (ev) { ev.stopPropagation(); setPalette(p.id); });
+      palPanel.appendChild(o);
+    });
+    document.body.appendChild(palPanel);
+    palBtn.setAttribute("aria-expanded", "true");
+    var sel = palPanel.querySelector('[aria-checked="true"]'); if (sel) sel.focus({ preventScroll: true });
+  });
+  document.addEventListener("click", function (e) { if (palPanel && !palPanel.contains(e.target)) closePal(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && palPanel) { closePal(); palBtn.focus(); } });
+  document.body.appendChild(palBtn);
+  var savedPal = "signal";
+  try { savedPal = localStorage.getItem("site-pal") || "signal"; } catch (e) {}
+  if (!PALETTES.some(function (p) { return p.id === savedPal; })) savedPal = "signal";
+  setPalette(savedPal);
+
   // ---------- page transition: arrive ----------
   var wipe = document.createElement("div");
   wipe.className = "fx-wipe";
@@ -143,26 +205,26 @@
         for (var b = a + 1; b < nodes.length; b++) {
           var dx = nodes[a].x - nodes[b].x, dy = nodes[a].y - nodes[b].y, d = Math.hypot(dx, dy);
           if (d < LINK) {
-            ctx.strokeStyle = "rgba(79,209,255," + (0.16 * (1 - d / LINK)).toFixed(3) + ")"; ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(" + COL.a + "," + (0.16 * (1 - d / LINK)).toFixed(3) + ")"; ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(nodes[a].x, nodes[a].y); ctx.lineTo(nodes[b].x, nodes[b].y); ctx.stroke();
-            if (packets.length < 26 && Math.random() < 0.0009) packets.push({ a: nodes[a], b: nodes[b], t: 0, v: 0.008 + Math.random() * 0.012, c: Math.random() < 0.8 ? "79,209,255" : "167,139,250" });
+            if (packets.length < 26 && Math.random() < 0.0009) packets.push({ a: nodes[a], b: nodes[b], t: 0, v: 0.008 + Math.random() * 0.012, c: Math.random() < 0.8 ? "a" : "v" });
           }
         }
         var mx = mouse.x - nodes[a].x, my = mouse.y - nodes[a].y, mdist = Math.hypot(mx, my);
         if (mdist < 180) {
-          ctx.strokeStyle = "rgba(167,139,250," + (0.35 * (1 - mdist / 180)).toFixed(3) + ")";
+          ctx.strokeStyle = "rgba(" + COL.v + "," + (0.35 * (1 - mdist / 180)).toFixed(3) + ")";
           ctx.beginPath(); ctx.moveTo(nodes[a].x, nodes[a].y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
         }
       }
       nodes.forEach(function (n) {
-        ctx.fillStyle = n.hub ? "rgba(167,139,250,0.9)" : "rgba(79,209,255,0.65)";
+        ctx.fillStyle = n.hub ? "rgba(" + COL.v + ",0.9)" : "rgba(" + COL.a + ",0.65)";
         ctx.beginPath(); ctx.arc(n.x, n.y, n.hub ? n.r + 1.2 : n.r, 0, Math.PI * 2); ctx.fill();
       });
       for (var p = packets.length - 1; p >= 0; p--) {
         var pk = packets[p]; pk.t += pk.v;
         if (pk.t >= 1) { packets.splice(p, 1); continue; }
         var px = pk.a.x + (pk.b.x - pk.a.x) * pk.t, py = pk.a.y + (pk.b.y - pk.a.y) * pk.t;
-        ctx.fillStyle = "rgba(" + pk.c + ",1)"; ctx.shadowColor = "rgba(" + pk.c + ",1)"; ctx.shadowBlur = 10;
+        var pc = "rgb(" + COL[pk.c] + ")"; ctx.fillStyle = pc; ctx.shadowColor = pc; ctx.shadowBlur = 10;
         ctx.fillRect(px - 2, py - 2, 4, 4); ctx.shadowBlur = 0;
       }
       requestAnimationFrame(draw);
@@ -182,7 +244,7 @@
       for (var i = rings.length - 1; i >= 0; i--) {
         var r = rings[i]; r.t += 0.035;
         if (r.t >= 1) { rings.splice(i, 1); continue; }
-        c2.strokeStyle = "rgba(79,209,255," + (1 - r.t).toFixed(3) + ")"; c2.lineWidth = 2 * (1 - r.t) + 0.5;
+        c2.strokeStyle = "rgba(" + COL.a + "," + (1 - r.t).toFixed(3) + ")"; c2.lineWidth = 2 * (1 - r.t) + 0.5;
         c2.beginPath(); c2.arc(r.x, r.y, 6 + r.t * 46, 0, Math.PI * 2); c2.stroke();
       }
       for (var j = parts.length - 1; j >= 0; j--) {
@@ -197,7 +259,7 @@
       rings.push({ x: e.clientX, y: e.clientY, t: 0 });
       for (var k = 0; k < 14; k++) {
         var ang = Math.random() * Math.PI * 2, sp = 1.5 + Math.random() * 4;
-        parts.push({ x: e.clientX, y: e.clientY, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: 1, s: 2 + Math.random() * 2.5, c: Math.random() < 0.7 ? "#4fd1ff" : "#a78bfa" });
+        parts.push({ x: e.clientX, y: e.clientY, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: 1, s: 2 + Math.random() * 2.5, c: "rgb(" + (Math.random() < 0.7 ? COL.a : COL.v) + ")" });
       }
       if (!running) { running = true; requestAnimationFrame(loop); }
     });
