@@ -1,0 +1,178 @@
+/* ===== Immersive layer for erickvaldez.com =====
+   Dark "network operations" look: deep navy, cyan signal, violet accent.
+   Everything here degrades gracefully: without JS the page is fully readable,
+   and prefers-reduced-motion turns the motion off. */
+
+:root {
+  color-scheme: dark;
+  --bg: #060a12;
+  --bg-alt: #0a1120;
+  --text: #e6edf8;
+  --muted: #8d9bb8;
+  --border: #1b2740;
+  --accent: #4fd1ff;
+  --accent-soft: rgba(79, 209, 255, 0.12);
+  --violet: #a78bfa;
+  --glass: rgba(10, 17, 32, 0.62);
+  --glow: 0 0 24px rgba(79, 209, 255, 0.35);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(167, 139, 250, 0.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(79, 209, 255, 0.08), transparent 60%),
+    var(--bg);
+  overflow-x: hidden;
+}
+body::before {
+  /* faint grid */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(79, 209, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 209, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 80%);
+}
+nav, header, section, footer { position: relative; z-index: 1; }
+::selection { background: rgba(79, 209, 255, 0.3); }
+
+/* ----- nav: glass ----- */
+nav {
+  background: rgba(6, 10, 18, 0.55);
+  -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid rgba(79, 209, 255, 0.12);
+}
+nav a.link { position: relative; transition: color 0.2s; }
+nav a.link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; border-radius: 2px;
+  background: var(--accent); box-shadow: var(--glow); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;
+}
+nav a.link:hover::after, nav a.link.active::after, nav a.link[aria-current="page"]::after { transform: scaleX(1); }
+nav a.link.active { color: var(--text); }
+.logo { letter-spacing: 0.02em; }
+.logo span { text-shadow: var(--glow); }
+
+/* ----- scroll progress ----- */
+.fx-progress {
+  position: fixed; top: 0; left: 0; height: 2px; width: 100%; z-index: 20; pointer-events: none;
+  background: linear-gradient(90deg, var(--accent), var(--violet));
+  transform-origin: left; transform: scaleX(0); box-shadow: 0 0 10px rgba(79, 209, 255, 0.6);
+}
+
+/* ----- hero ----- */
+header#top, header.page-head { overflow: hidden; }
+header#top { min-height: min(86svh, 760px); display: grid; align-items: center; padding: 110px 0 90px; }
+header#top .wrap, header.page-head .wrap { position: relative; z-index: 2; }
+#net { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+header#top::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 160px; z-index: 1; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+}
+h1 { text-shadow: 0 0 40px rgba(79, 209, 255, 0.15); }
+.eyebrow { min-height: 1.4em; }
+.eyebrow .caret { display: inline-block; width: 0.55em; height: 1em; vertical-align: -0.12em; margin-left: 2px; background: var(--accent); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.badge {
+  background: rgba(79, 209, 255, 0.08); border: 1px solid rgba(79, 209, 255, 0.28);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.scroll-cue {
+  position: absolute; left: 50%; bottom: 26px; z-index: 2; transform: translateX(-50%);
+  font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.2em; color: var(--muted);
+  display: grid; justify-items: center; gap: 8px; text-decoration: none;
+}
+.scroll-cue i { width: 1px; height: 34px; background: linear-gradient(var(--accent), transparent); animation: drip 1.8s ease-in-out infinite; }
+@keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+/* ----- buttons ----- */
+.btn { position: relative; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.25s ease, background 0.25s; will-change: transform; }
+.btn:hover { opacity: 1; }
+.btn.primary { background: linear-gradient(135deg, #6fdcff, var(--accent)); color: #021019; border-color: transparent; box-shadow: 0 8px 30px rgba(79, 209, 255, 0.25); }
+.btn.primary:hover { box-shadow: 0 10px 40px rgba(79, 209, 255, 0.45); }
+.btn.secondary { background: rgba(79, 209, 255, 0.05); }
+.btn::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%;
+  background: linear-gradient(110deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg); transition: left 0.55s ease;
+}
+.btn:hover::after { left: 130%; }
+
+/* ----- sections ----- */
+section { background: transparent !important; border-top: 1px solid rgba(79, 209, 255, 0.08); padding: 88px 0; }
+h2 { position: relative; display: inline-block; }
+h2::before { text-shadow: var(--glow); }
+h2[data-text]:hover::after {
+  content: attr(data-text); position: absolute; left: 0; top: 0; color: var(--violet); pointer-events: none;
+  clip-path: inset(0 0 55% 0); transform: translateX(-2px); animation: glitch 0.35s steps(2) 2;
+}
+@keyframes glitch { 0% { transform: translate(-2px, 0); clip-path: inset(0 0 60% 0); } 50% { transform: translate(2px, 1px); clip-path: inset(40% 0 20% 0); } 100% { transform: translate(0, 0); clip-path: inset(80% 0 0 0); } }
+
+/* ----- cards: glass, spotlight, tilt ----- */
+.card, section:nth-of-type(odd) .card, .quiz {
+  background: linear-gradient(180deg, rgba(14, 22, 40, 0.72), rgba(10, 16, 30, 0.72));
+  border: 1px solid rgba(79, 209, 255, 0.14);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  position: relative; transform-style: preserve-3d;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+}
+.card::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(79, 209, 255, 0.14), transparent 45%);
+}
+.card:hover::before { opacity: 1; }
+.card:hover { border-color: rgba(79, 209, 255, 0.4); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 30px rgba(79, 209, 255, 0.08); }
+a.project .play { display: inline-flex; gap: 6px; transition: gap 0.2s; }
+a.project:hover .play { gap: 12px; }
+.placeholder { border-color: rgba(79, 209, 255, 0.18); background: rgba(10, 16, 30, 0.4); }
+.tag { background: rgba(79, 209, 255, 0.04); border-color: rgba(79, 209, 255, 0.18); transition: border-color 0.2s, color 0.2s, transform 0.2s; }
+.tag:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+/* ----- reveal on scroll (only when JS is running) ----- */
+.fx-ready .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.8s cubic-bezier(.2,.7,.2,1), transform 0.8s cubic-bezier(.2,.7,.2,1); transition-delay: var(--d, 0s); }
+.fx-ready .reveal.in { opacity: 1; transform: none; }
+
+/* ----- cursor (fine pointers only) ----- */
+.fx-cursor, .fx-cursor-ring { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 30; border-radius: 50%; }
+.fx-cursor { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+.fx-cursor-ring { width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 1px solid rgba(79, 209, 255, 0.55); transition: width 0.25s, height 0.25s, margin 0.25s, border-color 0.25s, background 0.25s; }
+.fx-cursor-ring.hot { width: 58px; height: 58px; margin: -29px 0 0 -29px; border-color: var(--violet); background: rgba(167, 139, 250, 0.08); }
+#fx-clicks { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 29; }
+
+/* ----- page transition ----- */
+.fx-wipe {
+  position: fixed; inset: 0; z-index: 50; pointer-events: none; display: grid; place-items: center;
+  background: linear-gradient(135deg, #050912, #0b1426);
+  transform: translateY(100%);
+}
+.fx-wipe .msg { font-family: "JetBrains Mono", monospace; font-size: 14px; color: var(--accent); letter-spacing: 0.06em; opacity: 0; transition: opacity 0.2s; }
+.fx-wipe .msg b { color: var(--text); font-weight: 500; }
+.fx-wipe .bar { width: 160px; height: 2px; margin-top: 12px; background: rgba(79, 209, 255, 0.2); overflow: hidden; border-radius: 2px; }
+.fx-wipe .bar span { display: block; height: 100%; width: 40%; background: var(--accent); animation: load 0.6s ease-in-out infinite; }
+@keyframes load { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+.fx-wipe.cover { transition: transform 0.45s cubic-bezier(.7,0,.3,1); transform: translateY(0); pointer-events: all; }
+.fx-wipe.cover .msg { opacity: 1; }
+.fx-wipe.enter { transform: translateY(0); }
+.fx-wipe.leave { transition: transform 0.6s cubic-bezier(.7,0,.3,1); transform: translateY(-100%); }
+
+/* ----- footer ----- */
+footer { border-top: 1px solid rgba(79, 209, 255, 0.08); }
+
+/* ----- port quiz tweaks for the dark theme ----- */
+.quiz-options button { background: rgba(79, 209, 255, 0.04); transition: border-color 0.2s, transform 0.15s, background 0.2s; }
+.quiz-options button:hover:not(:disabled) { transform: translateY(-2px); background: rgba(79, 209, 255, 0.08); }
+.quiz-options button.correct { background: #157347; border-color: #3ddc97; }
+.quiz-options button.wrong { background: #9c1f33; border-color: #ff4d6d; }
+.quiz-port { text-shadow: var(--glow); }
+.quiz-actions button { background: linear-gradient(135deg, #6fdcff, var(--accent)); color: #021019; border-color: transparent; }
+
+@media (max-width: 600px) {
+  header#top { min-height: auto; padding: 80px 0 90px; }
+  section { padding: 68px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .fx-ready .reveal { opacity: 1; transform: none; transition: none; }
+  .eyebrow .caret, .scroll-cue i { animation: none; }
+  .btn::after, h2[data-text]:hover::after { display: none; }
+}
