@@ -53,6 +53,9 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .hud .k { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
 .hud .v { font-family: var(--font-display); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; line-height: 1; }
 .hud .v.score { color: var(--packet); text-shadow: 0 0 14px rgba(79, 209, 255, 0.45); }
+.lives-wrap { display: grid; justify-items: center; gap: 4px; }
+.shields { display: flex; gap: 4px; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; color: var(--good); }
+.shields svg { width: 14px; height: 14px; }
 .lives { display: flex; gap: 10px; align-items: center; justify-content: center; }
 .life { width: 18px; height: 18px; transform: rotate(45deg); border-radius: 4px; border: 2px solid var(--line); position: relative; overflow: hidden; }
 .life::after { content: ""; position: absolute; inset: 0; background: var(--packet); transform-origin: left; }
@@ -240,7 +243,7 @@ body { margin: 0; }
 
     <div class="hud">
       <div class="stat"><span class="k">Score</span><span class="v score" id="score">0</span></div>
-      <div class="lives" id="lives" aria-label="Lives"></div>
+      <div class="lives-wrap"><div class="lives" id="lives" aria-label="Lives"></div><div class="shields" id="shields" hidden></div></div>
       <div class="stat right"><span class="k">Best</span><span class="v" id="best">0</span><span class="mode-chip" id="mode-chip">Two-Factor</span></div>
     </div>
 
@@ -256,8 +259,8 @@ body { margin: 0; }
         <div class="choose-label">Pick your security posture to start</div>
         <div class="modes" role="radiogroup" aria-label="Difficulty">
           <button class="mode e" data-mode="1" role="radio" type="button">
-            <span class="mode-top"><span class="n">Password123</span><span class="r">Easy</span></span>
-            <span class="d">Easy questions. You're back in no matter what you answer, but the life stays lost. Basically a sticky note on the monitor.</span>
+            <span class="mode-top"><span class="n">Password123</span><span class="r">Easy &middot; +1</span></span>
+            <span class="d">Easy questions. Answer right and get the life back. Basically a sticky note on the monitor.</span>
             <span class="foot"><span class="b">Best <b data-best="1">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
           <button class="mode m" data-mode="2" role="radio" type="button">
@@ -266,14 +269,14 @@ body { margin: 0; }
             <span class="foot"><span class="b">Best <b data-best="2">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
           <button class="mode h" data-mode="3" role="radio" type="button">
-            <span class="mode-top"><span class="n">Zero Trust</span><span class="r">Hard &middot; +1</span></span>
-            <span class="d">Hard questions. Answer right and get the whole life back. Never trust, always verify, especially yourself.</span>
+            <span class="mode-top"><span class="n">Zero Trust</span><span class="r">Hard &middot; Shield</span></span>
+            <span class="d">Hard questions. The life is gone for good, but a right answer earns a firewall shield that blocks your next crash. Never trust, always verify.</span>
             <span class="foot"><span class="b">Best <b data-best="3">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
         </div>
         <div class="rules">
           <div><span class="tag b">0 LIVES</span><span>Last chance: get 2 of 3 right to come back with 1 life. Once per run.</span></div>
-          <div><span class="tag p">+25</span><span>Grab data bits for bonus points.</span></div>
+          <div><span class="tag p">+10</span><span>Every data bit you grab and every question you get right.</span></div>
         </div>
         <div class="keys">Swipe left or right (or tap a side) &middot; Arrow keys or A / D on a keyboard</div>
         </div>
@@ -612,8 +615,19 @@ body { margin: 0; }
   var particles = [], popups = [], trail = [];
   var asked = {}, qRight = 0, qTotal = 0, history = [];
   var lastChanceUsed = false, lastChance = null; // {step, right}
+  var shields = 0, MAX_SHIELDS = 3;
 
   function laneX(l) { return PX + laneW * l + laneW / 2; }
+
+  function renderShields() {
+    var el = document.getElementById("shields");
+    if (!shields) { el.hidden = true; return; }
+    var icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6l8-3z"/></svg>';
+    var h = ""; for (var i = 0; i < shields; i++) h += icon;
+    el.innerHTML = h + "<span>SHIELD</span>";
+    el.setAttribute("aria-label", shields + " shield" + (shields === 1 ? "" : "s"));
+    el.hidden = false;
+  }
 
   function renderLives() {
     var h = "";
@@ -628,7 +642,7 @@ body { margin: 0; }
   function reset() {
     lane = 1; packetX = laneX(1); lives = 3; score = 0; dist = 0; bonus = 0; elapsed = 0;
     speed = H * 0.55; rows = []; spawnAcc = H * 0.5; shieldUntil = 0; asked = {}; qRight = 0; qTotal = 0; history = [];
-    particles = []; popups = []; trail = []; shake = 0; lastChanceUsed = false; lastChance = null;
+    particles = []; popups = []; trail = []; shake = 0; lastChanceUsed = false; lastChance = null; shields = 0; renderShields();
     renderLives(); elScore.textContent = "0";
   }
 
@@ -698,13 +712,22 @@ body { margin: 0; }
       if (r.bit >= 0 && !r.bitTaken) {
         var bx = laneX(r.bit), by = r.y - laneW * 0.6;
         if (Math.abs(bx - packetX) < pSize * 0.75 && Math.abs(by - packetY) < pSize * 0.75) {
-          r.bitTaken = true; bonus += 25; burst(bx, by, C.bit, 14, 160); popup(bx, by - 10, "+25", C.bit);
+          r.bitTaken = true; bonus += 10; burst(bx, by, C.bit, 14, 160); popup(bx, by - 10, "+10", C.bit);
         }
       }
       if (now < shieldUntil) continue;
       for (var b = 0; b < r.blocks.length; b++) {
         var bl = r.blocks[b], hb = hitBox(bl.lane, bl.type), top = r.y - hb.h / 2;
         if (pBox.x < hb.x + hb.w && pBox.x + pBox.w > hb.x && pBox.y < top + hb.h && pBox.y + pBox.h > top) {
+          if (shields > 0) {
+            shields--; renderShields();
+            shieldUntil = now + 1200;
+            burst(packetX, packetY, C.good, 28, 280);
+            popup(packetX, packetY - pSize, "BLOCKED", C.good);
+            shake = reduceMotion ? 0 : 5;
+            r.blocks.splice(b, 1);
+            break;
+          }
           startCrash(bl.type); return;
         }
       }
@@ -904,6 +927,12 @@ body { margin: 0; }
       roundRect(-pSize / 4, -pSize / 4, pSize / 2, pSize / 2, 4); ctx.fill();
       ctx.restore();
       // shield ring
+      if (shields > 0) {
+        ctx.strokeStyle = "rgba(61,220,151,0.55)"; ctx.lineWidth = 2;
+        ctx.setLineDash([6, 5]); ctx.lineDashOffset = -tsec * 20;
+        ctx.beginPath(); ctx.arc(px, packetY, pSize * 1.05, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
       var sh = shieldUntil - performance.now();
       if (sh > 0) {
         ctx.strokeStyle = "rgba(61,220,151," + Math.min(0.9, sh / 600).toFixed(3) + ")"; ctx.lineWidth = 2.5;
@@ -1005,7 +1034,7 @@ body { margin: 0; }
       });
     } else {
       card.classList.remove("danger");
-      document.getElementById("q-label").textContent = currentTier === 1 ? "Answer to get back in" : currentTier === 2 ? "Right answer restores half a life" : "Right answer restores the full life";
+      document.getElementById("q-label").textContent = currentTier === 1 ? "Right answer restores the life" : currentTier === 2 ? "Right answer restores half a life" : "Right answer earns a firewall shield";
       steps.hidden = true;
     }
     document.getElementById("q-tier").textContent = MODES[gameMode];
@@ -1031,7 +1060,7 @@ body { margin: 0; }
     answered = true;
     qTotal++;
     var right = oi === currentQ.a;
-    if (right) qRight++;
+    if (right) { qRight++; bonus += 10; score += 10; elScore.textContent = score; }
     history.push({ q: currentQ.q, yours: currentQ.o[oi], answer: currentQ.o[currentQ.a], right: right, e: currentQ.e, last: !!lastChance });
     document.querySelectorAll("#q-opts .opt").forEach(function (b) {
       b.disabled = true;
@@ -1050,13 +1079,17 @@ body { margin: 0; }
       else if (nWrong >= 2) { head = "Wrong. That's 2 misses, connection lost"; pendingOutcome = "over"; }
       else { head = (right ? "Correct" : "Wrong") + ". One more right brings you back"; pendingOutcome = "next"; }
     } else {
-      var refund = right ? (currentTier === 3 ? 1 : currentTier === 2 ? 0.5 : 0) : 0;
+      var refund = right ? (currentTier === 1 ? 1 : currentTier === 2 ? 0.5 : 0) : 0;
       lives = Math.min(3, Math.round((lives + refund) * 2) / 2);
       renderLives();
+      var gotShield = right && currentTier === 3 && shields < MAX_SHIELDS;
+      if (gotShield) { shields++; renderShields(); }
       good = right;
-      var what = currentTier === 1 ? (right ? "Correct. Back in the run" : "Wrong, but you're back in the run")
-        : right ? (refund === 1 ? "Correct. Full life restored" : "Correct. Half a life restored")
-        : "Wrong. No life restored";
+      var what = !right ? "Wrong. Life lost"
+        : currentTier === 1 ? "Correct. Life restored, +10 points"
+        : currentTier === 2 ? "Correct. Half a life restored, +10 points"
+        : gotShield ? "Correct. Firewall shield earned, +10 points"
+        : "Correct. Shields full, +10 points";
       if (lives > 0) { head = what; pendingOutcome = "resume"; }
       else if (!lastChanceUsed) { head = (right ? "Correct, but" : "Wrong, and") + " you're out of lives. Last chance: get 2 of 3 right"; pendingOutcome = "lastchance"; }
       else { head = "Out of lives"; pendingOutcome = "over"; }
