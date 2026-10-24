@@ -204,6 +204,9 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
 .mode:hover { border-color: var(--muted); }
+.mode.e:hover { border-color: var(--good); }
+.mode.m:hover { border-color: var(--firewall-2); }
+.mode.h:hover { border-color: var(--bad); }
 .mode:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
 .mode-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .mode .n { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
@@ -213,12 +216,12 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .mode .go { font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; color: var(--packet); }
 .mode .foot { display: flex; justify-content: space-between; align-items: baseline; }
 .mode .b b { color: var(--fg); font-family: var(--font-display); font-size: 13px; letter-spacing: 0; }
-.mode.e .n, .mode.e .r { color: #c7d2e8; }
+.mode.e .n, .mode.e .r { color: var(--good); }
 .mode.m .n, .mode.m .r { color: var(--firewall-2); }
-.mode.h .n, .mode.h .r { color: var(--good); }
-.mode[aria-checked="true"].e { border-color: #c7d2e8; background: rgba(199, 210, 232, 0.08); }
+.mode.h .n, .mode.h .r { color: var(--bad); }
+.mode[aria-checked="true"].e { border-color: var(--good); background: rgba(61, 220, 151, 0.08); box-shadow: 0 0 22px rgba(61, 220, 151, 0.14); }
 .mode[aria-checked="true"].m { border-color: var(--firewall-2); background: rgba(255, 207, 110, 0.08); box-shadow: 0 0 22px rgba(255, 207, 110, 0.12); }
-.mode[aria-checked="true"].h { border-color: var(--good); background: rgba(61, 220, 151, 0.08); box-shadow: 0 0 22px rgba(61, 220, 151, 0.14); }
+.mode[aria-checked="true"].h { border-color: var(--bad); background: rgba(255, 77, 109, 0.08); box-shadow: 0 0 22px rgba(255, 77, 109, 0.14); }
 .hud .mode-chip { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .logo-mark { animation: bob 2.4s ease-in-out infinite; }
 @keyframes bob { 0%, 100% { transform: rotate(45deg) translateY(0); } 50% { transform: rotate(45deg) translateY(-4px); } }
@@ -260,17 +263,17 @@ body { margin: 0; }
         <div class="modes" role="radiogroup" aria-label="Difficulty">
           <button class="mode e" data-mode="1" role="radio" type="button">
             <span class="mode-top"><span class="n">Password123</span><span class="r">Easy &middot; +1</span></span>
-            <span class="d">Easy questions. Answer right and get the life back. Basically a sticky note on the monitor.</span>
+            <span class="d">1 easy question per crash. Answer right and get the life back. Basically a sticky note on the monitor.</span>
             <span class="foot"><span class="b">Best <b data-best="1">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
           <button class="mode m" data-mode="2" role="radio" type="button">
             <span class="mode-top"><span class="n">Two-Factor</span><span class="r">Medium &middot; +&frac12;</span></span>
-            <span class="d">Medium questions. Answer right and get half a life back. Something you know, something you dodge.</span>
+            <span class="d">2 medium questions per crash. Get both right and win half a life back. Something you know, something you dodge.</span>
             <span class="foot"><span class="b">Best <b data-best="2">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
           <button class="mode h" data-mode="3" role="radio" type="button">
             <span class="mode-top"><span class="n">Zero Trust</span><span class="r">Hard &middot; Shield</span></span>
-            <span class="d">Hard questions. The life is gone for good, but a right answer earns a firewall shield that blocks your next crash. Never trust, always verify.</span>
+            <span class="d">3 hard questions per crash. The life is gone for good, but go 3 for 3 and earn a firewall shield that blocks your next crash. Never trust, always verify.</span>
             <span class="foot"><span class="b">Best <b data-best="3">0</b></span><span class="go">PLAY &#9654;</span></span>
           </button>
         </div>
@@ -970,7 +973,7 @@ body { margin: 0; }
     var dt = Math.min(0.05, (t - lastT) / 1000 || 0); lastT = t;
     if (mode === "play") update(dt);
     if (mode === "demo") demoUpdate(dt);
-    if (mode === "crash") { crashTimer -= dt; if (crashTimer <= 0) { lives = Math.max(0, lives - 1); renderLives(); openQuestion(gameMode); } }
+    if (mode === "crash") { crashTimer -= dt; if (crashTimer <= 0) { lives = Math.max(0, lives - 1); renderLives(); round = { need: gameMode, step: 0 }; openQuestion(gameMode); } }
     stepEffects(dt);
     draw(dt);
     requestAnimationFrame(frame);
@@ -1009,13 +1012,14 @@ body { margin: 0; }
   }
 
   var currentQ = null, currentTier = 1, answered = false, pendingOutcome = null;
+  var round = { need: 1, step: 0 };
   function openQuestion(tier) {
     mode = "question";
     answered = false;
     currentTier = tier || gameMode;
     currentQ = pickQuestion(currentTier);
     var card = document.getElementById("q-card"), steps = document.getElementById("q-steps");
-    var showCrash = !lastChance;
+    var showCrash = !lastChance && round.step === 0;
     document.getElementById("crash-head").hidden = !showCrash;
     document.getElementById("crash-text").hidden = !showCrash;
     if (showCrash) {
@@ -1029,15 +1033,23 @@ body { margin: 0; }
       card.classList.add("danger");
       document.getElementById("q-label").innerHTML = '<span class="lc">Last chance &middot; ' + (lastChance.step + 1) + " of 3</span>";
       steps.hidden = false;
-      steps.querySelectorAll("span").forEach(function (s, i) {
-        s.className = i < lastChance.step ? (lastChance.results[i] ? "ok" : "miss") : i === lastChance.step ? "now" : "";
-      });
+      steps.innerHTML = [0, 1, 2].map(function (i) {
+        return '<span class="' + (i < lastChance.step ? (lastChance.results[i] ? "ok" : "miss") : i === lastChance.step ? "now" : "") + '"></span>';
+      }).join("");
     } else {
       card.classList.remove("danger");
-      document.getElementById("q-label").textContent = currentTier === 1 ? "Right answer restores the life" : currentTier === 2 ? "Right answer restores half a life" : "Right answer earns a firewall shield";
-      steps.hidden = true;
+      var goal = currentTier === 1 ? "Right answer restores the life" : currentTier === 2 ? "Get both right to restore half a life" : "Go 3 for 3 to earn a firewall shield";
+      document.getElementById("q-label").textContent = round.need > 1 ? "Question " + (round.step + 1) + " of " + round.need + " \u00b7 " + goal : goal;
+      if (round.need > 1) {
+        steps.hidden = false;
+        var html = "";
+        for (var si = 0; si < round.need; si++) html += '<span class="' + (si < round.step ? "ok" : si === round.step ? "now" : "") + '"></span>';
+        steps.innerHTML = html;
+      } else steps.hidden = true;
     }
-    document.getElementById("q-tier").textContent = MODES[gameMode];
+    var tierEl = document.getElementById("q-tier");
+    tierEl.textContent = MODES[gameMode];
+    tierEl.style.color = gameMode === 1 ? "var(--good)" : gameMode === 2 ? "var(--firewall-2)" : "var(--bad)";
     document.getElementById("q-text").textContent = currentQ.q;
     var box = document.getElementById("q-opts"); box.innerHTML = "";
     var order = [0, 1, 2, 3].sort(function () { return Math.random() - 0.5; });
@@ -1079,16 +1091,30 @@ body { margin: 0; }
       else if (nWrong >= 2) { head = "Wrong. That's 2 misses, connection lost"; pendingOutcome = "over"; }
       else { head = (right ? "Correct" : "Wrong") + ". One more right brings you back"; pendingOutcome = "next"; }
     } else {
+      round.step++;
+      if (right && round.step < round.need) {
+        good = true;
+        head = "Correct, +10 points. " + (round.need - round.step) + " more to go";
+        pendingOutcome = "nextround";
+        res.className = "result good";
+        res.innerHTML = "<strong></strong><span></span>";
+        res.querySelector("strong").textContent = head;
+        res.querySelector("span").textContent = currentQ.e;
+        res.hidden = false;
+        var contBtn = document.getElementById("q-continue");
+        contBtn.textContent = "Next question"; contBtn.hidden = false; contBtn.focus({ preventScroll: true });
+        return;
+      }
       var refund = right ? (currentTier === 1 ? 1 : currentTier === 2 ? 0.5 : 0) : 0;
       lives = Math.min(3, Math.round((lives + refund) * 2) / 2);
       renderLives();
       var gotShield = right && currentTier === 3 && shields < MAX_SHIELDS;
       if (gotShield) { shields++; renderShields(); }
       good = right;
-      var what = !right ? "Wrong. Life lost"
+      var what = !right ? (round.need > 1 ? "Wrong. No reward this time, life lost" : "Wrong. Life lost")
         : currentTier === 1 ? "Correct. Life restored, +10 points"
-        : currentTier === 2 ? "Correct. Half a life restored, +10 points"
-        : gotShield ? "Correct. Firewall shield earned, +10 points"
+        : currentTier === 2 ? "2 for 2. Half a life restored, +10 points"
+        : gotShield ? "3 for 3. Firewall shield earned, +10 points"
         : "Correct. Shields full, +10 points";
       if (lives > 0) { head = what; pendingOutcome = "resume"; }
       else if (!lastChanceUsed) { head = (right ? "Correct, but" : "Wrong, and") + " you're out of lives. Last chance: get 2 of 3 right"; pendingOutcome = "lastchance"; }
@@ -1108,6 +1134,7 @@ body { margin: 0; }
     var o = pendingOutcome; pendingOutcome = null;
     if (o === "lastchance") { lastChanceUsed = true; lastChance = { step: 0, results: [] }; openQuestion(gameMode); return; }
     if (o === "next") { openQuestion(gameMode); return; }
+    if (o === "nextround") { openQuestion(gameMode); return; }
     qScreen.hidden = true;
     if (o === "over") { gameOver(); return; }
     // resume or revive
