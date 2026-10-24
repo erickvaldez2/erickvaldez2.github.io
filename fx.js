@@ -1,6 +1,6 @@
 /* Immersive effects for erickvaldez.com.
    Network hero, scroll reveals, click bursts, cursor, card tilt,
-   magnetic buttons, text scramble and page transitions.
+   text scramble and page transitions.
    All motion respects prefers-reduced-motion. */
 (function () {
   "use strict";
@@ -129,7 +129,6 @@
   } else revealEls.forEach(function (el) { el.classList.add("in"); });
 
   // headings get their text for the glitch hover
-  document.querySelectorAll("h2").forEach(function (h) { h.setAttribute("data-text", h.textContent); });
 
   // ---------- active nav link ----------
   var navLinks = Array.prototype.slice.call(document.querySelectorAll('nav a.link[href^="#"]'));
@@ -265,38 +264,14 @@
     });
   }
 
-  // ---------- custom cursor (mouse only) ----------
-  if (finePointer && !reduce) {
-    var dot = document.createElement("div"), ring = document.createElement("div");
-    dot.className = "fx-cursor"; ring.className = "fx-cursor-ring";
-    document.body.appendChild(ring); document.body.appendChild(dot);
-    var tx = -100, ty = -100, rx = -100, ry = -100;
-    addEventListener("pointermove", function (e) { tx = e.clientX; ty = e.clientY; dot.style.transform = "translate(" + tx + "px," + ty + "px)"; });
-    (function follow() {
-      rx += (tx - rx) * 0.18; ry += (ty - ry) * 0.18;
-      ring.style.transform = "translate(" + rx + "px," + ry + "px)";
-      requestAnimationFrame(follow);
-    })();
-    document.addEventListener("pointerover", function (e) { ring.classList.toggle("hot", !!e.target.closest("a, button, .card, .tag")); });
-  }
-
-  // ---------- card spotlight + tilt, magnetic buttons ----------
+  // ---------- card spotlight (mouse only, no tilt) ----------
   if (finePointer && !reduce) {
     document.querySelectorAll(".card").forEach(function (card) {
       card.addEventListener("pointermove", function (e) {
-        var r = card.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-        card.style.setProperty("--mx", x + "px"); card.style.setProperty("--my", y + "px");
-        var rx = ((y / r.height) - 0.5) * -6, ry = ((x / r.width) - 0.5) * 6;
-        card.style.transform = "perspective(900px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(-3px)";
+        var r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", (e.clientX - r.left) + "px");
+        card.style.setProperty("--my", (e.clientY - r.top) + "px");
       });
-      card.addEventListener("pointerleave", function () { card.style.transform = ""; });
-    });
-    document.querySelectorAll(".btn").forEach(function (b) {
-      b.addEventListener("pointermove", function (e) {
-        var r = b.getBoundingClientRect();
-        b.style.transform = "translate(" + ((e.clientX - r.left - r.width / 2) * 0.18).toFixed(1) + "px," + ((e.clientY - r.top - r.height / 2) * 0.25).toFixed(1) + "px)";
-      });
-      b.addEventListener("pointerleave", function () { b.style.transform = ""; });
     });
   }
 })();

@@ -145,16 +145,15 @@ h2[data-text]:hover::after {
 .card, section:nth-of-type(odd) .card, .quiz {
   background: linear-gradient(180deg, rgba(var(--card-rgb), 0.78), rgba(var(--card-rgb), 0.62));
   border: 1px solid rgba(var(--accent-rgb), 0.14);
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  position: relative; transform-style: preserve-3d;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+  position: relative;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 .card::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s;
   background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--accent-rgb), 0.14), transparent 45%);
 }
 .card:hover::before { opacity: 1; }
-.card:hover { border-color: rgba(var(--accent-rgb), 0.4); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 30px rgba(var(--accent-rgb), 0.08); }
+.card:hover { transform: translateY(-3px); border-color: rgba(var(--accent-rgb), 0.4); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 30px rgba(var(--accent-rgb), 0.08); }
 a.project .play { display: inline-flex; gap: 6px; transition: gap 0.2s; }
 a.project:hover .play { gap: 12px; }
 .placeholder { border-color: rgba(var(--accent-rgb), 0.18); background: rgba(var(--card-rgb), 0.4); }
@@ -209,3 +208,10 @@ footer { border-top: 1px solid rgba(var(--accent-rgb), 0.08); }
   .eyebrow .caret, .scroll-cue i { animation: none; }
   .btn::after, h2[data-text]:hover::after { display: none; }
 }
+
+/* desktop fixes */
+a.project { align-content: start; transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease; }
+.fx-cursor, .fx-cursor-ring { display: none !important; }
+h2[data-text]:hover::after { display: none; }
+.fx-ready .reveal { transform: translateY(14px); transition-duration: 0.5s; }
+.fx-ready .reveal.in { transform: none; }
