@@ -94,6 +94,9 @@
     font-size: 14px; font-family: "JetBrains Mono", monospace;
   }
 
+  a.project { text-decoration: none; color: var(--text); display: grid; gap: 8px; transition: border-color 0.15s; }
+  a.project:hover { border-color: var(--accent); }
+  a.project .play { color: var(--accent); font-weight: 600; font-size: 15px; }
   .placeholder {
     border: 2px dashed var(--border); border-radius: 12px; padding: 34px;
     text-align: center; color: var(--muted);
@@ -231,9 +234,17 @@
 <section id="projects">
   <div class="wrap">
     <h2>Projects</h2>
-    <div class="placeholder">
-      <p><strong>Projects coming soon.</strong></p>
-      <p>Home lab builds and security write-ups will be posted here as they're completed.</p>
+    <div class="grid">
+      <a class="card project" href="/packet-dash">
+        <p class="meta">Game &middot; JavaScript &middot; Canvas</p>
+        <h3>Packet Dash</h3>
+        <p class="muted">A lane-dodging runner where you play a data packet. Crash into a burning firewall or malware and a CompTIA Security+ question decides how much of your life you get back. Includes 176 questions and practice tests for each exam domain.</p>
+        <span class="play">Play now &rarr;</span>
+      </a>
+      <div class="placeholder">
+        <p><strong>More coming soon.</strong></p>
+        <p>Home lab builds and security write-ups will be posted here as they're completed.</p>
+      </div>
     </div>
   </div>
 </section>
