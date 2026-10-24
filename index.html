@@ -154,10 +154,10 @@
     <a class="logo" href="#top">erick<span>valdez</span></a>
     <ul>
       <li><a class="link" href="#about">About</a></li>
-      <li><a class="link" href="#experience">Experience</a></li>
+      <li class="hide-sm"><a class="link" href="#experience">Experience</a></li>
       <li class="hide-sm"><a class="link" href="#projects">Projects</a></li>
       <li><a class="link" href="#contact">Contact</a></li>
-      <li class="hide-sm"><a class="link" href="#game">Play</a></li>
+      <li><a class="link" href="/games">Games</a></li>
     </ul>
   </div>
 </nav>
@@ -241,6 +241,12 @@
         <p class="muted">A lane-dodging runner where you play a data packet. Crash into a burning firewall or malware and a CompTIA Security+ question decides how much of your life you get back. Includes 176 questions and practice tests for each exam domain.</p>
         <span class="play">Play now &rarr;</span>
       </a>
+      <a class="card project" href="/games#port-quiz">
+        <p class="meta">Game &middot; JavaScript</p>
+        <h3>Port Quiz</h3>
+        <p class="muted">A 10-round quiz matching common port numbers to their protocols, with a quick security fact after every answer.</p>
+        <span class="play">Play now &rarr;</span>
+      </a>
       <div class="placeholder">
         <p><strong>More coming soon.</strong></p>
         <p>Home lab builds and security write-ups will be posted here as they're completed.</p>
@@ -257,14 +263,6 @@
       <a class="btn primary" id="email-btn" href="#contact">Email me</a>
     </p>
     <noscript><p class="muted">evaldez2d [at] gmail [dot] com</p></noscript>
-  </div>
-</section>
-
-<section id="game">
-  <div class="wrap">
-    <h2>Port Quiz</h2>
-    <p class="muted" style="margin-bottom: 22px;">Think you know your ports? Match each port number to its protocol. 10 rounds.</p>
-    <div class="quiz" id="quiz" aria-live="polite"></div>
   </div>
 </section>
 
@@ -291,122 +289,6 @@
     document.getElementById("year").textContent = new Date().getFullYear();
   })();
 
-  // Port quiz
-  (function () {
-    var PORTS = [
-      { port: 21, name: "FTP", fact: "File Transfer Protocol control channel. Sends credentials in plain text." },
-      { port: 22, name: "SSH", fact: "Secure Shell: encrypted remote login. Also carries SFTP and SCP." },
-      { port: 23, name: "Telnet", fact: "Unencrypted remote login. Replaced by SSH for good reason." },
-      { port: 25, name: "SMTP", fact: "Simple Mail Transfer Protocol, used to relay email between servers." },
-      { port: 53, name: "DNS", fact: "Domain Name System. Uses UDP for most lookups and TCP for zone transfers." },
-      { port: 67, name: "DHCP", fact: "DHCP server port. Hands out IP addresses to devices on a network." },
-      { port: 69, name: "TFTP", fact: "Trivial FTP over UDP. No authentication, often used to push device configs." },
-      { port: 80, name: "HTTP", fact: "Unencrypted web traffic." },
-      { port: 88, name: "Kerberos", fact: "Authentication protocol behind Active Directory logins." },
-      { port: 110, name: "POP3", fact: "Downloads email from a server, usually removing it afterward." },
-      { port: 123, name: "NTP", fact: "Network Time Protocol. Accurate time matters for logs and Kerberos." },
-      { port: 143, name: "IMAP", fact: "Reads email while keeping it synced on the server." },
-      { port: 161, name: "SNMP", fact: "Simple Network Management Protocol, for monitoring network devices." },
-      { port: 389, name: "LDAP", fact: "Lightweight Directory Access Protocol, for querying directories like AD." },
-      { port: 443, name: "HTTPS", fact: "HTTP over TLS: encrypted web traffic." },
-      { port: 445, name: "SMB", fact: "Windows file sharing. A favorite target, famously exploited by WannaCry." },
-      { port: 514, name: "Syslog", fact: "Sends log messages to a central server, usually over UDP." },
-      { port: 636, name: "LDAPS", fact: "LDAP over TLS: encrypted directory queries." },
-      { port: 993, name: "IMAPS", fact: "IMAP over TLS: encrypted email access." },
-      { port: 3306, name: "MySQL", fact: "Default MySQL database port. Should never face the open internet." },
-      { port: 3389, name: "RDP", fact: "Remote Desktop Protocol. A common target for brute-force attacks." }
-    ];
-    var ROUNDS = 10;
-    var el = document.getElementById("quiz");
-    var queue, round, score;
-
-    function shuffle(a) {
-      for (var i = a.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var t = a[i]; a[i] = a[j]; a[j] = t;
-      }
-      return a;
-    }
-    function getBest() {
-      try { return parseInt(localStorage.getItem("portQuizBest") || "0", 10) || 0; } catch (e) { return 0; }
-    }
-    function setBest(v) {
-      try { localStorage.setItem("portQuizBest", String(v)); } catch (e) {}
-    }
-
-    function start() {
-      queue = shuffle(PORTS.slice()).slice(0, ROUNDS);
-      round = 0; score = 0;
-      show();
-    }
-
-    function show() {
-      var q = queue[round];
-      var others = shuffle(PORTS.filter(function (p) { return p.name !== q.name; })).slice(0, 3);
-      var options = shuffle(others.concat([q]));
-      el.innerHTML =
-        '<div class="quiz-top"><span>Round ' + (round + 1) + '/' + ROUNDS + '</span><span>Score ' + score + '</span></div>' +
-        '<div class="quiz-port">' + q.port + '</div>' +
-        '<p class="quiz-prompt">Which protocol uses this port?</p>' +
-        '<div class="quiz-options"></div>' +
-        '<p class="quiz-fact"></p>' +
-        '<div class="quiz-actions"></div>';
-      var box = el.querySelector(".quiz-options");
-      options.forEach(function (opt) {
-        var b = document.createElement("button");
-        b.type = "button";
-        b.textContent = opt.name;
-        b.addEventListener("click", function () { answer(b, opt, q); });
-        box.appendChild(b);
-      });
-    }
-
-    function answer(btn, opt, q) {
-      var buttons = el.querySelectorAll(".quiz-options button");
-      buttons.forEach(function (b) {
-        b.disabled = true;
-        if (b.textContent === q.name) b.classList.add("correct");
-      });
-      var fact = el.querySelector(".quiz-fact");
-      if (opt.name === q.name) {
-        score++;
-        fact.textContent = "Correct! " + q.fact;
-      } else {
-        btn.classList.add("wrong");
-        fact.textContent = "It's " + q.name + ". " + q.fact;
-      }
-      el.querySelector(".quiz-top span:last-child").textContent = "Score " + score;
-      var next = document.createElement("button");
-      next.type = "button";
-      next.textContent = round + 1 < ROUNDS ? "Next" : "See results";
-      next.addEventListener("click", function () {
-        round++;
-        if (round < ROUNDS) show(); else finish();
-      });
-      el.querySelector(".quiz-actions").appendChild(next);
-      next.focus();
-    }
-
-    function finish() {
-      var best = getBest();
-      var isNew = score > best;
-      if (isNew) setBest(score);
-      var msg = score === ROUNDS ? "Perfect score. You'd ace Security+."
-        : score >= 7 ? "Solid. You know your ports."
-        : score >= 4 ? "Not bad. A little review and you'll have it."
-        : "Time to hit the port charts!";
-      el.innerHTML =
-        '<div class="quiz-result">' +
-        '<div class="big">' + score + '/' + ROUNDS + '</div>' +
-        '<p style="margin: 8px 0 4px;">' + msg + '</p>' +
-        '<p class="muted" style="font-size: 14px;">' + (isNew ? "New best score!" : "Best: " + Math.max(best, score) + "/" + ROUNDS) + '</p>' +
-        '</div>' +
-        '<div class="quiz-actions"><button type="button" id="quiz-again">Play again</button></div>';
-      document.getElementById("quiz-again").addEventListener("click", start);
-    }
-
-    start();
-  })();
 </script>
 </body>
 </html>
