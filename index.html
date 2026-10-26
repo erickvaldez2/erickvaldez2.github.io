@@ -98,6 +98,9 @@
   a.project { text-decoration: none; color: var(--text); display: grid; gap: 8px; transition: border-color 0.15s; }
   a.project:hover { border-color: var(--accent); }
   a.project .play { color: var(--accent); font-weight: 600; font-size: 15px; }
+  .card.editions { display: grid; gap: 8px; align-content: start; }
+  .ed-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .ed-btns .btn { padding: 10px 14px; font-size: 14px; text-align: center; flex: 1 1 130px; }
   .placeholder {
     border: 2px dashed var(--border); border-radius: 12px; padding: 34px;
     text-align: center; color: var(--muted);
@@ -240,12 +243,15 @@
   <div class="wrap">
     <h2>Projects</h2>
     <div class="grid">
-      <a class="card project" href="/packet-dash">
+      <div class="card project editions">
         <p class="meta">Game &middot; JavaScript &middot; Canvas</p>
         <h3>Packet Dash</h3>
-        <p class="muted">A lane-dodging runner where you play a data packet. Crash into a burning firewall or malware and a CompTIA Security+ question decides how much of your life you get back. Includes 176 questions and practice tests for each exam domain.</p>
-        <span class="play">Play now &rarr;</span>
-      </a>
+        <p class="muted">A lane-dodging runner where you play a data packet. Crash into a burning firewall or malware and a CompTIA question decides how much of your life you get back. Two editions, each with practice tests for every exam domain.</p>
+        <div class="ed-btns">
+          <a class="btn primary" href="/packet-dash">Security+ edition</a>
+          <a class="btn secondary" href="/packet-dash-cysa">CySA+ edition</a>
+        </div>
+      </div>
       <a class="card project" href="/games#port-quiz">
         <p class="meta">Game &middot; JavaScript</p>
         <h3>Port Quiz</h3>
