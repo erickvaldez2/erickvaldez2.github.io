@@ -2,305 +2,170 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="theme-color" content="#060a12">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
 <title>Erick Valdez | Network Security</title>
-<meta name="description" content="Erick Valdez: U.S. Army network communications specialist preparing for CompTIA Security+ and pursuing a B.S. in Cybersecurity Technology.">
+<meta name="description" content="Erick Valdez: U.S. Army network communications specialist with an active Secret clearance, pursuing a B.S. in Cybersecurity Technology and CompTIA Security+.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #ffffff;
-    --bg-alt: #f5f7fa;
-    --text: #1a202c;
-    --muted: #5a6577;
-    --border: #e2e8f0;
-    --accent: #1f6feb;
-    --accent-soft: #e8f0fe;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0d1117;
-      --bg-alt: #161b22;
-      --text: #e6edf3;
-      --muted: #9aa5b1;
-      --border: #30363d;
-      --accent: #58a6ff;
-      --accent-soft: #132339;
-    }
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: "Inter", system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.65;
-    font-size: 17px;
-  }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
-
-  nav {
-    position: sticky; top: 0; z-index: 10;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-  }
-  nav .wrap { display: flex; justify-content: space-between; align-items: center; height: 60px; }
-  .logo { font-family: "JetBrains Mono", monospace; font-weight: 500; color: var(--text); text-decoration: none; }
-  .logo span { color: var(--accent); }
-  nav ul { display: flex; gap: 22px; list-style: none; }
-  nav a.link { color: var(--muted); text-decoration: none; font-size: 15px; font-weight: 500; }
-  nav a.link:hover { color: var(--accent); }
-
-  header { padding: 90px 0 70px; }
-  .eyebrow { font-family: "JetBrains Mono", monospace; color: var(--accent); font-size: 14px; margin-bottom: 14px; }
-  h1 { font-size: clamp(36px, 7vw, 54px); line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
-  .tagline { font-size: clamp(18px, 3vw, 22px); color: var(--muted); margin-top: 14px; max-width: 620px; }
-  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
-  .badge {
-    background: var(--accent-soft); color: var(--accent);
-    padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 600;
-  }
-  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
-  .btn {
-    display: inline-block; padding: 12px 22px; border-radius: 8px;
-    font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid var(--accent);
-  }
-  .btn.primary { background: var(--accent); color: #fff; }
-  .btn.secondary { color: var(--accent); }
-  .btn:hover { opacity: 0.88; }
-
-  section { padding: 64px 0; border-top: 1px solid var(--border); }
-  section:nth-of-type(even) { background: var(--bg-alt); }
-  h2 { font-size: 28px; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.01em; }
-  h2::before { content: "// "; font-family: "JetBrains Mono", monospace; color: var(--accent); font-size: 22px; }
-  p + p { margin-top: 14px; }
-  .muted { color: var(--muted); }
-
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
-  .card {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 12px; padding: 22px;
-  }
-  section:nth-of-type(odd) .card { background: var(--bg-alt); }
-  .card h3 { font-size: 18px; margin-bottom: 6px; }
-  .card .meta { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
-  .card ul { padding-left: 18px; }
-  .card li { margin-bottom: 6px; }
-
-  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
-  .tag {
-    border: 1px solid var(--border); padding: 5px 12px; border-radius: 6px;
-    font-size: 14px; font-family: "JetBrains Mono", monospace;
-  }
-
-  a.project { text-decoration: none; color: var(--text); display: grid; gap: 8px; transition: border-color 0.15s; }
-  a.project:hover { border-color: var(--accent); }
-  a.project .play { color: var(--accent); font-weight: 600; font-size: 15px; }
-  .card.editions { display: grid; gap: 8px; align-content: start; }
-  .ed-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-  .ed-btns .btn { padding: 10px 14px; font-size: 14px; text-align: center; flex: 1 1 130px; }
-  .placeholder {
-    border: 2px dashed var(--border); border-radius: 12px; padding: 34px;
-    text-align: center; color: var(--muted);
-  }
-
-  #contact .btn { margin-top: 8px; }
-
-  /* Port quiz */
-  .quiz {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 12px; padding: 26px; max-width: 560px;
-  }
-  .quiz-top { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); font-family: "JetBrains Mono", monospace; }
-  .quiz-port {
-    font-family: "JetBrains Mono", monospace; font-size: 56px; font-weight: 500;
-    color: var(--accent); text-align: center; margin: 18px 0 4px;
-  }
-  .quiz-prompt { text-align: center; color: var(--muted); margin-bottom: 20px; }
-  .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .quiz-options button {
-    font: inherit; font-weight: 600; font-size: 15px;
-    padding: 14px 10px; border-radius: 8px; cursor: pointer;
-    background: var(--bg-alt); color: var(--text); border: 1px solid var(--border);
-  }
-  .quiz-options button:hover:not(:disabled) { border-color: var(--accent); }
-  .quiz-options button:disabled { cursor: default; }
-  .quiz-options button.correct { background: #1a7f37; border-color: #1a7f37; color: #fff; }
-  .quiz-options button.wrong { background: #cf222e; border-color: #cf222e; color: #fff; }
-  .quiz-fact { min-height: 48px; margin-top: 16px; font-size: 15px; color: var(--muted); text-align: center; }
-  .quiz-actions { text-align: center; margin-top: 10px; }
-  .quiz-actions button {
-    font: inherit; font-weight: 600; font-size: 15px; cursor: pointer;
-    padding: 11px 22px; border-radius: 8px; border: 1px solid var(--accent);
-    background: var(--accent); color: #fff;
-  }
-  .quiz-result { text-align: center; padding: 10px 0; }
-  .quiz-result .big { font-family: "JetBrains Mono", monospace; font-size: 48px; color: var(--accent); }
-  @media (max-width: 420px) { .quiz-options { grid-template-columns: 1fr; } .quiz-port { font-size: 46px; } }
-  footer { border-top: 1px solid var(--border); padding: 30px 0 40px; font-size: 14px; color: var(--muted); }
-  footer p + p { margin-top: 8px; }
-  footer a { color: var(--muted); }
-
-  @media (max-width: 600px) {
-    nav ul { gap: 14px; }
-    nav a.link { font-size: 14px; }
-    header { padding: 60px 0 50px; }
-    .hide-sm { display: none; }
-  }
-</style>
-<link rel="stylesheet" href="/fx.css?v=3">
-<script>try{var p=localStorage.getItem("site-pal");if(p&&p!=="signal")document.documentElement.dataset.palette=p;}catch(e){}</script>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800;62..125,900&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css?v=1">
 </head>
 <body>
-
-<nav>
-  <div class="wrap">
-    <a class="logo" href="#top">erick<span>valdez</span></a>
-    <ul>
-      <li><a class="link" href="#about">About</a></li>
-      <li class="hide-sm"><a class="link" href="#experience">Experience</a></li>
-      <li class="hide-sm"><a class="link" href="#projects">Projects</a></li>
-      <li><a class="link" href="#contact">Contact</a></li>
-      <li><a class="link" href="/games">Games</a></li>
-    </ul>
+<header class="lnav gutter">
+  <div class="max">
+    <a class="name" href="#top">Erick Valdez</a>
+    <nav aria-label="Sections"><a href="#short">Overview</a><a href="#service">Service</a><a href="#packet">Projects</a><a href="/games">Games</a><a href="#contact">Contact</a></nav>
+    <a class="hire" href="#contact">Hire</a>
   </div>
-</nav>
-
-<header id="top">
-  <div class="wrap">
-    <p class="eyebrow">&gt; network security</p>
-    <h1>Erick Valdez</h1>
-    <p class="tagline">U.S. Army network communications specialist building toward a career in network security.</p>
-    <div class="badges">
-      <span class="badge">Security+ (in progress)</span>
-      <span class="badge">Active Secret Clearance</span>
-      <span class="badge">B.S. Cybersecurity (in progress)</span>
-    </div>
-    <div class="cta">
-      <a class="btn primary" href="#contact">Get in touch</a>
-      <a class="btn secondary" href="https://github.com/erickvaldez2" target="_blank" rel="noopener">GitHub</a>
-      <a class="btn secondary" href="/games">Play my games</a>
-    </div>
-  </div>
-  <a class="scroll-cue" href="#about" aria-label="Scroll to About">SCROLL<i></i></a>
 </header>
 
-<section id="about">
-  <div class="wrap">
-    <h2>About</h2>
-    <p>I'm Erick Valdez, a U.S. Army network communications specialist (25H) with six years of service and hands-on experience building and maintaining tactical networks. I hold an active Secret clearance, I'm preparing for the CompTIA Security+, and I'm earning my B.S. in Cybersecurity Technology at UMGC.</p>
-    <p>My goal is to bring my military network experience into a civilian role as a network security specialist, protecting the systems organizations depend on.</p>
-  </div>
-</section>
-
-<section id="experience">
-  <div class="wrap">
-    <h2>Experience</h2>
-    <div class="card">
-      <h3>Network Communications Specialist (25H)</h3>
-      <p class="meta">U.S. Army &middot; Active Guard Reserve (full-time)</p>
-      <ul>
-        <li>Install, configure, and maintain tactical network and communications systems.</li>
-        <li>Troubleshoot connectivity issues and keep communications equipment mission-ready.</li>
-        <li>Serve as full-time staff supporting unit readiness and training soldiers on communications equipment.</li>
-        <li>Work in an environment that requires an active Secret clearance and strict security practices.</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<section id="skills">
-  <div class="wrap">
-    <h2>Certifications &amp; Education</h2>
-    <div class="grid">
-      <div class="card">
-        <h3>CompTIA Security+</h3>
-        <p class="meta">In progress</p>
-        <p class="muted">Threats and vulnerabilities, security architecture, operations, incident response, and risk management.</p>
+<main id="top">
+  <section class="hero" id="hero" aria-label="Introduction">
+    <div class="hero-pin gutter">
+      <div class="hero-copy max" style="width:100%">
+        <p class="hero-kicker">Erick Valdez</p>
+        <h1>Disciplined. Goal-driven. Building toward network security.</h1>
       </div>
-      <div class="card">
-        <h3>B.S. Cybersecurity Technology</h3>
-        <p class="meta">University of Maryland Global Campus &middot; In progress</p>
-        <p class="muted">Coursework in network security, systems administration, and cyber defense.</p>
+      <div class="hero-num" aria-hidden="true">25H<span class="fill">25H</span></div>
+      <svg class="hero-path" viewBox="0 0 1600 140" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 110 C 260 110, 300 30, 560 40 S 900 120, 1120 70 S 1420 20, 1600 30" fill="none" stroke="#ff6a1f" stroke-width="2"/>
+      </svg>
+      <div class="hero-foot max">
+        <p>U.S. Army network communications specialist with six years of service and an active Secret clearance. Pursuing a B.S. in Cybersecurity Technology and CompTIA Security+, with additional certifications planned to stay ahead in the field.</p>
+        <div class="ctas"><a class="btn fill" href="#contact">Get in touch</a><a class="link" href="/games">Play my games</a></div>
       </div>
     </div>
-    <h3 style="margin: 32px 0 14px; font-size: 18px;">Skills</h3>
-    <div class="tags">
-      <span class="tag">Network troubleshooting</span>
-      <span class="tag">TCP/IP</span>
-      <span class="tag">Routing &amp; switching</span>
-      <span class="tag">Security fundamentals</span>
-      <span class="tag">Tactical communications</span>
-      <span class="tag">Incident response basics</span>
-      <span class="tag">Team training</span>
-    </div>
-  </div>
-</section>
+  </section>
 
-<section id="projects">
-  <div class="wrap">
-    <h2>Projects</h2>
-    <div class="grid">
-      <div class="card project editions">
-        <p class="meta">Game &middot; JavaScript &middot; Canvas</p>
-        <h3>Packet Dash</h3>
-        <p class="muted">A lane-dodging runner where you play a data packet. Crash into a burning firewall or malware and a CompTIA question decides how much of your life you get back. Two editions, each with practice tests for every exam domain.</p>
-        <div class="ed-btns">
-          <a class="btn primary" href="/packet-dash">Security+ edition</a>
-          <a class="btn secondary" href="/packet-dash-cysa">CySA+ edition</a>
+  <section class="reel-sec" id="short" aria-labelledby="short-title">
+    <div class="gutter"><div class="max reel-head">
+      <h2 id="short-title">At a glance</h2>
+      <div class="reel-ctl"><button type="button" id="prev" aria-label="Previous">&lsaquo;</button><button type="button" id="next" aria-label="Next">&rsaquo;</button></div>
+    </div></div>
+    <div class="reel" id="reel" tabindex="0" aria-label="Highlights">
+      <article class="slide s4"><h3>Built my own study games and website.</h3><div class="lanes" aria-hidden="true"><span></span><span><i class="fw"></i><i class="pk"></i></span><span></span></div><p>Packet Racer in Security+ and CySA+ editions, the Port Quiz, and erickvaldez.com.</p></article>
+      <article class="slide s2"><h3>Active Secret clearance.</h3><p></p></article>
+      <article class="slide s3"><h3>Studying for Security+ and a B.S. in Cybersecurity Technology.</h3><div class="bars" aria-hidden="true"><i style="height:30%"></i><i style="height:48%"></i><i style="height:42%"></i><i style="height:66%"></i><i style="height:74%"></i><i style="height:90%"></i></div><p>University of Maryland Global Campus.</p></article>
+      <article class="slide s1 soon"><h3>Coming soon.</h3><span class="big" aria-hidden="true">lab</span><p>Home lab projects.</p></article>
+    </div>
+  </section>
+
+  <section class="nums gutter" aria-label="By the numbers">
+    <div class="max">
+      <div class="stat-hero"><b>6 yrs</b><span>IT-related experience<sup><a href="#fn1" aria-label="Footnote 1">1</a></sup></span></div>
+      <div class="stat-side">
+        <div><b>2</b><span>Study editions</span></div>
+        <div><b>2</b><span>Games built</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="service gutter" id="service" aria-labelledby="svc-title">
+    <div class="max">
+      <h2 id="svc-title">Service record.</h2>
+      <ol>
+        <li><span class="yr">Active</span><h3>Active duty and Army Reserve, 25H</h3><p>Configured, troubleshot, operated, and maintained tactical equipment and networks.</p></li>
+        <li><span class="yr">2026</span><h3>Active Guard Reserve, full-time staff</h3><p>Leads the unit's IT and network operations while maintaining training and readiness. Balances office and administrative work with field and tactical operations.</p></li>
+        <li class="next"><span class="yr">Next</span><h3>Network security specialist</h3><p>Security+ in progress<sup><a href="#fn2" aria-label="Footnote 2">2</a></sup>, then CySA+ and CCNA, alongside a B.S. in Cybersecurity Technology.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="viewer gutter" id="packet" aria-labelledby="pd-title">
+    <div class="max">
+      <div>
+        <h2 id="pd-title">Packet Racer</h2>
+        <p class="lead">Steer a data packet past burning firewalls and malware. Crash, and an exam question decides how much of your life you get back.</p>
+        <div class="edition-pick" role="group" aria-label="Edition">
+          <button type="button" data-ed="sec" aria-pressed="true" aria-label="Security+ edition" style="background:#4fd1ff"></button>
+          <button type="button" data-ed="cysa" aria-pressed="false" aria-label="CySA+ edition" style="background:#a78bfa"></button>
+          <span class="lbl" id="ed-name">Security+ edition</span>
+        </div>
+        <div class="ed-detail" id="ed-detail" aria-live="polite">
+          <p>176 questions across all five SY0-701 domains, plus a 50-question full practice exam.</p>
+          <a class="btn fill" href="/packet-racer">Play Security+ edition</a>
         </div>
       </div>
-      <a class="card project" href="/games#port-quiz">
-        <p class="meta">Game &middot; JavaScript</p>
-        <h3>Port Quiz</h3>
-        <p class="muted">A 10-round quiz matching common port numbers to their protocols, with a quick security fact after every answer.</p>
-        <span class="play">Play now &rarr;</span>
-      </a>
-      <div class="placeholder">
-        <p><strong>More coming soon.</strong></p>
-        <p>Home lab builds and security write-ups will be posted here as they're completed.</p>
+      <div class="screen" aria-hidden="true" id="screen">
+        <div class="track"><span></span><span></span><span></span></div>
+        <div class="fly">
+          <i class="fw2" style="left:14%;width:24%;top:12%"></i><i class="fw2" style="left:62%;width:24%;top:12%"></i>
+          <i class="mw" style="left:46%;top:34%"></i>
+          <i class="fw2" style="left:38%;width:24%;top:58%"></i>
+        </div>
+        <span class="tag" id="screen-tag">SECURITY+</span>
+        <i class="pk2"></i>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="contact">
-  <div class="wrap">
-    <h2>Contact</h2>
-    <p>Open to conversations about network security roles and opportunities.</p>
-    <p>
-      <a class="btn primary" id="email-btn" href="#contact">Email me</a>
-    </p>
-    <noscript><p class="muted">evaldez2d [at] gmail [dot] com</p></noscript>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <p>&copy; <span id="year">2026</span> Erick Valdez</p>
-    <p>The views and content on this site are my own and do not represent the U.S. Army or the Department of Defense.</p>
-  </div>
-</footer>
+  <section class="contact gutter" id="contact" aria-labelledby="ct-title">
+    <div class="max">
+      <h2 id="ct-title">Let's connect.</h2>
+      <div class="row"><a class="btn fill" id="email-btn" href="#contact">Email Erick</a><a class="link" href="https://github.com/erickvaldez2" target="_blank" rel="noopener">GitHub</a><a class="link" href="/games">Play the games</a></div>
+      <div class="notes" id="notes">
+        <ol>
+          <li id="fn1">Six years of U.S. Army service as a 25H as of October 2026, including active duty, Army Reserve and Active Guard Reserve.</li>
+          <li id="fn2">Security+ exam not yet taken. This page will update when it is.</li>
+          <li>Views on this site are Erick's own and do not represent the U.S. Army or the Department of Defense.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</main>
 
 <script>
-  // Email is assembled at runtime so scraper bots can't read it from the page source.
-  (function () {
-    var u = ["evaldez", "2d"].join("");
-    var d = ["gmail", "com"].join(".");
-    var btn = document.getElementById("email-btn");
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
-      window.location.href = "mai" + "lto:" + u + "@" + d;
-    });
-    btn.addEventListener("mouseenter", function () {
-      btn.setAttribute("title", u + "@" + d);
-    }, { once: true });
-    document.getElementById("year").textContent = new Date().getFullYear();
-  })();
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // hero scroll progress -> --p (0..1)
+  var hero = document.getElementById("hero");
+  function onScroll() {
+    if (reduce) return;
+    var r = hero.getBoundingClientRect();
+    var span = hero.offsetHeight - window.innerHeight;
+    var p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+    hero.style.setProperty("--p", p.toFixed(3));
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  // reel buttons
+  var reel = document.getElementById("reel");
+  function step(dir) { reel.scrollBy({ left: dir * Math.min(reel.clientWidth * 0.8, 540), behavior: reduce ? "auto" : "smooth" }); }
+  document.getElementById("prev").addEventListener("click", function () { step(-1); });
+  document.getElementById("next").addEventListener("click", function () { step(1); });
+
+  // edition picker
+  var ED = {
+    sec: { name: "Security+ edition", color: "#4fd1ff", tag: "SECURITY+", text: "176 questions across all five SY0-701 domains, plus a 50-question full practice exam.", cta: "Play Security+ edition", url: "/packet-racer" },
+    cysa: { name: "CySA+ edition", color: "#a78bfa", tag: "CYSA+", text: "101 analyst questions on logs, threat hunting, vulnerability management and incident response, plus a 47-question full exam.", cta: "Play CySA+ edition", url: "/packet-racer-cysa" }
+  };
+  var screen = document.getElementById("screen");
+  document.querySelectorAll(".edition-pick button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var e = ED[b.dataset.ed];
+      document.querySelectorAll(".edition-pick button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      document.getElementById("ed-name").textContent = e.name;
+      var d = document.getElementById("ed-detail");
+      d.querySelector("p").textContent = e.text;
+      d.querySelector("a").textContent = e.cta;
+      d.querySelector("a").setAttribute("href", e.url);
+      screen.style.setProperty("--edc", e.color);
+      document.getElementById("screen-tag").textContent = e.tag;
+    });
+  });
+
+  // email is assembled at runtime so scraper bots can't read it from the page source
+  var u = ["evaldez", "2d"].join(""), dom = ["gmail", "com"].join(".");
+  var eb = document.getElementById("email-btn");
+  if (eb) {
+    eb.addEventListener("click", function (ev) { ev.preventDefault(); window.location.href = "mai" + "lto:" + u + "@" + dom; });
+    eb.setAttribute("title", u + "@" + dom);
+  }
+})();
 </script>
-<script src="/fx.js?v=3" defer></script>
 </body>
 </html>
