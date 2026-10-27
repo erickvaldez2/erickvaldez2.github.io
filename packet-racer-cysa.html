@@ -7,29 +7,33 @@
 <title>Packet Racer: CySA+</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800;62..125,900&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* Layout: full-height single-screen game. Glass HUD over the playfield, canvas below, overlays for start / question / game over. Single dark look by design. */
 :root {
   color-scheme: dark;
-  --bg: #050912;
-  --bg-2: #0a1222;
-  --panel: rgba(13, 21, 38, 0.86);
-  --panel-solid: #0d1526;
-  --panel-2: #15203a;
-  --line: #1f2c49;
-  --fg: #e8eef9;
-  --muted: #8796b5;
-  --packet: #4fd1ff;
-  --packet-core: #d9f6ff;
+  --bg: #050505;
+  --bg-2: #0d0c0b;
+  --panel: rgba(18, 18, 16, 0.9);
+  --panel-solid: #121210;
+  --panel-2: #1a1917;
+  --line: #2a2823;
+  --fg: #f3f1ea;
+  --muted: #8f8c84;
+  --packet: #a78bfa;
+  --packet-hue: #a78bfa;
+  --packet-core: #ece5ff;
   --firewall: #ff9f43;
   --firewall-2: #ffcf6e;
   --malware: #ff4d6d;
-  --bit: #a78bfa;
+  --bit: #f3f1ea;
   --good: #3ddc97;
   --bad: #ff4d6d;
-  --font-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --flare: #ff6a1f;
+  --paper: #efece4;
+  --ink: #171613;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
 }
 html, body { height: 100%; }
 * { box-sizing: border-box; }
@@ -227,19 +231,69 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 @keyframes bob { 0%, 100% { transform: rotate(45deg) translateY(0); } 50% { transform: rotate(45deg) translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .logo-mark { animation: none; } }
 @media (max-width: 380px) { .card h1 { font-size: 36px; } .hud .v { font-size: 22px; } }
-.edition { font-family: var(--font-display); font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bit); margin-top: -6px; }
+.edition { font-family: var(--font-display); font-weight: 800; font-stretch: 80%; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #5b3fb8; margin-top: -6px; }
+/* Site style: ink playfield, paper cards, Archivo display */
+.hud { background: linear-gradient(to bottom, rgba(5, 5, 5, 0.94), rgba(5, 5, 5, 0)); }
+.hud .k { font-family: var(--font-display); font-weight: 700; font-stretch: 85%; }
+.hud .v { font-weight: 900; font-stretch: 78%; font-size: 30px; }
+.hud .v.score { color: var(--fg); text-shadow: none; }
+.life.full { box-shadow: none; }
+.overlay { background: rgba(5, 5, 5, 0.86); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.overlay.see-through { background: rgba(5, 5, 5, 0.62); }
+.card {
+  --fg: #171613; --muted: #5f5c55; --panel-2: #e3dfd5; --line: #cfc9bb;
+  --packet: #b2440d; --good: #2f6b3a; --bad: #b3362b; --firewall: #a8670d; --firewall-2: #a8670d; --malware: #b3362b; --bit: #171613;
+  background: var(--paper); color: var(--fg); border: 0; border-radius: 6px; border-top: 5px solid var(--flare);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); padding: 24px 22px 22px;
+}
+.card.danger { border-top-color: var(--bad); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); }
+.logo-mark { background: var(--packet-hue); box-shadow: none; border-radius: 6px; }
+.card h1 { font-weight: 900; font-stretch: 72%; font-size: 52px; line-height: 0.86; letter-spacing: -0.01em; text-transform: uppercase; }
+.card h2, .crash-title, .q-text, .review-q, .t-count { font-stretch: 85%; letter-spacing: -0.005em; }
+.card h2 { font-weight: 800; }
+.btn { font-weight: 800; font-stretch: 85%; letter-spacing: 0.02em; border-radius: 999px; color: var(--paper); background: var(--ink); box-shadow: none; }
+.btn:hover { background: #000; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+.btn.ghost:hover { background: rgba(23, 22, 19, 0.06); }
+.seg { border-radius: 999px; }
+.seg button { border-radius: 999px; font-stretch: 85%; }
+.seg button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.test-btn, .mode, .opt, .diff { background: rgba(255, 255, 255, 0.45); border-radius: 6px; }
+.test-btn.full { border-color: rgba(178, 68, 13, 0.45); background: rgba(178, 68, 13, 0.06); }
+.opt.sel { background: rgba(178, 68, 13, 0.08); }
+.opt.right { background: rgba(47, 107, 58, 0.12); }
+.opt.wrong { background: rgba(179, 54, 43, 0.1); }
+.mode .n { font-weight: 900; font-stretch: 78%; font-size: 21px; text-transform: uppercase; }
+.mode[aria-checked="true"].e { background: rgba(47, 107, 58, 0.1); box-shadow: none; }
+.mode[aria-checked="true"].m { background: rgba(168, 103, 13, 0.1); box-shadow: none; }
+.mode[aria-checked="true"].h { background: rgba(179, 54, 43, 0.1); box-shadow: none; }
+.tag.g { background: rgba(47, 107, 58, 0.12); }
+.tag.b { background: rgba(179, 54, 43, 0.1); }
+.tag.p { background: rgba(23, 22, 19, 0.08); }
+.crash-icon { border-radius: 6px; }
+.crash-icon.fw { background: rgba(168, 103, 13, 0.12); border-color: rgba(168, 103, 13, 0.5); }
+.crash-icon.mw { background: rgba(179, 54, 43, 0.1); border-color: rgba(179, 54, 43, 0.5); }
+.review-item, .result, .stats div { border-radius: 6px; }
+.stats .v, .t-score #t-pct { font-weight: 900; font-stretch: 75%; }
+.newbest { text-shadow: none; }
+.btn:focus-visible, .opt:focus-visible, .mode:focus-visible, .test-btn:focus-visible, .diff:focus-visible, .seg button:focus-visible { outline-color: var(--ink); }
+.card .q-text { color: var(--fg); font-weight: 700; }
+.mode .n { white-space: nowrap; }
+.mode-top { flex-wrap: wrap; row-gap: 2px; }
+.q-meta .tier { white-space: nowrap; }
+@media (max-width: 380px) { .card h1 { font-size: 44px; } }
 </style>
-
 <style>
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body { margin: 0; }
 [hidden] { display: none !important; }
-.back-link { position: fixed; z-index: 6; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-decoration: none; background: rgba(13,21,38,0.8); border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; }
+.back-link { position: fixed; z-index: 6; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-decoration: none; background: rgba(18,18,16,0.85); border: 1px solid #2a2823; border-radius: 999px; padding: 6px 10px; }
 .back-link:hover { color: var(--fg); }
 .app:has(#start-screen[hidden]):has(#over-screen[hidden]) .back-link { display: none; }
 </style>
 </head>
 <body>
+
 <div class="app">
   <a class="back-link" href="/games">&larr; erickvaldez.com</a>
   <div class="stage" id="stage">
@@ -488,6 +542,7 @@ body { margin: 0; }
     var cs = getComputedStyle(document.documentElement);
     ["bg", "bg-2", "line", "packet", "packet-core", "firewall", "firewall-2", "malware", "bit", "muted", "good"].forEach(function (k) { C[k] = cs.getPropertyValue("--" + k).trim(); });
   })();
+  var PK = (function (h) { h = h.replace("#", ""); return parseInt(h.slice(0, 2), 16) + "," + parseInt(h.slice(2, 4), 16) + "," + parseInt(h.slice(4, 6), 16); })(C.packet || "#4fd1ff");
   var FONT_DISPLAY = getComputedStyle(document.documentElement).getPropertyValue("--font-display");
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -715,28 +770,28 @@ body { margin: 0; }
       for (var j = i + 1; j < nodes.length; j++) {
         var b = nodes[j], by = (b.y + par) % H;
         var dx = a.x - b.x, dy = ay - by, d2 = dx * dx + dy * dy;
-        if (d2 < 9000) { ctx.strokeStyle = "rgba(79,209,255," + (0.08 * (1 - d2 / 9000)).toFixed(3) + ")"; ctx.beginPath(); ctx.moveTo(a.x, ay); ctx.lineTo(b.x, by); ctx.stroke(); }
+        if (d2 < 9000) { ctx.strokeStyle = "rgba(243,241,234," + (0.06 * (1 - d2 / 9000)).toFixed(3) + ")"; ctx.beginPath(); ctx.moveTo(a.x, ay); ctx.lineTo(b.x, by); ctx.stroke(); }
       }
     }
-    ctx.fillStyle = "rgba(79,209,255,0.25)";
+    ctx.fillStyle = "rgba(243,241,234,0.16)";
     nodes.forEach(function (n) { ctx.beginPath(); ctx.arc(n.x, (n.y + par) % H, n.r, 0, Math.PI * 2); ctx.fill(); });
 
     // track
     var tg = ctx.createLinearGradient(PX, 0, PX + PW, 0);
-    tg.addColorStop(0, "rgba(79,209,255,0.06)"); tg.addColorStop(0.5, "rgba(79,209,255,0.02)"); tg.addColorStop(1, "rgba(79,209,255,0.06)");
+    tg.addColorStop(0, "rgba(243,241,234,0.045)"); tg.addColorStop(0.5, "rgba(243,241,234,0.012)"); tg.addColorStop(1, "rgba(243,241,234,0.045)");
     ctx.fillStyle = tg; ctx.fillRect(PX, 0, PW, H);
-    ctx.strokeStyle = "rgba(79,209,255,0.35)"; ctx.lineWidth = 2;
-    ctx.shadowColor = C.packet; ctx.shadowBlur = 10;
+    ctx.strokeStyle = "rgba(255,106,31,0.55)"; ctx.lineWidth = 2;
+    ctx.shadowColor = "rgba(255,106,31,0.6)"; ctx.shadowBlur = 8;
     ctx.beginPath(); ctx.moveTo(PX, 0); ctx.lineTo(PX, H); ctx.moveTo(PX + PW, 0); ctx.lineTo(PX + PW, H); ctx.stroke();
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(135,150,181,0.22)"; ctx.lineWidth = 2; ctx.setLineDash([18, 22]); ctx.lineDashOffset = -(scroll % 40);
+    ctx.strokeStyle = "rgba(243,241,234,0.14)"; ctx.lineWidth = 2; ctx.setLineDash([18, 22]); ctx.lineDashOffset = -(scroll % 40);
     for (var l = 1; l < 3; l++) { var lx = PX + laneW * l; ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx, H); ctx.stroke(); }
     ctx.setLineDash([]);
 
     // speed streaks
     if (mode === "play" && elapsed > 8 && !reduceMotion) {
       var intensity = Math.min(1, (elapsed - 8) / 30);
-      ctx.strokeStyle = "rgba(217,246,255," + (0.12 * intensity).toFixed(3) + ")"; ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(243,241,234," + (0.1 * intensity).toFixed(3) + ")"; ctx.lineWidth = 1;
       for (var s = 0; s < 6; s++) {
         var sx = PX + ((s * 97 + Math.floor(scroll / 7)) % PW), sy = (scroll * 1.5 + s * 173) % H;
         ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx, sy + 40 + 60 * intensity); ctx.stroke();
@@ -783,7 +838,7 @@ body { margin: 0; }
           fg.addColorStop(0, C["firewall-2"]); fg.addColorStop(1, C.firewall);
           ctx.fillStyle = fg; roundRect(hb.x, top, hb.w, hb.h, 5); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.fillStyle = "rgba(5,9,18,0.22)";
+          ctx.fillStyle = "rgba(5,5,5,0.22)";
           var bw = 18, rh = hb.h / 3;
           for (var k = 0; k < 3; k++) {
             var rowY = top + k * rh, off = k % 2 ? bw / 2 : 0;
@@ -794,7 +849,7 @@ body { margin: 0; }
           var label = hb.w > 104 ? "FIREWALL" : "FW";
           ctx.font = "700 11px " + FONT_DISPLAY;
           var tw = ctx.measureText(label).width, lockW = 12, plateW = tw + lockW + 18, cxp = hb.x + hb.w / 2;
-          ctx.fillStyle = "rgba(5,9,18,0.82)"; roundRect(cxp - plateW / 2, r.y - 8, plateW, 16, 4); ctx.fill();
+          ctx.fillStyle = "rgba(5,5,5,0.82)"; roundRect(cxp - plateW / 2, r.y - 8, plateW, 16, 4); ctx.fill();
           // padlock
           var lx = cxp - plateW / 2 + 7, ly = r.y - 4;
           ctx.strokeStyle = C["firewall-2"]; ctx.lineWidth = 1.5;
@@ -821,7 +876,7 @@ body { margin: 0; }
           ctx.fillStyle = C.malware;
           ctx.beginPath(); ctx.ellipse(cx, r.y + rad * 0.05, rad * 0.46 * pulse, rad * 0.58 * pulse, 0, 0, Math.PI * 2); ctx.fill();
           ctx.shadowBlur = 0;
-          ctx.fillStyle = "rgba(5,9,18,0.35)";
+          ctx.fillStyle = "rgba(5,5,5,0.35)";
           ctx.fillRect(cx - rad * 0.4, r.y + rad * 0.05, rad * 0.8, 1.5);
           ctx.fillStyle = C.bg;
           ctx.beginPath(); ctx.arc(cx - rad * 0.17, r.y - rad * 0.2, rad * 0.1, 0, Math.PI * 2); ctx.arc(cx + rad * 0.17, r.y - rad * 0.2, rad * 0.1, 0, Math.PI * 2); ctx.fill();
@@ -841,7 +896,7 @@ body { margin: 0; }
     if (mode !== "crash" && mode !== "over") {
       for (var t = trail.length - 1; t >= 1; t--) {
         var tr = trail[t], f = 1 - t / trail.length;
-        ctx.fillStyle = "rgba(79,209,255," + (0.22 * f).toFixed(3) + ")";
+        ctx.fillStyle = "rgba(" + PK + "," + (0.22 * f).toFixed(3) + ")";
         var ts = pSize * 0.55 * f;
         ctx.beginPath(); ctx.arc(tr.x, tr.y + pSize * 0.3, ts / 2, 0, Math.PI * 2); ctx.fill();
       }

@@ -29,9 +29,12 @@ a { color: inherit; }
 .lnav nav { display: flex; gap: 22px; font-size: 13px; color: #cfccc4; }
 .lnav nav a { text-decoration: none; }
 .lnav nav a:hover { color: var(--bone); }
-.hire { font-size: 13px; font-weight: 600; text-decoration: none; background: var(--flare); color: #160700; padding: 6px 14px; border-radius: 999px; }
-.hire:hover { background: #ff8746; }
-@media (max-width: 760px) { .lnav nav a { display: none; } .lnav nav a[href="/games"] { display: inline; } }
+.play { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-stretch: 88%; font-size: 13px; font-weight: 800; letter-spacing: 0.02em; text-decoration: none; background: var(--flare); color: #160700; padding: 7px 15px 7px 12px; border-radius: 999px; box-shadow: 0 0 0 0 rgba(255,106,31,0.55); animation: playPulse 2.6s ease-out infinite; }
+.play:hover { background: #ff8746; }
+.play .dot { width: 8px; height: 8px; border-radius: 50%; background: #160700; }
+@keyframes playPulse { 0% { box-shadow: 0 0 0 0 rgba(255,106,31,0.5); } 70%,100% { box-shadow: 0 0 0 12px rgba(255,106,31,0); } }
+@media (prefers-reduced-motion: reduce) { .play { animation: none; } }
+@media (max-width: 760px) { .lnav nav { display: none; } }
 
 /* ---------- hero: one scroll-driven moment ---------- */
 .hero { position: relative; height: 230vh; }
