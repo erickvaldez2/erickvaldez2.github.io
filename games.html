@@ -4,18 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
+<script>(function(){var t;try{t=localStorage.getItem("ev-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==="light"?"#efece4":"#050505";})();</script>
 <title>Games | Erick Valdez</title>
 <meta name="description" content="Games by Erick Valdez: Packet Racer in Security+ and CySA+ editions, and the Port Quiz.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800;62..125,900&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/site.css?v=2">
+<link rel="stylesheet" href="/site.css?v=3">
 </head>
 <body>
 <header class="lnav gutter">
   <div class="max">
     <a class="name" href="/">Erick Valdez</a>
     <nav aria-label="Sections"><a href="/#short">Overview</a><a href="/#service">Service</a><a href="/#packet">Projects</a><a href="/#contact">Contact</a></nav>
+    <button class="theme-btn" id="theme-btn" type="button" aria-label="Switch to light mode"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
     <a class="play" href="/games" aria-current="page"><span class="dot" aria-hidden="true"></span>Play the games</a>
   </div>
 </header>
@@ -122,6 +124,24 @@
 
 })();
 
+  // Theme toggle (shared with Packet Racer via the ev-theme key)
+  (function () {
+    var btn = document.getElementById("theme-btn"), root = document.documentElement;
+    function apply(t, save) {
+      root.setAttribute("data-theme", t);
+      if (save) { try { localStorage.setItem("ev-theme", t); } catch (e) {} }
+      btn.setAttribute("aria-label", "Switch to " + (t === "light" ? "dark" : "light") + " mode");
+      var m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = t === "light" ? "#efece4" : "#050505";
+    }
+    apply(root.getAttribute("data-theme") || "dark", false);
+    btn.addEventListener("click", function () { apply(root.getAttribute("data-theme") === "light" ? "dark" : "light", true); });
+    if (window.matchMedia) {
+      var mq = window.matchMedia("(prefers-color-scheme: light)");
+      var onSys = function (e) { var saved = null; try { saved = localStorage.getItem("ev-theme"); } catch (err) {} if (!saved) apply(e.matches ? "light" : "dark", false); };
+      if (mq.addEventListener) mq.addEventListener("change", onSys); else if (mq.addListener) mq.addListener(onSys);
+    }
+  })();
+
   // Port quiz
   (function () {
     var PORTS = [
@@ -149,92 +169,126 @@
     ];
     var ROUNDS = 10;
     var el = document.getElementById("quiz");
-    var queue, round, score;
+    var queue, round, score, log, answered, inView = false;
 
     function shuffle(a) {
-      for (var i = a.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var t = a[i]; a[i] = a[j]; a[j] = t;
-      }
+      for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
       return a;
     }
-    function getBest() {
-      try { return parseInt(localStorage.getItem("portQuizBest") || "0", 10) || 0; } catch (e) { return 0; }
-    }
-    function setBest(v) {
-      try { localStorage.setItem("portQuizBest", String(v)); } catch (e) {}
+    function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+    function getBest() { try { return parseInt(localStorage.getItem("portQuizBest") || "0", 10) || 0; } catch (e) { return 0; } }
+    function setBest(v) { try { localStorage.setItem("portQuizBest", String(v)); } catch (e) {} }
+
+    function steps() {
+      var h = '<div class="quiz-steps" aria-hidden="true">';
+      for (var i = 0; i < ROUNDS; i++) {
+        var c = i < log.length ? (log[i].ok ? "ok" : "no") : i === round ? "now" : "";
+        h += '<span class="' + c + '"></span>';
+      }
+      return h + "</div>";
     }
 
     function start() {
       queue = shuffle(PORTS.slice()).slice(0, ROUNDS);
-      round = 0; score = 0;
-      show();
+      round = 0; score = 0; log = [];
+      show(false);
     }
 
-    function show() {
+    function show(focus) {
       var q = queue[round];
+      answered = false;
       var others = shuffle(PORTS.filter(function (p) { return p.name !== q.name; })).slice(0, 3);
       var options = shuffle(others.concat([q]));
       el.innerHTML =
-        '<div class="quiz-top"><span>Round ' + (round + 1) + '/' + ROUNDS + '</span><span>Score ' + score + '</span></div>' +
+        '<div class="quiz-meta"><span>Round <b>' + (round + 1) + '</b> of ' + ROUNDS + '</span><span>Score <b id="quiz-score">' + score + '</b></span></div>' +
+        steps() +
+        '<p class="quiz-label">Port</p>' +
         '<div class="quiz-port">' + q.port + '</div>' +
-        '<p class="quiz-prompt">Which protocol uses this port?</p>' +
+        '<p class="quiz-label">Which protocol uses this port?</p>' +
         '<div class="quiz-options"></div>' +
-        '<p class="quiz-fact"></p>' +
-        '<div class="quiz-actions"></div>';
+        '<div class="quiz-after"></div>' +
+        '<p class="quiz-keys">Tap an answer, or press 1 to 4</p>';
       var box = el.querySelector(".quiz-options");
-      options.forEach(function (opt) {
+      options.forEach(function (opt, i) {
         var b = document.createElement("button");
         b.type = "button";
-        b.textContent = opt.name;
+        b.dataset.name = opt.name;
+        b.innerHTML = "<b>" + (i + 1) + "</b><span>" + esc(opt.name) + "</span>";
         b.addEventListener("click", function () { answer(b, opt, q); });
         box.appendChild(b);
       });
+      if (focus) box.querySelector("button").focus({ preventScroll: true });
     }
 
     function answer(btn, opt, q) {
-      var buttons = el.querySelectorAll(".quiz-options button");
-      buttons.forEach(function (b) {
+      if (answered) return;
+      answered = true;
+      var ok = opt.name === q.name;
+      if (ok) score++;
+      log.push({ port: q.port, right: q.name, picked: opt.name, ok: ok, fact: q.fact });
+      el.querySelectorAll(".quiz-options button").forEach(function (b) {
         b.disabled = true;
-        if (b.textContent === q.name) b.classList.add("correct");
+        if (b.dataset.name === q.name) b.classList.add("correct");
       });
-      var fact = el.querySelector(".quiz-fact");
-      if (opt.name === q.name) {
-        score++;
-        fact.textContent = "Correct! " + q.fact;
-      } else {
-        btn.classList.add("wrong");
-        fact.textContent = "It's " + q.name + ". " + q.fact;
-      }
-      el.querySelector(".quiz-top span:last-child").textContent = "Score " + score;
-      var next = document.createElement("button");
-      next.type = "button";
-      next.textContent = round + 1 < ROUNDS ? "Next" : "See results";
-      next.addEventListener("click", function () {
-        round++;
-        if (round < ROUNDS) show(); else finish();
-      });
-      el.querySelector(".quiz-actions").appendChild(next);
-      next.focus();
+      if (!ok) btn.classList.add("wrong");
+      el.querySelector("#quiz-score").textContent = score;
+      el.querySelector(".quiz-steps").outerHTML = steps();
+      var after = el.querySelector(".quiz-after");
+      after.style.display = "grid"; after.style.gap = "14px";
+      after.innerHTML =
+        '<p class="quiz-fact ' + (ok ? "good" : "bad") + '"><strong>' + (ok ? "Correct" : "It's " + esc(q.name)) + '</strong>' + esc(q.fact) + '</p>' +
+        '<button type="button" class="quiz-go" id="quiz-next">' + (round + 1 < ROUNDS ? "Next port" : "See results") + '</button>';
+      el.querySelector(".quiz-keys").textContent = "Press Enter to continue";
+      var next = document.getElementById("quiz-next");
+      next.addEventListener("click", function () { round++; if (round < ROUNDS) show(true); else finish(); });
+      next.focus({ preventScroll: true });
     }
 
     function finish() {
-      var best = getBest();
-      var isNew = score > best;
+      var best = getBest(), isNew = score > best;
       if (isNew) setBest(score);
       var msg = score === ROUNDS ? "Perfect score. You'd ace Security+."
         : score >= 7 ? "Solid. You know your ports."
         : score >= 4 ? "Not bad. A little review and you'll have it."
         : "Time to hit the port charts!";
+      var items = log.map(function (r) {
+        return '<li class="' + (r.ok ? "ok" : "no") + '"><span class="rq">Port ' + r.port + ' &rarr; ' + esc(r.right) + '</span>' +
+          '<span class="ry">' + (r.ok ? "You got it" : "You picked " + esc(r.picked)) + '</span>' +
+          '<span class="rf">' + esc(r.fact) + '</span></li>';
+      }).join("");
       el.innerHTML =
-        '<div class="quiz-result">' +
-        '<div class="big">' + score + '/' + ROUNDS + '</div>' +
-        '<p style="margin: 8px 0 4px;">' + msg + '</p>' +
-        '<p class="muted" style="font-size: 14px;">' + (isNew ? "New best score!" : "Best: " + Math.max(best, score) + "/" + ROUNDS) + '</p>' +
+        '<div class="quiz-meta"><span>Results</span><span>Port Quiz</span></div>' +
+        steps() +
+        '<h3>' + (score >= 7 ? "Ports secured" : "Connection dropped") + '</h3>' +
+        (isNew ? '<div class="quiz-new">NEW HIGH SCORE</div>' : '') +
+        '<div class="quiz-stats">' +
+          '<div><div class="k">Score</div><div class="v">' + score + '/' + ROUNDS + '</div></div>' +
+          '<div><div class="k">Best</div><div class="v">' + Math.max(best, score) + '/' + ROUNDS + '</div></div>' +
+          '<div><div class="k">Accuracy</div><div class="v">' + Math.round(score / ROUNDS * 100) + '%</div></div>' +
         '</div>' +
-        '<div class="quiz-actions"><button type="button" id="quiz-again">Play again</button></div>';
-      document.getElementById("quiz-again").addEventListener("click", start);
+        '<p class="quiz-msg">' + msg + '</p>' +
+        '<p class="quiz-label">Your answers</p>' +
+        '<ol class="quiz-review">' + items + '</ol>' +
+        '<button type="button" class="quiz-go" id="quiz-again">Play again</button>';
+      var again = document.getElementById("quiz-again");
+      again.addEventListener("click", function () { start(); var f = el.querySelector(".quiz-options button"); if (f) f.focus({ preventScroll: true }); });
+      again.focus({ preventScroll: true });
     }
+
+    // keyboard: 1-4 to answer, Enter for next, only while the quiz is on screen
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) { inView = es[0].isIntersecting; }, { threshold: 0.3 }).observe(el);
+    } else { inView = true; }
+    document.addEventListener("keydown", function (e) {
+      if (!inView || e.metaKey || e.ctrlKey || e.altKey) return;
+      var n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 4 && !answered) {
+        var b = el.querySelectorAll(".quiz-options button")[n - 1];
+        if (b) { e.preventDefault(); b.click(); }
+      } else if (e.key === "Enter" && answered && document.activeElement !== document.getElementById("quiz-next")) {
+        var nx = document.getElementById("quiz-next"); if (nx) { e.preventDefault(); nx.click(); }
+      }
+    });
 
     start();
   })();

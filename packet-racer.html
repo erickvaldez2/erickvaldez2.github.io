@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="theme-color" content="#050505">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Packet Racer: a lane-dodging runner where crashes are saved by answering CompTIA Security+ questions. Includes practice tests by exam domain. Built by Erick Valdez.">
 <title>Packet Racer</title>
+<script>(function(){var t;try{t=localStorage.getItem("ev-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800;62..125,900&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Layout: full-height single-screen game. Glass HUD over the playfield, canvas below, overlays for start / question / game over. Single dark look by design. */
+/* Layout: full-height single-screen game. Glass HUD over the playfield, canvas below, overlays for start / question / game over. Light and dark themes via html[data-theme]. */
 :root {
   color-scheme: dark;
   --bg: #050505;
@@ -290,11 +292,69 @@ body { margin: 0; }
 .back-link:hover { color: var(--fg); }
 .app:has(#start-screen[hidden]):has(#over-screen[hidden]) .back-link { display: none; }
 </style>
+<style>
+/* ---------- Themes ---------- */
+:root { --net-rgb: 243,241,234; --edge-rgb: 255,106,31; --veil-rgb: 5,5,5; --vig: 0.55; }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #efece4; --bg-2: #e2ddd1; --line: #cfc9bb; --fg: #171613; --muted: #5f5c55;
+  --packet: #0b8fc4; --packet-core: #e6f8ff;
+  --firewall: #e0661a; --firewall-2: #f29a3f; --malware: #cf2f4c; --bit: #171613; --good: #2f6b3a; --bad: #b3362b;
+  --net-rgb: 23,22,19; --edge-rgb: 178,68,13; --veil-rgb: 239,236,228; --vig: 0.07;
+}
+.hud { background: linear-gradient(to bottom, rgba(var(--veil-rgb), 0.94), rgba(var(--veil-rgb), 0)); }
+.overlay { background: rgba(var(--veil-rgb), 0.86); }
+.overlay.see-through { background: rgba(var(--veil-rgb), 0.62); }
+:root[data-theme="light"] .overlay { background: rgba(var(--veil-rgb), 0.78); }
+:root[data-theme="light"] .overlay.see-through { background: rgba(var(--veil-rgb), 0.55); }
+:root[data-theme="light"] .card { background: #f8f6f0; box-shadow: 0 0 0 1px #dcd6c8, 0 24px 60px rgba(23, 22, 19, 0.18); }
+:root[data-theme="light"] .card.danger { box-shadow: 0 0 0 1px #dcd6c8, 0 24px 60px rgba(23, 22, 19, 0.18); }
+:root[data-theme="light"] .life.full { box-shadow: none; }
+
+:root[data-theme="dark"] .card {
+  --fg: #f3f1ea; --muted: #8f8c84; --panel-2: #1f1e1b; --line: #2f2d28;
+  --packet: #ff6a1f; --good: #3ddc97; --bad: #ff4d6d; --firewall: #ffb35c; --firewall-2: #ffb35c; --malware: #ff4d6d; --bit: #f3f1ea;
+  background: #121210; box-shadow: 0 0 0 1px #262420, 0 30px 80px rgba(0, 0, 0, 0.7);
+}
+:root[data-theme="dark"] .card.danger { box-shadow: 0 0 0 1px #262420, 0 30px 80px rgba(0, 0, 0, 0.7); }
+:root[data-theme="dark"] .btn { color: #050505; background: #f3f1ea; }
+:root[data-theme="dark"] .btn:hover { background: #fff; }
+:root[data-theme="dark"] .btn.ghost { background: transparent; color: #f3f1ea; border-color: #f3f1ea; }
+:root[data-theme="dark"] .btn.ghost:hover { background: rgba(243, 241, 234, 0.08); }
+:root[data-theme="dark"] .seg button[aria-selected="true"] { background: #f3f1ea; color: #050505; }
+:root[data-theme="dark"] .test-btn, :root[data-theme="dark"] .mode, :root[data-theme="dark"] .opt, :root[data-theme="dark"] .diff { background: rgba(255, 255, 255, 0.035); }
+:root[data-theme="dark"] .test-btn.full { border-color: rgba(255, 106, 31, 0.45); background: rgba(255, 106, 31, 0.07); }
+:root[data-theme="dark"] .opt.sel { background: rgba(255, 106, 31, 0.1); }
+:root[data-theme="dark"] .opt.right { background: rgba(61, 220, 151, 0.12); }
+:root[data-theme="dark"] .opt.wrong { background: rgba(255, 77, 109, 0.12); }
+:root[data-theme="dark"] .mode[aria-checked="true"].e { background: rgba(61, 220, 151, 0.08); }
+:root[data-theme="dark"] .mode[aria-checked="true"].m { background: rgba(255, 179, 92, 0.08); }
+:root[data-theme="dark"] .mode[aria-checked="true"].h { background: rgba(255, 77, 109, 0.08); }
+:root[data-theme="dark"] .tag.g { background: rgba(61, 220, 151, 0.14); }
+:root[data-theme="dark"] .tag.b { background: rgba(255, 77, 109, 0.14); }
+:root[data-theme="dark"] .tag.p { background: rgba(243, 241, 234, 0.1); }
+:root[data-theme="dark"] .crash-icon.fw { background: rgba(255, 179, 92, 0.12); border-color: rgba(255, 179, 92, 0.5); }
+:root[data-theme="dark"] .crash-icon.mw { background: rgba(255, 77, 109, 0.12); border-color: rgba(255, 77, 109, 0.5); }
+:root[data-theme="dark"] .btn:focus-visible, :root[data-theme="dark"] .opt:focus-visible, :root[data-theme="dark"] .mode:focus-visible, :root[data-theme="dark"] .test-btn:focus-visible, :root[data-theme="dark"] .diff:focus-visible, :root[data-theme="dark"] .seg button:focus-visible { outline-color: #f3f1ea; }
+
+.back-link, .theme-toggle { background: rgba(18, 18, 16, 0.85); border: 1px solid #2a2823; }
+:root[data-theme="light"] .back-link, :root[data-theme="light"] .theme-toggle { background: rgba(248, 246, 240, 0.92); border-color: #cfc9bb; }
+.theme-toggle {
+  position: fixed; z-index: 6; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px; color: var(--muted); border-radius: 999px; padding: 6px 10px;
+}
+.theme-toggle:hover { color: var(--fg); }
+.theme-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.theme-toggle svg { width: 12px; height: 12px; }
+.app:has(#start-screen[hidden]):has(#over-screen[hidden]) .theme-toggle { display: none; }
+</style>
 </head>
 <body>
 
 <div class="app">
   <a class="back-link" href="/">&larr; erickvaldez.com</a>
+  <button class="theme-toggle" id="theme-toggle" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg><span id="theme-label">Light mode</span></button>
   <div class="stage" id="stage">
     <canvas id="cv" aria-label="Packet Racer playfield"></canvas>
 
@@ -613,12 +673,34 @@ body { margin: 0; }
   var elScore = document.getElementById("score"), elBest = document.getElementById("best"), elLives = document.getElementById("lives");
   var startScreen = document.getElementById("start-screen"), qScreen = document.getElementById("q-screen"), overScreen = document.getElementById("over-screen");
 
-  var C = {};
-  (function () {
+  var C = {}, PK = "79,209,255";
+  function readColors() {
     var cs = getComputedStyle(document.documentElement);
-    ["bg", "bg-2", "line", "packet", "packet-core", "firewall", "firewall-2", "malware", "bit", "muted", "good"].forEach(function (k) { C[k] = cs.getPropertyValue("--" + k).trim(); });
-  })();
-  var PK = (function (h) { h = h.replace("#", ""); return parseInt(h.slice(0, 2), 16) + "," + parseInt(h.slice(2, 4), 16) + "," + parseInt(h.slice(4, 6), 16); })(C.packet || "#4fd1ff");
+    ["bg", "bg-2", "line", "packet", "packet-core", "firewall", "firewall-2", "malware", "bit", "muted", "good", "net-rgb", "edge-rgb", "vig"].forEach(function (k) { C[k] = cs.getPropertyValue("--" + k).trim(); });
+    C.light = document.documentElement.getAttribute("data-theme") === "light";
+    C.blend = C.light ? "source-over" : "lighter";
+    var h = (C.packet || "#4fd1ff").replace("#", "");
+    PK = parseInt(h.slice(0, 2), 16) + "," + parseInt(h.slice(2, 4), 16) + "," + parseInt(h.slice(4, 6), 16);
+  }
+  readColors();
+
+  // ---------- theme ----------
+  var themeBtn = document.getElementById("theme-toggle"), themeLabel = document.getElementById("theme-label");
+  function applyTheme(t, save) {
+    document.documentElement.setAttribute("data-theme", t);
+    if (save) { try { localStorage.setItem("ev-theme", t); } catch (e) {} }
+    readColors();
+    themeLabel.textContent = t === "light" ? "Dark mode" : "Light mode";
+    themeBtn.setAttribute("aria-label", "Switch to " + (t === "light" ? "dark" : "light") + " mode");
+    var mc = document.querySelector('meta[name="theme-color"]'); if (mc) mc.content = t === "light" ? "#efece4" : "#050505";
+  }
+  applyTheme(document.documentElement.getAttribute("data-theme") || "dark", false);
+  themeBtn.addEventListener("click", function () { applyTheme(C.light ? "dark" : "light", true); });
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: light)");
+    var onSys = function (e) { var saved = null; try { saved = localStorage.getItem("ev-theme"); } catch (err) {} if (!saved) applyTheme(e.matches ? "light" : "dark", false); };
+    if (mq.addEventListener) mq.addEventListener("change", onSys); else if (mq.addListener) mq.addListener(onSys);
+  }
   var FONT_DISPLAY = getComputedStyle(document.documentElement).getPropertyValue("--font-display");
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -846,28 +928,28 @@ body { margin: 0; }
       for (var j = i + 1; j < nodes.length; j++) {
         var b = nodes[j], by = (b.y + par) % H;
         var dx = a.x - b.x, dy = ay - by, d2 = dx * dx + dy * dy;
-        if (d2 < 9000) { ctx.strokeStyle = "rgba(243,241,234," + (0.06 * (1 - d2 / 9000)).toFixed(3) + ")"; ctx.beginPath(); ctx.moveTo(a.x, ay); ctx.lineTo(b.x, by); ctx.stroke(); }
+        if (d2 < 9000) { ctx.strokeStyle = "rgba(" + C["net-rgb"] + "," + ((C.light ? 0.1 : 0.06) * (1 - d2 / 9000)).toFixed(3) + ")"; ctx.beginPath(); ctx.moveTo(a.x, ay); ctx.lineTo(b.x, by); ctx.stroke(); }
       }
     }
-    ctx.fillStyle = "rgba(243,241,234,0.16)";
+    ctx.fillStyle = "rgba(" + C["net-rgb"] + "," + (C.light ? 0.2 : 0.16) + ")";
     nodes.forEach(function (n) { ctx.beginPath(); ctx.arc(n.x, (n.y + par) % H, n.r, 0, Math.PI * 2); ctx.fill(); });
 
     // track
     var tg = ctx.createLinearGradient(PX, 0, PX + PW, 0);
-    tg.addColorStop(0, "rgba(243,241,234,0.045)"); tg.addColorStop(0.5, "rgba(243,241,234,0.012)"); tg.addColorStop(1, "rgba(243,241,234,0.045)");
+    var NR = C["net-rgb"]; tg.addColorStop(0, "rgba(" + NR + ",0.045)"); tg.addColorStop(0.5, "rgba(" + NR + ",0.012)"); tg.addColorStop(1, "rgba(" + NR + ",0.045)");
     ctx.fillStyle = tg; ctx.fillRect(PX, 0, PW, H);
-    ctx.strokeStyle = "rgba(255,106,31,0.55)"; ctx.lineWidth = 2;
-    ctx.shadowColor = "rgba(255,106,31,0.6)"; ctx.shadowBlur = 8;
+    ctx.strokeStyle = "rgba(" + C["edge-rgb"] + "," + (C.light ? 0.75 : 0.55) + ")"; ctx.lineWidth = 2;
+    ctx.shadowColor = "rgba(" + C["edge-rgb"] + "," + (C.light ? 0.25 : 0.6) + ")"; ctx.shadowBlur = 8;
     ctx.beginPath(); ctx.moveTo(PX, 0); ctx.lineTo(PX, H); ctx.moveTo(PX + PW, 0); ctx.lineTo(PX + PW, H); ctx.stroke();
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(243,241,234,0.14)"; ctx.lineWidth = 2; ctx.setLineDash([18, 22]); ctx.lineDashOffset = -(scroll % 40);
+    ctx.strokeStyle = "rgba(" + C["net-rgb"] + "," + (C.light ? 0.2 : 0.14) + ")"; ctx.lineWidth = 2; ctx.setLineDash([18, 22]); ctx.lineDashOffset = -(scroll % 40);
     for (var l = 1; l < 3; l++) { var lx = PX + laneW * l; ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx, H); ctx.stroke(); }
     ctx.setLineDash([]);
 
     // speed streaks
     if (mode === "play" && elapsed > 8 && !reduceMotion) {
       var intensity = Math.min(1, (elapsed - 8) / 30);
-      ctx.strokeStyle = "rgba(243,241,234," + (0.1 * intensity).toFixed(3) + ")"; ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(" + C["net-rgb"] + "," + (0.1 * intensity).toFixed(3) + ")"; ctx.lineWidth = 1;
       for (var s = 0; s < 6; s++) {
         var sx = PX + ((s * 97 + Math.floor(scroll / 7)) % PW), sy = (scroll * 1.5 + s * 173) % H;
         ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx, sy + 40 + 60 * intensity); ctx.stroke();
@@ -882,7 +964,7 @@ body { margin: 0; }
         if (bl.type === "fw") {
           // flames licking off the top of the wall
           var nf = Math.max(4, Math.floor(hb.w / 13)), fwid = hb.w / nf;
-          ctx.save(); ctx.globalCompositeOperation = "lighter";
+          ctx.save(); ctx.globalCompositeOperation = C.blend;
           for (var f = 0; f < nf; f++) {
             var fx = hb.x + (f + 0.5) * fwid;
             var flick = 0.5 + 0.5 * Math.sin(tsec * 11 + f * 1.9 + bl.seed * 3);
@@ -963,7 +1045,7 @@ body { margin: 0; }
       if (r.bit >= 0 && !r.bitTaken) {
         var bx = laneX(r.bit), by = r.y - laneW * 0.6, sz = 10 + Math.sin(tsec * 5 + r.y) * 1.5;
         ctx.save(); ctx.translate(bx, by); ctx.rotate(Math.PI / 4 + tsec * 2.5);
-        ctx.shadowColor = C.bit; ctx.shadowBlur = 14; ctx.fillStyle = C.bit; ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
+        ctx.shadowColor = C.bit; ctx.shadowBlur = C.light ? 0 : 14; ctx.fillStyle = C.bit; ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
         ctx.restore();
       }
     });
@@ -1013,7 +1095,7 @@ body { margin: 0; }
 
     // vignette
     var vg = ctx.createRadialGradient(W / 2, H * 0.55, Math.min(W, H) * 0.3, W / 2, H * 0.55, Math.max(W, H) * 0.75);
-    vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.55)");
+    vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0," + (C.vig || 0.55) + ")");
     ctx.fillStyle = vg; ctx.fillRect(-20, -20, W + 40, H + 40);
     ctx.restore();
   }
