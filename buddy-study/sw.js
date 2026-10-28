@@ -1,5 +1,5 @@
 // Buddy Study offline cache. Bump VERSION whenever you upload a new index.html.
-const VERSION = "buddy-study-v2";
+const VERSION = "buddy-study-v3";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
