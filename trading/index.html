@@ -2,6 +2,8 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Trade Desk</title>
@@ -439,6 +441,37 @@ Win: +$20 (+2R)   Loss: −$10 (−1R)</div>
   ];
   var BASE_CHECKS = ["Stop and target set before entering", "Max loss is within my risk rule", "I'm not adding to a loser (no averaging down)", "Not a revenge trade after a loss"];
 
+  /* ---------- validation: never trust stored or restored data ---------- */
+  function numOr(v, d) { v = Number(v); return isFinite(v) && v >= 0 ? v : d; }
+  function pick(v, ok, d) { return ok.indexOf(v) >= 0 ? v : d; }
+  function cleanTrade(t) {
+    if (!t || typeof t !== "object") return null;
+    var entry = numOr(t.entry, NaN), stop = numOr(t.stop, NaN), size = numOr(t.size, NaN);
+    if (!(entry > 0) || !(stop > 0) || !(size > 0)) return null;
+    var closed = t.status === "closed" && numOr(t.exit, 0) > 0;
+    var date = new Date(t.date); if (isNaN(date)) date = new Date();
+    return {
+      id: String(t.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 24) || (Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+      date: date.toISOString(),
+      ticker: String(t.ticker || "—").toUpperCase().replace(/[^A-Z0-9.\-\/—]/g, "").slice(0, 12) || "—",
+      market: pick(t.market, ["stock", "crypto"], "stock"),
+      mode: pick(t.mode, ["day", "long"], "day"),
+      dir: pick(t.dir, ["long", "short"], "long"),
+      method: Object.prototype.hasOwnProperty.call(METHODS, t.method) ? t.method : "shannon",
+      entry: entry, stop: stop, target: numOr(t.target, 0) > 0 ? Number(t.target) : null, size: size,
+      checksMet: Math.floor(numOr(t.checksMet, 0)) % 100, checksTotal: Math.floor(numOr(t.checksTotal, 0)) % 100,
+      notes: String(t.notes || "").slice(0, 400),
+      status: closed ? "closed" : "open", exit: closed ? Number(t.exit) : null,
+      closedAt: closed ? date.toISOString() : null, followed: closed ? t.followed === true : null
+    };
+  }
+  function cleanState(d) {
+    var trades = (d && Array.isArray(d.trades) ? d.trades : []).slice(0, 5000).map(cleanTrade).filter(Boolean);
+    var start = numOr(d && d.start, 1000), risk = numOr(d && d.riskPct, 1);
+    return { start: start > 0 ? start : 1000, riskPct: risk > 0 && risk <= 5 ? risk : 1, trades: trades };
+  }
+  state = cleanState(state);
+
   /* ---------- helpers ---------- */
   function money(n, signed) {
     if (!isFinite(n)) return "—";
@@ -658,14 +691,14 @@ Win: +$20 (+2R)   Loss: −$10 (−1R)</div>
         cls = r > 0 ? "win" : "loss";
         right = '<span class="r" style="color:' + (r > 0 ? "var(--good)" : "var(--bad)") + '">' + (r >= 0 ? "+" : "−") + Math.abs(r).toFixed(2) + "R · " + money(p, true) + "</span>";
       }
-      var html = '<li class="trade ' + cls + '" data-id="' + t.id + '">' +
+      var html = '<li class="trade ' + cls + '" data-id="' + esc(t.id) + '">' +
         '<div class="top"><span class="tk">' + esc(t.ticker) + "<small>" + (t.dir === "long" ? "Buy" : "Short") + " · " + (crypto ? "Crypto" : "Stock") + " · " + (t.mode === "day" ? "Day" : "Long term") + "</small></span>" + right + "</div>" +
         '<div class="meta num"><span>' + d + "</span><span>" + qty(t.size, crypto) + " @ " + price(t.entry) + "</span><span>stop " + price(t.stop) + "</span>" + (t.target ? "<span>target " + price(t.target) + "</span>" : "") + (t.status === "closed" ? "<span>exit " + price(t.exit) + "</span>" : "") + "</div>" +
-        '<div class="meta"><span>' + (m ? esc(m.name) : "") + "</span><span>Checks " + t.checksMet + "/" + t.checksTotal + "</span>" + (t.status === "closed" ? "<span>" + (t.followed ? "Followed plan" : "Broke plan") + "</span>" : "") + "</div>" +
+        '<div class="meta"><span>' + (m ? esc(m.name) : "") + "</span><span>Checks " + esc(t.checksMet) + "/" + esc(t.checksTotal) + "</span>" + (t.status === "closed" ? "<span>" + (t.followed ? "Followed plan" : "Broke plan") + "</span>" : "") + "</div>" +
         (t.notes ? '<div class="meta"><span>' + esc(t.notes) + "</span></div>" : "");
       if (t.status === "open") {
         if (openCloser === t.id) {
-          html += '<div class="closer"><label><span class="lbl">Exit price</span><input type="number" step="any" min="0" inputmode="decimal" class="exitIn" placeholder="' + (t.target || t.entry) + '"></label>' +
+          html += '<div class="closer"><label><span class="lbl">Exit price</span><input type="number" step="any" min="0" inputmode="decimal" class="exitIn" placeholder="' + esc(t.target || t.entry) + '"></label>' +
             '<button class="btn small saveClose" type="button">Close</button>' +
             '<label class="check"><input type="checkbox" class="followIn" checked><span>I followed my plan (entry, stop, size)</span></label></div>';
         } else {
@@ -680,7 +713,7 @@ Win: +$20 (+2R)   Loss: −$10 (−1R)</div>
   $("trades").addEventListener("click", function (e) {
     var li = e.target.closest(".trade"); if (!li) return;
     var t = state.trades.find(function (x) { return x.id === li.dataset.id; }); if (!t) return;
-    if (e.target.closest(".openClose")) { openCloser = t.id; renderJournal(); var inp = li.ownerDocument.querySelector('[data-id="' + t.id + '"] .exitIn'); if (inp) inp.focus(); }
+    if (e.target.closest(".openClose")) { openCloser = t.id; renderJournal(); var inp = li.ownerDocument.querySelector('[data-id="' + esc(t.id) + '"] .exitIn'); if (inp) inp.focus(); }
     else if (e.target.closest(".saveClose")) {
       var ex = parseFloat(li.querySelector(".exitIn").value);
       if (!(ex > 0)) { toast("Enter the exit price"); return; }
@@ -717,7 +750,7 @@ Win: +$20 (+2R)   Loss: −$10 (−1R)</div>
         var d = JSON.parse(rd.result);
         if (!d || !Array.isArray(d.trades)) throw 0;
         if (!confirm("Replace this device's journal with the backup (" + d.trades.length + " trades)?")) return;
-        state = { start: +d.start || 1000, riskPct: +d.riskPct || 1, trades: d.trades }; save(); renderAll(); toast("Backup restored");
+        state = cleanState(d); save(); renderAll(); toast("Backup restored (" + state.trades.length + " trades)");
       } catch (e) { toast("That file isn't a Trade Desk backup"); }
     };
     rd.readAsText(f); this.value = "";

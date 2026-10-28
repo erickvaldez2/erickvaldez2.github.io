@@ -1,0 +1,5 @@
+# Security contact for erickvaldez.com
+Contact: https://erickvaldez.com/#contact
+Expires: 2027-10-28T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://erickvaldez.com/.well-known/security.txt
