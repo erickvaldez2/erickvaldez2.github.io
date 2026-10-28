@@ -29,12 +29,16 @@ a { color: inherit; }
 .lnav nav { display: flex; gap: 22px; font-size: 13px; color: #cfccc4; }
 .lnav nav a { text-decoration: none; }
 .lnav nav a:hover { color: var(--bone); }
-.play { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-stretch: 88%; font-size: 13px; font-weight: 800; letter-spacing: 0.02em; text-decoration: none; background: var(--flare); color: #160700; padding: 7px 15px 7px 12px; border-radius: 999px; box-shadow: 0 0 0 0 rgba(255,106,31,0.55); animation: playPulse 2.6s ease-out infinite; }
+.play { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-stretch: 88%; font-size: 13px; font-weight: 800; letter-spacing: 0.02em; text-decoration: none; background: var(--flare); color: #160700; padding: 7px 15px 7px 12px; border-radius: 999px; }
+/* pulse ring: a separate layer that only scales and fades, so the nav is not repainted every frame */
+.play::before { content: ""; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1; border-radius: inherit; background: rgba(255,106,31,0.55); transform: scale(1); opacity: 0; will-change: transform, opacity; animation: playPulse 2.6s ease-out infinite; pointer-events: none; }
 .play:hover { background: #ff8746; }
 .play .dot { width: 8px; height: 8px; border-radius: 50%; background: #160700; }
-@keyframes playPulse { 0% { box-shadow: 0 0 0 0 rgba(255,106,31,0.5); } 70%,100% { box-shadow: 0 0 0 12px rgba(255,106,31,0); } }
-@media (prefers-reduced-motion: reduce) { .play { animation: none; } }
+@keyframes playPulse { 0% { transform: scale(1, 1); opacity: 0.9; } 70%, 100% { transform: scale(1.16, 1.8); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .play::before { animation: none; } }
 @media (max-width: 760px) { .lnav nav { display: none; } }
+/* touch screens: a solid nav instead of a live blur, which iPhones must recompute on every scroll frame */
+@media (hover: none) { .lnav { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(5,5,5,0.95); } }
 
 /* ---------- hero: one scroll-driven moment ---------- */
 /* svh = the visible height with the browser toolbar showing, so nothing hides behind Safari's bar and the layout doesn't jump when the bar slides away */
@@ -53,10 +57,15 @@ a { color: inherit; }
   transform: translate3d(0, calc(var(--p, 0) * -14svh), 0) scale(calc(1 + var(--p, 0) * 0.08));
   transform-origin: 80% 80%;
 }
-/* the orange fill waits until the intro text has faded (first 30% of the scroll), then fills the rest of the way */
-.hero-num .fill { position: absolute; inset: 0; color: var(--flare); -webkit-text-stroke: 0; clip-path: inset(calc(100% - var(--p, 0) * 100%) 0 0 0); -webkit-clip-path: inset(calc(100% - clamp(0%, (var(--p, 0) - 0.3) * 142.86%, 100%)) 0 0 0); clip-path: inset(calc(100% - clamp(0%, (var(--p, 0) - 0.3) * 142.86%, 100%)) 0 0 0); }
-.hero-path { position: absolute; left: 0; right: 0; bottom: 18vh; bottom: 18svh; z-index: 1; height: 140px; pointer-events: none; }
-.hero-path path { stroke-dasharray: 1600; stroke-dashoffset: calc(1600 - var(--p, 0) * 1600); }
+/* Orange fill: two layers slide in opposite directions inside a clipping box, so the text is drawn once
+   and the phone's graphics chip just moves it (no repainting the giant text on every scroll frame).
+   --q is 0 until the intro text has faded, then runs to 1. */
+.hero-num .fill { position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; transform: translate3d(0, calc((1 - var(--q, 0)) * 100%), 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.hero-num .fill-in { display: block; color: var(--flare); -webkit-text-stroke: 0; transform: translate3d(0, calc((var(--q, 0) - 1) * 100%), 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+/* Orange line: revealed left to right by sliding layers instead of redrawing the stroke each frame */
+.hero-path { position: absolute; left: 0; right: 0; bottom: 18vh; bottom: 18svh; z-index: 1; height: 140px; pointer-events: none; overflow: hidden; transform: translate3d(calc((var(--p, 0) - 1) * 100%), 0, 0); will-change: transform; }
+.hero-path-in { position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translate3d(calc((1 - var(--p, 0)) * 100%), 0, 0); will-change: transform; }
+.hero-path svg { display: block; width: 100%; height: 100%; }
 .hero-foot { position: absolute; left: max(20px, env(safe-area-inset-left, 0px)); right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); transition: visibility 0s; z-index: 2; display: flex; justify-content: space-between; gap: 20px; align-items: end; flex-wrap: wrap; }
 .hero-foot p { margin: 0; max-width: 46ch; color: #cfccc4; font-size: 17px; }
 .hero-foot p, .hero-foot .ctas { opacity: calc(1 - var(--p, 0) * 3.4); transform: translate3d(0, calc(var(--p, 0) * -24px), 0); }
@@ -182,6 +191,8 @@ sup a { color: var(--dim); text-decoration: none; font-size: 0.6em; margin-left:
   .hero { height: auto; }
   .hero-pin { position: relative; height: auto; min-height: 640px; }
   .hero.faded .hero-foot { visibility: visible; pointer-events: auto; }
+  .hero-num .fill { display: none; }
+  .hero-path, .hero-path-in { transform: none; }
   .screen .fly { animation: none; }
 }
 
