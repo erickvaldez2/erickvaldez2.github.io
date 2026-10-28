@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Trade Desk</title>
+<meta name="description" content="Paper trading planner, journal, and methods guide.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #050505; --ink-2: #121210; --ink-3: #1c1b18; --line: #2f2d28;
+  --paper: #efece4; --paper-2: #f8f6f0; --paper-text: #171613;
+  --bone: #f3f1ea; --dim: #8f8c84; --dim-paper: #5f5c55;
+  --flare: #ff6a1f; --olive: #8d9a5b;
+  --good: #3ddc97; --bad: #ff4d6d; --warn: #ffc24d;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --text: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  /* theme tokens (dark default) */
+  --bg: var(--ink); --fg: var(--bone); --muted: var(--dim); --panel: var(--ink-2); --panel-2: var(--ink-3);
+  --border: var(--line); --field: #0d0c0b; --accent: var(--flare); --btn: var(--bone); --btn-fg: var(--ink);
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: var(--paper); --fg: var(--paper-text); --muted: var(--dim-paper); --panel: var(--paper-2); --panel-2: #e3dfd5;
+  --border: #cfc9bb; --field: #ffffff; --accent: #b2440d; --btn: var(--paper-text); --btn-fg: var(--paper);
+  --good: #2f6b3a; --bad: #b3362b; --warn: #8a5a00;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--text); font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.max { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* nav */
+.lnav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 94%, transparent); border-bottom: 1px solid var(--border); padding-top: env(safe-area-inset-top); }
+.lnav .max { display: flex; align-items: center; gap: 14px; height: 54px; }
+.lnav .name { font-family: var(--display); font-weight: 700; font-size: 18px; text-decoration: none; margin-right: auto; }
+.tabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 3px; }
+.tabs a { font-family: var(--display); font-weight: 700; font-stretch: 88%; font-size: 13px; letter-spacing: 0.02em; text-decoration: none; padding: 6px 13px; border-radius: 999px; color: var(--muted); }
+.tabs a[aria-current="page"] { background: var(--accent); color: #160700; }
+:root[data-theme="light"] .tabs a[aria-current="page"] { color: #fff; }
+.theme-btn { width: 34px; height: 34px; flex: none; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer; padding: 0; background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.theme-btn svg { width: 16px; height: 16px; }
+@media (max-width: 520px) { .lnav .name { font-size: 15px; } .tabs a { padding: 6px 10px; font-size: 12px; } }
+@media (max-width: 520px) { .lnav .name span { display: none; } }
+
+/* head */
+.head { padding-block: 56px 34px; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 28px 48px; align-items: end; }
+.kicker { font-family: var(--display); font-weight: 700; color: var(--accent); margin: 0; font-size: 18px; }
+h1 { font-family: var(--display); font-weight: 900; font-stretch: 115%; font-size: clamp(54px, 10vw, 128px); line-height: 0.86; letter-spacing: -0.05em; margin: 6px 0 0; }
+.head p.lead { color: var(--muted); max-width: 44ch; margin: 18px 0 0; }
+.acct { border-top: 2px solid var(--fg); padding-top: 14px; display: grid; gap: 12px; }
+.acct .bal { font-family: var(--display); font-weight: 900; font-stretch: 110%; font-size: clamp(44px, 7vw, 72px); line-height: 0.9; letter-spacing: -0.04em; }
+.acct .sub { color: var(--muted); font-size: 14px; }
+.acct .row { display: flex; gap: 10px; flex-wrap: wrap; }
+.acct label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.acct input { width: 120px; }
+@media (max-width: 820px) { .head { grid-template-columns: 1fr; padding-block: 40px 24px; } }
+
+/* fields */
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  background: var(--field); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; min-height: 44px; width: 100%; font-size: 16px;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); outline: none; }
+.lbl { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 3px; background: var(--panel); gap: 2px; }
+.seg button { border: 0; background: transparent; border-radius: 999px; padding: 8px 16px; min-height: 38px; cursor: pointer; font-weight: 600; font-size: 15px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.btn { border: 0; cursor: pointer; border-radius: 999px; padding: 12px 20px; min-height: 46px; font-family: var(--display); font-weight: 800; font-stretch: 90%; font-size: 16px; background: var(--btn); color: var(--btn-fg); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1.5px solid var(--fg); }
+.btn.small { min-height: 38px; padding: 8px 14px; font-size: 14px; }
+.btn.flare { background: var(--accent); color: #160700; }
+:root[data-theme="light"] .btn.flare { color: #fff; }
+
+section.view { display: none; padding-bottom: 90px; }
+section.view.on { display: block; }
+h2 { font-family: var(--display); font-weight: 900; font-stretch: 108%; font-size: clamp(34px, 5.4vw, 60px); line-height: 0.95; letter-spacing: -0.04em; margin: 0 0 8px; }
+h3 { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; margin: 0; line-height: 1.15; }
+
+/* planner */
+.plan { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px; align-items: start; }
+.form { display: grid; gap: 22px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.toggles { display: flex; gap: 12px; flex-wrap: wrap; }
+.method-note { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
+.checks { display: grid; gap: 8px; }
+.checks h4 { margin: 10px 0 2px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.check { display: flex; gap: 12px; align-items: flex-start; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); cursor: pointer; font-size: 15px; line-height: 1.4; }
+.check input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--accent); }
+.check.on { border-color: color-mix(in srgb, var(--good) 60%, var(--border)); }
+.result { position: sticky; top: 76px; background: var(--panel); border: 1px solid var(--border); border-top: 5px solid var(--accent); border-radius: 8px; padding: 20px; display: grid; gap: 16px; }
+.result > * { min-width: 0; }
+.verdict { font-family: var(--display); font-weight: 900; font-stretch: 95%; font-size: 26px; line-height: 1.05; letter-spacing: -0.02em; }
+.verdict.good { color: var(--good); } .verdict.bad { color: var(--bad); } .verdict.warn { color: var(--warn); } .verdict.idle { color: var(--muted); }
+.why { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.size { border-top: 1px solid var(--border); padding-top: 14px; }
+.size b { display: block; font-family: var(--display); font-weight: 900; font-stretch: 110%; font-size: 52px; line-height: 0.9; letter-spacing: -0.04em; }
+.size span { color: var(--muted); font-size: 14px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.stats > div { background: var(--panel-2); border-radius: 6px; padding: 10px 12px; }
+.stats .k { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.stats .v { font-family: var(--mono); font-size: 17px; }
+.math { font-family: var(--mono); font-size: 13px; color: var(--muted); background: var(--panel-2); border-radius: 6px; padding: 10px 12px; line-height: 1.6; }
+.notes-list { margin: 0; padding-left: 18px; font-size: 14px; color: var(--muted); display: grid; gap: 4px; }
+.notes-list li.bad { color: var(--bad); } .notes-list li.warn { color: var(--warn); }
+.alerts { font-size: 14px; }
+.alerts b { font-family: var(--mono); font-weight: 500; }
+@media (max-width: 860px) { .plan { grid-template-columns: 1fr; } .result { position: static; } }
+@media (max-width: 480px) { .grid3 { grid-template-columns: 1fr 1fr; } .grid3 > :last-child { grid-column: 1 / -1; } }
+
+/* journal */
+.jhead { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.jbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+.kpis { display: grid; grid-template-columns: minmax(0, 5fr) repeat(4, minmax(0, 2fr)); gap: 0; border-top: 2px solid var(--fg); margin-bottom: 34px; }
+.kpis div { padding: 14px 14px 14px 0; }
+.kpis div + div { padding-left: 14px; border-left: 1px solid var(--border); }
+.kpis b { display: block; font-family: var(--display); font-weight: 900; font-stretch: 105%; font-size: clamp(28px, 4vw, 44px); line-height: 1; letter-spacing: -0.03em; }
+.kpis div:first-child b { font-size: clamp(48px, 8vw, 92px); line-height: 0.85; }
+.kpis span { font-size: 13px; color: var(--muted); }
+@media (max-width: 760px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis div:first-child { grid-column: 1 / -1; } .kpis div + div { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); } .kpis div:nth-child(odd):not(:first-child) { padding-left: 14px; border-left: 1px solid var(--border); } }
+.ready { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; margin-bottom: 34px; display: grid; gap: 12px; }
+.ready h3 { font-size: 18px; }
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 14px; }
+.bar .track { grid-column: 1 / -1; height: 6px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+.bar .track i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.bar.done .track i { background: var(--good); }
+.trades { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.trade { border: 1px solid var(--border); border-left: 4px solid var(--muted); border-radius: 8px; padding: 14px 16px; background: var(--panel); display: grid; gap: 8px; }
+.trade.win { border-left-color: var(--good); } .trade.loss { border-left-color: var(--bad); } .trade.open { border-left-color: var(--accent); }
+.trade .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.trade .tk { font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+.trade .tk small { font-family: var(--text); font-weight: 600; font-size: 12px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-left: 8px; }
+.trade .r { font-family: var(--mono); font-size: 18px; }
+.trade .meta { font-size: 13px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+.trade .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.closer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; border-top: 1px dashed var(--border); padding-top: 10px; }
+.closer .check { padding: 8px 10px; grid-column: 1 / -1; }
+.linkbtn { background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--muted); text-decoration: underline; font-size: 13px; }
+.empty { color: var(--muted); border: 1px dashed var(--border); border-radius: 8px; padding: 24px; text-align: center; }
+
+/* guide */
+.basics { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 40px; margin-bottom: 70px; }
+.terms { display: grid; gap: 0; border-top: 2px solid var(--fg); }
+.terms div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px 20px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.terms dt { font-family: var(--display); font-weight: 800; font-size: 17px; }
+.terms dd { margin: 0; color: var(--muted); font-size: 15px; }
+.example { margin-top: 20px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; font-size: 15px; }
+.example .math { margin-top: 10px; }
+@media (max-width: 820px) { .basics { grid-template-columns: 1fr; gap: 20px; } .terms div { grid-template-columns: 1fr; } }
+.group-title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin: 0 0 18px; }
+.group-title p { margin: 0; color: var(--muted); }
+.methods { display: grid; gap: 14px; margin-bottom: 60px; }
+.mcard { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 16px 30px; border-top: 1px solid var(--border); padding-top: 18px; }
+.mcard .who h3 { font-size: 24px; }
+.mcard .tag { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.mcard .book { font-size: 13px; color: var(--muted); margin-top: 8px; font-style: italic; }
+.mcard .idea { margin: 0 0 10px; font-size: 17px; }
+.mcard ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; display: grid; gap: 4px; }
+.mcard .use { margin-top: 12px; }
+@media (max-width: 760px) { .mcard { grid-template-columns: 1fr; } }
+.foot { border-top: 1px solid var(--border); padding-top: 18px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.foot p { margin: 0 0 10px; max-width: 90ch; }
+.ref { padding-left: 2em; text-indent: -2em; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 140%); background: var(--fg); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 15px; transition: transform 0.25s, visibility 0.25s; z-index: 50; visibility: hidden; }
+.toast.show { transform: translate(-50%, 0); visibility: visible; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<header class="lnav">
+  <div class="max">
+    <a class="name" href="/">Erick Valdez <span>· Trade Desk</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#plan" data-tab="plan">Plan</a>
+      <a href="#journal" data-tab="journal">Journal</a>
+      <a href="#guide" data-tab="guide">Guide</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" aria-label="Switch theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <div class="max head">
+    <div>
+      <p class="kicker">Paper trading · stocks + crypto</p>
+      <h1>Trade<br>Desk</h1>
+      <p class="lead">Plan every trade before you take it, size it so one loss never hurts, and log the result. Built on the published methods of traders with long track records.</p>
+    </div>
+    <div class="acct" aria-live="polite">
+      <div>
+        <div class="bal num" id="balance">$1,000.00</div>
+        <div class="sub" id="balSub">Paper balance · risking $10.00 per trade</div>
+      </div>
+      <div class="row">
+        <label>Start balance<input type="number" id="setStart" min="1" step="1" inputmode="decimal"></label>
+        <label>Risk % per trade<input type="number" id="setRisk" min="0.1" max="5" step="0.1" inputmode="decimal"></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAN -->
+  <section class="view" id="view-plan" aria-labelledby="planTitle">
+    <div class="max">
+      <h2 id="planTitle" class="sr">Plan a trade</h2>
+      <div class="plan">
+        <div class="form">
+          <div class="toggles">
+            <div>
+              <span class="lbl">Market</span>
+              <div class="seg" id="segMarket">
+                <button type="button" data-v="stock" aria-pressed="true">Stock</button>
+                <button type="button" data-v="crypto" aria-pressed="false">Crypto</button>
+              </div>
+            </div>
+            <div>
+              <span class="lbl">Style</span>
+              <div class="seg" id="segMode">
+                <button type="button" data-v="day" aria-pressed="true">Day trade</button>
+                <button type="button" data-v="long" aria-pressed="false">Long term</button>
+              </div>
+            </div>
+            <div>
+              <span class="lbl">Direction</span>
+              <div class="seg" id="segDir">
+                <button type="button" data-v="long" aria-pressed="true">Buy</button>
+                <button type="button" data-v="short" aria-pressed="false">Short</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <label><span class="lbl">Ticker / coin</span><input type="text" id="ticker" placeholder="AAPL or BTC" autocapitalize="characters" autocomplete="off" spellcheck="false"></label>
+            <label><span class="lbl">Method</span><select id="method"></select></label>
+          </div>
+          <p class="method-note" id="methodNote"></p>
+
+          <div class="grid3">
+            <label><span class="lbl">Entry</span><input type="number" id="entry" step="any" min="0" inputmode="decimal" placeholder="50.00"></label>
+            <label><span class="lbl">Stop-loss</span><input type="number" id="stop" step="any" min="0" inputmode="decimal" placeholder="49.50"></label>
+            <label><span class="lbl">Target</span><input type="number" id="target" step="any" min="0" inputmode="decimal" placeholder="51.00"></label>
+          </div>
+
+          <div class="checks" id="checks"></div>
+
+          <label><span class="lbl">Notes (why this trade?)</span><textarea id="notes" rows="2" placeholder="e.g. Pullback to VWAP in a daily uptrend"></textarea></label>
+
+          <div class="toggles">
+            <button class="btn flare" id="logBtn" type="button" disabled>Log to journal</button>
+            <button class="btn ghost" id="resetBtn" type="button">Clear</button>
+          </div>
+        </div>
+
+        <aside class="result" aria-live="polite">
+          <div>
+            <div class="verdict idle" id="verdict">Enter a trade</div>
+            <p class="why" id="why">Fill in entry and stop-loss to size it.</p>
+          </div>
+          <div class="size">
+            <b class="num" id="sizeOut">0</b>
+            <span id="sizeSub">shares</span>
+          </div>
+          <div class="stats">
+            <div><div class="k">Max loss</div><div class="v" id="oRisk">—</div></div>
+            <div><div class="k">Reward : risk</div><div class="v" id="oRR">—</div></div>
+            <div><div class="k">Position value</div><div class="v" id="oVal">—</div></div>
+            <div><div class="k">Profit at target</div><div class="v" id="oWin">—</div></div>
+          </div>
+          <div class="math" id="math">Size = risk $ ÷ (entry − stop)</div>
+          <ul class="notes-list" id="warnings"></ul>
+          <div class="alerts" id="alerts"></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="view" id="view-journal" aria-labelledby="jTitle">
+    <div class="max">
+      <div class="jhead">
+        <div>
+          <h2 id="jTitle">Journal</h2>
+          <p style="margin:0;color:var(--muted)">Saved on this device only. Back it up now and then.</p>
+        </div>
+        <div class="jbtns">
+          <button class="btn small ghost" id="csvBtn" type="button">Export CSV</button>
+          <button class="btn small ghost" id="backupBtn" type="button">Backup</button>
+          <label class="btn small ghost" style="display:inline-flex;align-items:center">Restore<input type="file" id="restoreIn" accept="application/json" class="sr"></label>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div><b class="num" id="kR">0.0R</b><span>Total R (closed trades)</span></div>
+        <div><b class="num" id="kAvg">—</b><span>Average R</span></div>
+        <div><b class="num" id="kWin">—</b><span>Win rate</span></div>
+        <div><b class="num" id="kN">0</b><span>Closed trades</span></div>
+        <div><b class="num" id="kPlan">—</b><span>Followed the plan</span></div>
+      </div>
+
+      <div class="ready">
+        <h3 id="readyTitle">Real-money check</h3>
+        <div class="bars" id="readyBars"></div>
+      </div>
+
+      <ul class="trades" id="trades"></ul>
+    </div>
+  </section>
+
+  <!-- GUIDE -->
+  <section class="view" id="view-guide" aria-labelledby="gTitle">
+    <div class="max">
+      <div class="basics">
+        <div>
+          <h2 id="gTitle">The basics</h2>
+          <p style="color:var(--muted);margin:0">Learn these before any method. Position size decides whether you survive long enough to get good.</p>
+        </div>
+        <div>
+          <dl class="terms">
+            <div><dt>R</dt><dd>The amount you risk on one trade. With $1,000 and 1% risk, 1R = $10. A trade that makes $20 is +2R; one that hits the stop is −1R. (Van Tharp)</dd></div>
+            <div><dt>Stop-loss</dt><dd>The price where you admit you're wrong and get out. Decide it before you enter, never move it further away.</dd></div>
+            <div><dt>Position size</dt><dd>How many shares or coins to buy so that hitting the stop costs exactly 1R. Size = risk $ ÷ (entry − stop).</dd></div>
+            <div><dt>Reward : risk</dt><dd>Distance to target ÷ distance to stop. At 2:1 or better, you can be wrong more than half the time and still make money.</dd></div>
+            <div><dt>VWAP</dt><dd>Volume-weighted average price for the day. Above it, buyers are in control; below it, sellers are.</dd></div>
+            <div><dt>50 / 200-day MA</dt><dd>Average closing price over 50 or 200 days. Rising and price above them = healthy long-term trend.</dd></div>
+            <div><dt>Support / resistance</dt><dd>Prices where buyers (support) or sellers (resistance) stepped in before. Good places for entries and stops.</dd></div>
+          </dl>
+          <div class="example">
+            <strong>Worked example ($1,000 account, 1% risk)</strong>
+            <div class="math">Risk budget  = $1,000 × 1% = $10
+Entry $50.00, stop $49.50 → risk per share $0.50
+Size         = $10 ÷ $0.50 = 20 shares ($1,000 position)
+Target $51.00 → reward $1.00 per share → 2:1
+Win: +$20 (+2R)   Loss: −$10 (−1R)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="group-title"><h2>Day trading</h2><p>Short-term methods. Use with Stock or Crypto.</p></div>
+      <div class="methods" id="dayMethods"></div>
+
+      <div class="group-title"><h2>Long term</h2><p>Investing methods. Built for stocks; crypto has no earnings, so lean on trend and position size.</p></div>
+      <div class="methods" id="longMethods"></div>
+
+      <div class="group-title"><h2>Risk</h2><p>Applies to every trade.</p></div>
+      <div class="methods" id="riskMethods"></div>
+
+      <div class="foot">
+        <p><strong>Rule change:</strong> The SEC approved eliminating the pattern day trader rule and its $25,000 minimum on April 14, 2026, effective June 4, 2026; some brokers have until October 20, 2027 to switch over (SoFi, n.d.; tastytrade, n.d.). Check your broker's current rules before trading real money.</p>
+        <p>This page is a practice and study tool, not financial advice. Even the traders above have long losing streaks, and most day traders lose money.</p>
+        <p class="ref">SoFi. (n.d.). <em>Pattern day trading rules replaced: A new era for retail traders</em>. SoFi. https://www.sofi.com/learn/content/pattern-day-trading-rules/</p>
+        <p class="ref">tastytrade. (n.d.). <em>Pattern day trading</em>. tastytrade. https://tastytrade.com/learn/markets/industry/pattern-day-trading/</p>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- storage (wrapped: private mode can throw) ---------- */
+  var KEY = "tradeDesk.v1";
+  function load() {
+    try { var s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch (e) {}
+    return null;
+  }
+  var state = load() || { start: 1000, riskPct: 1, trades: [] };
+  if (!Array.isArray(state.trades)) state.trades = [];
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  /* ---------- theme ---------- */
+  try { var th = localStorage.getItem("tradeDesk.theme"); if (th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+  $("themeBtn").addEventListener("click", function () {
+    var next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("tradeDesk.theme", next); } catch (e) {}
+  });
+
+  /* ---------- methods ---------- */
+  var METHODS = {
+    shannon: { group: "day", name: "Brian Shannon", tag: "Multiple timeframes + VWAP",
+      book: "Technical Analysis Using Multiple Timeframes",
+      idea: "Only trade in the direction of the higher timeframe, and use VWAP to see who's in control today.",
+      rules: ["Check the daily chart first; the intraday trade must agree with it.", "Longs above VWAP, shorts below it.", "Enter near a level (VWAP, prior day high/low), not in the middle of a move.", "If price loses VWAP against you, the idea is likely wrong."],
+      checks: ["Daily chart trend agrees with my direction", "Price is on the right side of VWAP", "Entry is near a level (VWAP or prior day high/low)", "Volume is above average on the move"] },
+    brooks: { group: "day", name: "Al Brooks", tag: "Price action",
+      book: "Trading Price Action Trends",
+      idea: "Read the bars. First decide if the market is trending or stuck in a range, then trade accordingly.",
+      rules: ["Most breakouts from a trading range fail; in a range, buy low and sell high.", "In a trend, look for pullbacks to enter with the trend.", "Wait for a strong signal bar that closes in your direction.", "Stop goes just beyond the signal bar."],
+      checks: ["I know if this is a trend or a trading range", "A strong signal bar closed in my direction", "I'm not buying the top of a range or selling the bottom", "Stop is just beyond the signal bar"] },
+    raschke: { group: "day", name: "Linda Raschke", tag: "Simple, repeatable setups",
+      book: "Street Smarts (with Larry Connors)",
+      idea: "Trade a few setups you know well, take quick profits, and get out fast when a trade doesn't work.",
+      rules: ["The first pullback in a new strong trend is the best one.", "After a quiet, tight day, expect a bigger move (range expansion).", "Take partial profits at the first target.", "If it doesn't move your way soon, exit."],
+      checks: ["Clear trend, and this is the 1st or 2nd pullback", "It's a setup I've practiced before", "I'll take partial profit at the first target", "If it doesn't work quickly, I'm out"] },
+    minervini: { group: "day", name: "Mark Minervini", tag: "Buy strength, cut losses fast",
+      book: "Trade Like a Stock Market Wizard",
+      idea: "Buy leaders breaking out near their highs, keep losses tiny, and never let a good gain turn into a loss.",
+      rules: ["Price above rising 50- and 200-day averages, near 52-week highs.", "Buy as it breaks out of a tight base on strong volume.", "Keep the stop tight; small losses are the cost of business.", "Raise the stop as the trade works."],
+      checks: ["Near its highs, above rising 50- and 200-day averages", "Breaking out of a tight base or consolidation", "Stop is tight (small % below entry)", "I'll raise my stop so a winner can't become a loser"] },
+    graham: { group: "long", name: "Benjamin Graham & Warren Buffett", tag: "Margin of safety",
+      book: "The Intelligent Investor (Graham)",
+      idea: "Buy good businesses for less than they're worth, and hold them for years.",
+      rules: ["Understand how the business makes money.", "Look for a durable advantage: brand, network, low costs, switching costs.", "Prefer low debt and steady free cash flow.", "Pay a fair or low price; the gap to fair value is your margin of safety."],
+      checks: ["I can explain how the business makes money", "It has a durable advantage over competitors", "Low debt and steady free cash flow", "Price is at or below my estimate of fair value"] },
+    lynch: { group: "long", name: "Peter Lynch", tag: "Know what you own",
+      book: "One Up on Wall Street",
+      idea: "Invest in what you understand and can explain in two minutes.",
+      rules: ["Start with products and companies you know from daily life.", "Check that earnings are actually growing.", "PEG (P/E ÷ growth rate) near 1 or lower is reasonable.", "Know your story; sell if the story breaks, not because the price dipped."],
+      checks: ["I understand the product and why people buy it", "Earnings are growing steadily", "PEG ratio around 1 or lower", "I can tell the 2-minute story of why it'll grow"] },
+    canslim: { group: "long", name: "William O'Neil", tag: "CAN SLIM",
+      book: "How to Make Money in Stocks",
+      idea: "Buy companies with fast-growing earnings that lead their industry, but only when the overall market is healthy.",
+      rules: ["C: current quarterly earnings up strongly (25%+).", "A: annual earnings growing for several years.", "L: a leader, not a laggard, in a leading industry.", "M: the overall market is in an uptrend. Cut any loss at 7–8%."],
+      checks: ["Current quarterly earnings up 25%+", "Annual earnings growing 3+ years", "Leader in a strong industry", "Overall market is in an uptrend"] }
+  };
+  var RISK = [
+    { name: "Van Tharp", tag: "Position sizing & R", book: "Trade Your Way to Financial Freedom",
+      idea: "Measure every trade in R. Your edge is your average R per trade, and position size decides how long you survive.",
+      rules: ["Risk the same small amount (1R) on every trade.", "Track average R, not just win rate.", "A method with positive average R over many trades is worth keeping."] },
+    { name: "Paul Tudor Jones", tag: "Defense first", book: "Profiled in Market Wizards (Schwager)",
+      idea: "Protect your money first. Making it back is much harder than losing it.",
+      rules: ["Never add to a losing position (no averaging down).", "Cut size when you're in a losing streak.", "Stay out when you don't have a clear edge."] }
+  ];
+  var BASE_CHECKS = ["Stop and target set before entering", "Max loss is within my risk rule", "I'm not adding to a loser (no averaging down)", "Not a revenge trade after a loss"];
+
+  /* ---------- helpers ---------- */
+  function money(n, signed) {
+    if (!isFinite(n)) return "—";
+    var s = Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (n < 0 ? "−$" : (signed && n > 0 ? "+$" : "$")) + s;
+  }
+  function price(n) {
+    if (!isFinite(n)) return "—";
+    var a = Math.abs(n), d = a >= 1 ? 2 : a >= 0.01 ? 4 : 8;
+    return "$" + n.toLocaleString("en-US", { minimumFractionDigits: Math.min(d, 2), maximumFractionDigits: d });
+  }
+  function qty(n, crypto) {
+    if (!isFinite(n)) return "0";
+    return crypto ? n.toLocaleString("en-US", { maximumFractionDigits: 6 }) : n.toLocaleString("en-US");
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function balance() {
+    return state.start + state.trades.reduce(function (s, t) { return s + (t.status === "closed" ? pnl(t) : 0); }, 0);
+  }
+  function pnl(t) { return t.size * (t.exit - t.entry) * (t.dir === "long" ? 1 : -1); }
+  function rMult(t) { var risk = Math.abs(t.entry - t.stop); return risk > 0 ? ((t.exit - t.entry) * (t.dir === "long" ? 1 : -1)) / risk : 0; }
+  var toastT;
+  function toast(msg) { var el = $("toast"); el.textContent = msg; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove("show"); }, 2200); }
+
+  /* ---------- account ---------- */
+  function renderAccount() {
+    var b = balance();
+    $("balance").textContent = money(b);
+    $("balSub").textContent = "Paper balance · risking " + money(b * state.riskPct / 100) + " per trade";
+    if (document.activeElement !== $("setStart")) $("setStart").value = state.start;
+    if (document.activeElement !== $("setRisk")) $("setRisk").value = state.riskPct;
+  }
+  $("setStart").addEventListener("input", function () { var v = parseFloat(this.value); if (v > 0) { state.start = v; save(); renderAll(); } });
+  $("setRisk").addEventListener("input", function () { var v = parseFloat(this.value); if (v > 0 && v <= 5) { state.riskPct = v; save(); renderAll(); } });
+
+  /* ---------- planner ---------- */
+  var plan = { market: "stock", mode: "day", dir: "long", checked: {} };
+  function seg(id, key) {
+    var box = $(id);
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      plan[key] = b.dataset.v;
+      box.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      if (key === "mode") fillMethods();
+      if (key === "mode" || key === "market") renderMethodNote();
+      calc();
+    });
+  }
+  seg("segMarket", "market"); seg("segMode", "mode"); seg("segDir", "dir");
+
+  function fillMethods() {
+    var sel = $("method");
+    sel.innerHTML = Object.keys(METHODS).filter(function (k) { return METHODS[k].group === plan.mode; })
+      .map(function (k) { return '<option value="' + k + '">' + esc(METHODS[k].name) + " — " + esc(METHODS[k].tag) + "</option>"; }).join("");
+    plan.checked = {};
+    renderChecks(); renderMethodNote();
+  }
+  function renderMethodNote() {
+    var m = METHODS[$("method").value]; if (!m) return;
+    var n = m.idea;
+    if (plan.market === "crypto" && plan.mode === "long") n += " Note: crypto has no earnings, so most of this checklist won't apply. Keep the size small.";
+    if (plan.market === "crypto" && plan.dir === "short") n += "";
+    $("methodNote").textContent = n;
+  }
+  function renderChecks() {
+    var m = METHODS[$("method").value]; if (!m) return;
+    var html = "<h4>" + esc(m.name) + " checklist</h4>";
+    m.checks.forEach(function (c, i) { html += item("m" + i, c); });
+    html += "<h4>Every trade</h4>";
+    BASE_CHECKS.forEach(function (c, i) { html += item("b" + i, c); });
+    $("checks").innerHTML = html;
+  }
+  function item(id, text) {
+    var on = !!plan.checked[id];
+    return '<label class="check' + (on ? " on" : "") + '"><input type="checkbox" data-id="' + id + '"' + (on ? " checked" : "") + "><span>" + esc(text) + "</span></label>";
+  }
+  $("checks").addEventListener("change", function (e) {
+    var cb = e.target; if (!cb.dataset.id) return;
+    plan.checked[cb.dataset.id] = cb.checked;
+    cb.closest(".check").classList.toggle("on", cb.checked);
+    calc();
+  });
+  $("method").addEventListener("change", function () { plan.checked = {}; renderChecks(); renderMethodNote(); calc(); });
+  ["entry", "stop", "target", "ticker"].forEach(function (id) { $(id).addEventListener("input", calc); });
+
+  var current = null;
+  function calc() {
+    var entry = parseFloat($("entry").value), stop = parseFloat($("stop").value), target = parseFloat($("target").value);
+    var crypto = plan.market === "crypto", long = plan.dir === "long";
+    var bal = balance(), budget = bal * state.riskPct / 100;
+    var warns = [];
+    var nChecks = $("checks").querySelectorAll("input").length;
+    var nDone = $("checks").querySelectorAll("input:checked").length;
+    current = null;
+
+    function idle(v, why) {
+      $("verdict").className = "verdict " + (v === "Fix the stop" ? "bad" : "idle"); $("verdict").textContent = v; $("why").textContent = why;
+      $("sizeOut").textContent = "0"; $("sizeSub").textContent = crypto ? "coins" : "shares";
+      ["oRisk", "oRR", "oVal", "oWin"].forEach(function (k) { $(k).textContent = "—"; });
+      $("math").textContent = "Size = risk $ ÷ (entry − stop)"; $("warnings").innerHTML = ""; $("alerts").innerHTML = "";
+      $("logBtn").disabled = true;
+    }
+    if (!(entry > 0) || !(stop > 0)) return idle("Enter a trade", "Fill in entry and stop-loss to size it.");
+    var riskPer = long ? entry - stop : stop - entry;
+    if (riskPer <= 0) return idle("Fix the stop", long ? "For a buy, the stop goes below the entry." : "For a short, the stop goes above the entry.");
+
+    var raw = +(budget / riskPer).toPrecision(10);
+    // tiny epsilon so float error (e.g. 1019.9999999) doesn't round a whole unit away
+    var size = crypto ? Math.floor(raw * 1e6 + 1e-6) / 1e6 : Math.floor(raw + 1e-9);
+    var maxAfford = crypto ? Math.floor((bal / entry) * 1e6 + 1e-6) / 1e6 : Math.floor(bal / entry + 1e-9);
+    var capped = false;
+    if (size > maxAfford) { size = maxAfford; capped = true; }
+    var maxLoss = size * riskPer;
+    var val = size * entry;
+    var rr = NaN, win = NaN, hasTarget = target > 0;
+    if (hasTarget) {
+      var rewardPer = long ? target - entry : entry - target;
+      if (rewardPer <= 0) warns.push(["bad", "Target is on the wrong side of the entry."]);
+      else { rr = rewardPer / riskPer; win = size * rewardPer; }
+    }
+    var stopPct = riskPer / entry * 100;
+
+    if (size <= 0) warns.push(["bad", crypto ? "Position rounds to zero." : "Stop is too far away: even 1 share risks " + money(riskPer) + ", more than " + money(budget) + ". Find a tighter stop or a cheaper stock."]);
+    if (capped) warns.push(["warn", "Capped by your cash: the full 1R size would cost more than your balance. Max loss is now " + money(maxLoss) + "."]);
+    if (!hasTarget) warns.push(["warn", "Add a target to check reward-to-risk."]);
+    else if (rr > 0 && rr < 2) warns.push(["bad", "Reward-to-risk is under 2:1. Most of these methods would skip it."]);
+    if (plan.mode === "day" && stopPct > 5) warns.push(["warn", "Stop is " + stopPct.toFixed(1) + "% away. That's wide for a day trade."]);
+    if (plan.dir === "short" && !crypto) warns.push(["warn", "Shorting stocks needs a margin account. Fine for paper practice."]);
+    if (plan.dir === "short" && crypto) warns.push(["warn", "Coinbase spot can't short. Practice it on paper only."]);
+
+    var verdict, cls, why;
+    if (size <= 0 || (hasTarget && !(rr > 0))) { verdict = "Can't size this"; cls = "bad"; why = "Fix the issues below."; }
+    else if (hasTarget && rr < 2) { verdict = "Skip it"; cls = "bad"; why = "Not enough reward for the risk."; }
+    else if (nDone < nChecks) { verdict = "Not ready"; cls = "warn"; why = nDone + " of " + nChecks + " checks done. A missing check is a reason to wait."; }
+    else if (!hasTarget) { verdict = "Almost"; cls = "warn"; why = "All checks done. Add a target."; }
+    else { verdict = "Ready to paper trade"; cls = "good"; why = "Sized to your risk rule, " + rr.toFixed(1) + ":1, all checks done."; }
+
+    $("verdict").className = "verdict " + cls; $("verdict").textContent = verdict; $("why").textContent = why;
+    $("sizeOut").textContent = qty(size, crypto);
+    $("sizeSub").textContent = (crypto ? "coins" : "shares") + " · stop " + stopPct.toFixed(2) + "% away";
+    $("oRisk").textContent = money(maxLoss) + " (1R)";
+    $("oRR").textContent = rr > 0 ? rr.toFixed(2) + " : 1" : "—";
+    $("oVal").textContent = money(val);
+    $("oWin").textContent = win > 0 ? money(win, true) : "—";
+    $("math").textContent = "Risk $  = " + money(bal) + " × " + state.riskPct + "% = " + money(budget) + "\nPer " + (crypto ? "coin" : "share") + " = " + price(entry) + " − " + price(stop) + " = " + price(riskPer) + "\nSize    = " + money(budget) + " ÷ " + price(riskPer) + " = " + qty(size, crypto) + (capped ? " (cash cap)" : "");
+    $("math").style.whiteSpace = "pre-wrap";
+    $("warnings").innerHTML = warns.map(function (w) { return '<li class="' + w[0] + '">' + esc(w[1]) + "</li>"; }).join("");
+    $("alerts").innerHTML = "<strong>TradingView alerts:</strong> entry <b>" + price(entry) + "</b>, stop <b>" + price(stop) + "</b>" + (hasTarget ? ", target <b>" + price(target) + "</b>" : "") + ".";
+
+    var ok = size > 0 && (!hasTarget || rr > 0);
+    $("logBtn").disabled = !ok;
+    if (ok) current = { entry: entry, stop: stop, target: hasTarget ? target : null, size: size, crypto: crypto, done: nDone, total: nChecks, rr: rr };
+  }
+
+  $("logBtn").addEventListener("click", function () {
+    if (!current) return;
+    var t = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      date: new Date().toISOString(),
+      ticker: ($("ticker").value || "—").trim().toUpperCase().slice(0, 12),
+      market: plan.market, mode: plan.mode, dir: plan.dir, method: $("method").value,
+      entry: current.entry, stop: current.stop, target: current.target, size: current.size,
+      checksMet: current.done, checksTotal: current.total, notes: $("notes").value.trim().slice(0, 400),
+      status: "open", exit: null, closedAt: null, followed: null
+    };
+    state.trades.unshift(t); save(); renderAll();
+    toast(t.ticker + " logged. Close it in the Journal.");
+  });
+  $("resetBtn").addEventListener("click", function () {
+    ["entry", "stop", "target", "ticker", "notes"].forEach(function (id) { $(id).value = ""; });
+    plan.checked = {}; renderChecks(); calc();
+  });
+
+  /* ---------- journal ---------- */
+  var openCloser = null;
+  function renderJournal() {
+    var closed = state.trades.filter(function (t) { return t.status === "closed"; });
+    var rs = closed.map(rMult);
+    var total = rs.reduce(function (a, b) { return a + b; }, 0);
+    var wins = rs.filter(function (r) { return r > 0; }).length;
+    var followed = closed.filter(function (t) { return t.followed; }).length;
+    $("kR").textContent = (total >= 0 ? "+" : "−") + Math.abs(total).toFixed(1) + "R";
+    $("kR").style.color = closed.length ? (total >= 0 ? "var(--good)" : "var(--bad)") : "";
+    $("kAvg").textContent = closed.length ? (total / closed.length >= 0 ? "+" : "−") + Math.abs(total / closed.length).toFixed(2) + "R" : "—";
+    $("kWin").textContent = closed.length ? Math.round(wins / closed.length * 100) + "%" : "—";
+    $("kN").textContent = closed.length;
+    $("kPlan").textContent = closed.length ? Math.round(followed / closed.length * 100) + "%" : "—";
+
+    // real-money readiness
+    var days = 0;
+    if (closed.length) {
+      var times = closed.map(function (t) { return new Date(t.date).getTime(); });
+      days = Math.floor((Math.max.apply(null, times) - Math.min.apply(null, times)) / 864e5);
+    }
+    var avg = closed.length ? total / closed.length : 0;
+    var planRate = closed.length ? followed / closed.length : 0;
+    var goals = [
+      ["Closed trades", closed.length, 40, closed.length + " / 40"],
+      ["Days of practice", days, 60, days + " / 60"],
+      ["Average R above 0", avg > 0 ? 1 : 0, 1, closed.length ? (avg >= 0 ? "+" : "−") + Math.abs(avg).toFixed(2) + "R" : "—"],
+      ["Followed the plan 80%+", planRate, 0.8, closed.length ? Math.round(planRate * 100) + "%" : "—"]
+    ];
+    var allDone = goals.every(function (g) { return g[1] >= g[2]; });
+    $("readyTitle").textContent = allDone ? "Real-money check: passed. Start small." : "Real-money check: keep practicing";
+    $("readyBars").innerHTML = goals.map(function (g) {
+      var pct = Math.max(0, Math.min(100, g[1] / g[2] * 100));
+      return '<div class="bar' + (g[1] >= g[2] ? " done" : "") + '"><span>' + g[0] + '</span><span class="num">' + g[3] + '</span><div class="track"><i style="width:' + pct + '%"></i></div></div>';
+    }).join("");
+
+    if (!state.trades.length) { $("trades").innerHTML = '<li class="empty">No trades yet. Plan one on the Plan tab and log it.</li>'; return; }
+    $("trades").innerHTML = state.trades.map(function (t) {
+      var m = METHODS[t.method], crypto = t.market === "crypto";
+      var d = new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      var cls = "open", right = '<span class="r" style="color:var(--accent)">Open</span>';
+      if (t.status === "closed") {
+        var r = rMult(t), p = pnl(t);
+        cls = r > 0 ? "win" : "loss";
+        right = '<span class="r" style="color:' + (r > 0 ? "var(--good)" : "var(--bad)") + '">' + (r >= 0 ? "+" : "−") + Math.abs(r).toFixed(2) + "R · " + money(p, true) + "</span>";
+      }
+      var html = '<li class="trade ' + cls + '" data-id="' + t.id + '">' +
+        '<div class="top"><span class="tk">' + esc(t.ticker) + "<small>" + (t.dir === "long" ? "Buy" : "Short") + " · " + (crypto ? "Crypto" : "Stock") + " · " + (t.mode === "day" ? "Day" : "Long term") + "</small></span>" + right + "</div>" +
+        '<div class="meta num"><span>' + d + "</span><span>" + qty(t.size, crypto) + " @ " + price(t.entry) + "</span><span>stop " + price(t.stop) + "</span>" + (t.target ? "<span>target " + price(t.target) + "</span>" : "") + (t.status === "closed" ? "<span>exit " + price(t.exit) + "</span>" : "") + "</div>" +
+        '<div class="meta"><span>' + (m ? esc(m.name) : "") + "</span><span>Checks " + t.checksMet + "/" + t.checksTotal + "</span>" + (t.status === "closed" ? "<span>" + (t.followed ? "Followed plan" : "Broke plan") + "</span>" : "") + "</div>" +
+        (t.notes ? '<div class="meta"><span>' + esc(t.notes) + "</span></div>" : "");
+      if (t.status === "open") {
+        if (openCloser === t.id) {
+          html += '<div class="closer"><label><span class="lbl">Exit price</span><input type="number" step="any" min="0" inputmode="decimal" class="exitIn" placeholder="' + (t.target || t.entry) + '"></label>' +
+            '<button class="btn small saveClose" type="button">Close</button>' +
+            '<label class="check"><input type="checkbox" class="followIn" checked><span>I followed my plan (entry, stop, size)</span></label></div>';
+        } else {
+          html += '<div class="acts"><button class="btn small ghost openClose" type="button">Close trade</button><button class="linkbtn del" type="button">Delete</button></div>';
+        }
+      } else {
+        html += '<div class="acts"><button class="linkbtn del" type="button">Delete</button></div>';
+      }
+      return html + "</li>";
+    }).join("");
+  }
+  $("trades").addEventListener("click", function (e) {
+    var li = e.target.closest(".trade"); if (!li) return;
+    var t = state.trades.find(function (x) { return x.id === li.dataset.id; }); if (!t) return;
+    if (e.target.closest(".openClose")) { openCloser = t.id; renderJournal(); var inp = li.ownerDocument.querySelector('[data-id="' + t.id + '"] .exitIn'); if (inp) inp.focus(); }
+    else if (e.target.closest(".saveClose")) {
+      var ex = parseFloat(li.querySelector(".exitIn").value);
+      if (!(ex > 0)) { toast("Enter the exit price"); return; }
+      t.exit = ex; t.status = "closed"; t.closedAt = new Date().toISOString(); t.followed = li.querySelector(".followIn").checked;
+      openCloser = null; save(); renderAll();
+      toast("Closed: " + (rMult(t) >= 0 ? "+" : "−") + Math.abs(rMult(t)).toFixed(2) + "R");
+    }
+    else if (e.target.closest(".del")) {
+      if (confirm("Delete this " + t.ticker + " trade?")) { state.trades = state.trades.filter(function (x) { return x !== t; }); save(); renderAll(); }
+    }
+  });
+
+  function download(name, text, type) {
+    var blob = new Blob([text], { type: type }), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  var stamp = function () { return new Date().toISOString().slice(0, 10); };
+  $("csvBtn").addEventListener("click", function () {
+    var head = ["date", "ticker", "market", "style", "direction", "method", "entry", "stop", "target", "size", "exit", "R", "P/L", "followed_plan", "checks", "notes"];
+    var rows = state.trades.map(function (t) {
+      var c = t.status === "closed";
+      return [t.date.slice(0, 10), t.ticker, t.market, t.mode, t.dir, METHODS[t.method] ? METHODS[t.method].name : t.method, t.entry, t.stop, t.target || "", t.size, c ? t.exit : "", c ? rMult(t).toFixed(2) : "", c ? pnl(t).toFixed(2) : "", c ? (t.followed ? "yes" : "no") : "", t.checksMet + "/" + t.checksTotal, t.notes]
+        .map(function (v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(",");
+    });
+    download("trade-journal-" + stamp() + ".csv", [head.join(",")].concat(rows).join("\n"), "text/csv");
+  });
+  $("backupBtn").addEventListener("click", function () { download("trade-desk-backup-" + stamp() + ".json", JSON.stringify(state, null, 2), "application/json"); });
+  $("restoreIn").addEventListener("change", function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var d = JSON.parse(rd.result);
+        if (!d || !Array.isArray(d.trades)) throw 0;
+        if (!confirm("Replace this device's journal with the backup (" + d.trades.length + " trades)?")) return;
+        state = { start: +d.start || 1000, riskPct: +d.riskPct || 1, trades: d.trades }; save(); renderAll(); toast("Backup restored");
+      } catch (e) { toast("That file isn't a Trade Desk backup"); }
+    };
+    rd.readAsText(f); this.value = "";
+  });
+
+  /* ---------- guide ---------- */
+  function card(m, useKey) {
+    return '<article class="mcard"><div class="who"><h3>' + esc(m.name) + '</h3><span class="tag">' + esc(m.tag) + '</span><div class="book">' + esc(m.book) + "</div></div>" +
+      '<div><p class="idea">' + esc(m.idea) + "</p><ul>" + m.rules.map(function (r) { return "<li>" + esc(r) + "</li>"; }).join("") + "</ul>" +
+      (useKey ? '<button class="btn small ghost use" type="button" data-use="' + useKey + '">Plan a trade with this</button>' : "") + "</div></article>";
+  }
+  $("dayMethods").innerHTML = Object.keys(METHODS).filter(function (k) { return METHODS[k].group === "day"; }).map(function (k) { return card(METHODS[k], k); }).join("");
+  $("longMethods").innerHTML = Object.keys(METHODS).filter(function (k) { return METHODS[k].group === "long"; }).map(function (k) { return card(METHODS[k], k); }).join("");
+  $("riskMethods").innerHTML = RISK.map(function (m) { return card(m, null); }).join("");
+  document.querySelector("#view-guide").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-use]"); if (!b) return;
+    var k = b.dataset.use, mode = METHODS[k].group;
+    $("segMode").querySelector('[data-v="' + mode + '"]').click();
+    $("method").value = k; plan.checked = {}; renderChecks(); renderMethodNote(); calc();
+    location.hash = "#plan";
+  });
+
+  /* ---------- tabs ---------- */
+  function showTab() {
+    var tab = (location.hash || "#plan").slice(1);
+    if (["plan", "journal", "guide"].indexOf(tab) < 0) tab = "plan";
+    document.querySelectorAll("section.view").forEach(function (s) { s.classList.toggle("on", s.id === "view-" + tab); });
+    document.querySelectorAll(".tabs a").forEach(function (a) { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  }
+  window.addEventListener("hashchange", function () { showTab(); window.scrollTo(0, 0); });
+
+  function renderAll() { renderAccount(); renderJournal(); calc(); }
+  fillMethods(); showTab(); renderAll();
+})();
+</script>
+</body>
+</html>
