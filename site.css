@@ -37,25 +37,32 @@ a { color: inherit; }
 @media (max-width: 760px) { .lnav nav { display: none; } }
 
 /* ---------- hero: one scroll-driven moment ---------- */
-.hero { position: relative; height: 230vh; }
-.hero-pin { position: sticky; top: 0; height: 100vh; min-height: 560px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; padding-top: 70px; }
+/* svh = the visible height with the browser toolbar showing, so nothing hides behind Safari's bar and the layout doesn't jump when the bar slides away */
+.hero { position: relative; height: 230vh; height: 230svh; }
+/* pinned right under the 54px nav and exactly one screen tall, so the buttons at the bottom are never cut off and the headline doesn't shift when it locks */
+.hero-pin { position: sticky; top: calc(54px + env(safe-area-inset-top, 0px)); height: calc(100vh - 54px); height: calc(100svh - 54px - env(safe-area-inset-top, 0px)); min-height: 500px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; padding-top: clamp(20px, 4svh, 44px); }
 .hero-copy { position: relative; z-index: 2; }
 .hero-kicker { font-family: var(--display); font-weight: 700; font-size: clamp(20px, 2.4vw, 28px); margin: 0; color: var(--flare); letter-spacing: -0.01em; }
 .hero h1 { font-family: var(--display); font-weight: 900; font-stretch: 112%; font-size: clamp(42px, 7.6vw, 112px); line-height: 0.92; letter-spacing: -0.04em; margin: 8px 0 0; max-width: 13ch; }
 .hero-num {
-  position: absolute; right: -2vw; bottom: -6vh; z-index: 1;
+  position: absolute; right: -2vw; bottom: -6vh; bottom: -6svh; z-index: 1; will-change: transform; pointer-events: none;
   font-family: var(--display); font-weight: 900; font-stretch: 125%;
   font-size: clamp(220px, 46vw, 680px); line-height: 0.8; letter-spacing: -0.06em;
   color: transparent; -webkit-text-stroke: 1.5px rgba(243,241,234,0.22);
   transform: translate3d(0, calc(var(--p, 0) * -14vh), 0) scale(calc(1 + var(--p, 0) * 0.08));
+  transform: translate3d(0, calc(var(--p, 0) * -14svh), 0) scale(calc(1 + var(--p, 0) * 0.08));
   transform-origin: 80% 80%;
 }
-.hero-num .fill { position: absolute; inset: 0; color: var(--flare); -webkit-text-stroke: 0; clip-path: inset(calc(100% - var(--p, 0) * 100%) 0 0 0); }
-.hero-path { position: absolute; left: 0; right: 0; bottom: 18vh; z-index: 1; height: 140px; pointer-events: none; }
+/* the orange fill waits until the intro text has faded (first 30% of the scroll), then fills the rest of the way */
+.hero-num .fill { position: absolute; inset: 0; color: var(--flare); -webkit-text-stroke: 0; clip-path: inset(calc(100% - var(--p, 0) * 100%) 0 0 0); -webkit-clip-path: inset(calc(100% - clamp(0%, (var(--p, 0) - 0.3) * 142.86%, 100%)) 0 0 0); clip-path: inset(calc(100% - clamp(0%, (var(--p, 0) - 0.3) * 142.86%, 100%)) 0 0 0); }
+.hero-path { position: absolute; left: 0; right: 0; bottom: 18vh; bottom: 18svh; z-index: 1; height: 140px; pointer-events: none; }
 .hero-path path { stroke-dasharray: 1600; stroke-dashoffset: calc(1600 - var(--p, 0) * 1600); }
-.hero-foot { position: absolute; left: max(20px, env(safe-area-inset-left, 0px)); right: max(20px, env(safe-area-inset-right, 0px)); bottom: 28px; z-index: 2; display: flex; justify-content: space-between; gap: 20px; align-items: end; flex-wrap: wrap; }
-.hero-foot p { margin: 0; max-width: 46ch; color: #cfccc4; font-size: 17px; opacity: calc(1 - var(--p, 0) * 1.6); }
-.hero-foot .ctas { display: flex; gap: 12px; align-items: center; opacity: calc(1 - var(--p, 0) * 1.6); }
+.hero-foot { position: absolute; left: max(20px, env(safe-area-inset-left, 0px)); right: max(20px, env(safe-area-inset-right, 0px)); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); transition: visibility 0s; z-index: 2; display: flex; justify-content: space-between; gap: 20px; align-items: end; flex-wrap: wrap; }
+.hero-foot p { margin: 0; max-width: 46ch; color: #cfccc4; font-size: 17px; }
+.hero-foot p, .hero-foot .ctas { opacity: calc(1 - var(--p, 0) * 3.4); transform: translate3d(0, calc(var(--p, 0) * -24px), 0); }
+.hero-foot .ctas { display: flex; gap: 12px; align-items: center; }
+/* once the intro text has faded, hide it so invisible buttons can't be tapped */
+.hero.faded .hero-foot { visibility: hidden; pointer-events: none; }
 .btn { font-weight: 600; font-size: 16px; text-decoration: none; padding: 11px 20px; border-radius: 999px; display: inline-flex; align-items: center; min-height: 44px; }
 .btn.fill { background: var(--bone); color: var(--ink); }
 .btn.fill:hover { background: #ffffff; }
@@ -162,7 +169,11 @@ sup a { color: var(--dim); text-decoration: none; font-size: 0.6em; margin-left:
   .cmp { grid-template-columns: 1fr; }
   .cmp .col + .col { border-left: 0; padding-left: 0; border-top: 1px solid rgba(23,22,19,0.2); }
   .cmp .col:first-child { padding-right: 0; }
-  .hero { height: 190vh; }
+  /* phones: shorter scroll, smaller 25H, and the intro text fades out before the orange fill reaches it */
+  .hero { height: 190vh; height: 175svh; }
+  .hero-num { font-size: clamp(170px, 50vw, 420px); right: -5vw; bottom: -2svh; }
+  .hero-path { bottom: 24svh; }
+  .hero-foot p { font-size: 16px; }
   .slide { height: 400px; }
   .slide.s1 .big { font-size: 150px; }
 }
@@ -170,6 +181,7 @@ sup a { color: var(--dim); text-decoration: none; font-size: 0.6em; margin-left:
   html { scroll-behavior: auto; }
   .hero { height: auto; }
   .hero-pin { position: relative; height: auto; min-height: 640px; }
+  .hero.faded .hero-foot { visibility: visible; pointer-events: auto; }
   .screen .fly { animation: none; }
 }
 
