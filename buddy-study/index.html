@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Buddy Study: two vet tech study games. Run Buddy through the clinic route, or race the clock on chart shorthand.">
+<meta name="theme-color" content="#1f8a70">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Buddy Study">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
+<title>Buddy Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: oversized wordmark with Buddy standing on it (left), a deep-green Vet Terms tile (right),
+   then Buddy Run levels as three boxes stepping up like stairs (easy to hard). Games run in their own full views. */
+:root{
+  --bg:#f3f6f4; --surface:#ffffff; --soft:#edf2ef; --ink:#14201c; --muted:#5b6b66; --line:#dbe4df;
+  --brand:#1f8a70; --coral:#ec6a4c;
+  --green:#2c9f66; --green-soft:#e0f3e8;
+  --yellow:#f3b52a; --yellow-soft:#fcf0d0; --on-yellow:#2a1f05;
+  --red:#e2513b; --red-soft:#fbe2dc;
+  --terms-bg:#12372f; --terms-ink:#ffffff; --terms-muted:#bfe0d4; --terms-chip:rgba(255,255,255,.1);
+  --shadow:0 1px 2px rgba(16,32,28,.06),0 8px 24px rgba(16,32,28,.07);
+  --shadow-lg:0 2px 6px rgba(16,32,28,.08),0 24px 60px rgba(16,32,28,.16);
+  --glass:rgba(255,255,255,.74); --glass-line:rgba(20,32,28,.08);
+  --sky:#bfe5ee; --sky2:#ecf7f1; --hill:#acd9ba; --hill2:#88c59f; --house:#f6e9d8; --roof:#d77a5b;
+  --ground:#8fcd7d; --path:#ede2cb; --pathline:#dccba8; --cloud:#ffffff; --sun:#ffcf5c;
+  --display:"Bricolage Grotesque","Avenir Next","Trebuchet MS",sans-serif;
+  --body:"Plus Jakarta Sans","Avenir Next","Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,"Menlo",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1412; --surface:#16201d; --soft:#1d2925; --ink:#e7efeb; --muted:#9aafa8; --line:#28362f;
+  --brand:#46c29d; --coral:#ff8a6d;
+  --green:#3dbd7d; --green-soft:#173628; --yellow:#f5c245; --yellow-soft:#3a3016; --red:#ef654e; --red-soft:#3c1f19;
+  --terms-bg:#18463b; --terms-muted:#b6dccd; --terms-chip:rgba(255,255,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3); --shadow-lg:0 2px 6px rgba(0,0,0,.35),0 24px 60px rgba(0,0,0,.45);
+  --glass:rgba(22,32,29,.74); --glass-line:rgba(255,255,255,.08);
+  --sky:#13283a; --sky2:#26434a; --hill:#1f4037; --hill2:#19352d; --house:#3a3633; --roof:#8a4a38;
+  --ground:#2b583a; --path:#4c4436; --pathline:#5d5341; --cloud:#3a5465; --sun:#f1e4a8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1412; --surface:#16201d; --soft:#1d2925; --ink:#e7efeb; --muted:#9aafa8; --line:#28362f;
+  --brand:#46c29d; --coral:#ff8a6d;
+  --green:#3dbd7d; --green-soft:#173628; --yellow:#f5c245; --yellow-soft:#3a3016; --red:#ef654e; --red-soft:#3c1f19;
+  --terms-bg:#18463b; --terms-muted:#b6dccd; --terms-chip:rgba(255,255,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3); --shadow-lg:0 2px 6px rgba(0,0,0,.35),0 24px 60px rgba(0,0,0,.45);
+  --glass:rgba(22,32,29,.74); --glass-line:rgba(255,255,255,.08);
+  --sky:#13283a; --sky2:#26434a; --hill:#1f4037; --hill2:#19352d; --house:#3a3633; --roof:#8a4a38;
+  --ground:#2b583a; --path:#4c4436; --pathline:#5d5341; --cloud:#3a5465; --sun:#f1e4a8; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+.wrap{max-width:1160px;margin:0 auto}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+kbd{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:0 6px;color:var(--ink)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+.playicon{width:22px;height:22px;flex:none}
+
+/* ---------- Landing ---------- */
+.landing{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:26px 40px;align-items:end}
+.hero{position:relative;min-width:0;padding-top:118px}
+#peek{position:absolute;left:clamp(170px,30vw,360px);top:0;width:190px;height:140px;pointer-events:none}
+.mega{font-family:var(--display);font-weight:800;font-size:clamp(76px,12.5vw,164px);line-height:.84;letter-spacing:-.055em;margin:0}
+.mega span{display:block}
+.mega .s{color:var(--brand);margin-left:.5em}
+.lede{font-size:18px;font-weight:500;color:var(--muted);max-width:40ch;margin:20px 0 0;text-wrap:pretty}
+.lede b{color:var(--ink);font-weight:700}
+
+.terms{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:10px;text-align:left;cursor:pointer;border:0;border-radius:28px;
+  padding:26px 26px 22px;background:var(--terms-bg);color:var(--terms-ink);box-shadow:var(--shadow-lg);transition:transform .2s;transform:rotate(1deg)}
+.terms:hover{transform:rotate(0) translateY(-3px)}
+.terms .eyebrow{color:var(--terms-muted)}
+.bgpaw{position:absolute;right:-28px;bottom:-34px;width:190px;height:190px;color:#fff;opacity:.07;pointer-events:none}
+.tt{font-family:var(--display);font-weight:800;font-size:52px;line-height:.95;letter-spacing:-.04em}
+.tdesc{color:var(--terms-muted);font-size:15px;max-width:30ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 8px}
+.chips span{font-family:var(--mono);font-size:15px;padding:4px 11px;border-radius:9px;background:var(--terms-chip)}
+.chips span:nth-child(2){transform:rotate(-4deg)}.chips span:nth-child(4){transform:rotate(3deg)}
+.tfoot{display:flex;align-items:center;gap:14px;position:relative}
+.bigplay{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:58px;padding:0 28px;border-radius:16px;font-weight:800;font-size:19px}
+.terms .bigplay{background:#fff;color:#12372f;flex:1;max-width:240px}
+.best{font-family:var(--mono);font-size:13px}
+
+.runhead{grid-column:1/-1;display:flex;align-items:baseline;gap:6px 16px;flex-wrap:wrap;margin-top:18px}
+.runhead h2{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-.03em;line-height:1;margin:0}
+.runhead p{margin:0;color:var(--muted);font-weight:500}
+.levels{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:end}
+.lvl{--c:var(--green);--cs:var(--green-soft);--on:#fff;display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-areas:"art body" "art play";
+  gap:12px 18px;text-align:left;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:14px;
+  box-shadow:var(--shadow);transition:transform .18s,box-shadow .18s}
+.lvl:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.lvl:active{transform:translateY(0) scale(.99)}
+.lvl.tech{--c:var(--yellow);--cs:var(--yellow-soft);--on:var(--on-yellow)}
+.lvl.vtne{--c:var(--red);--cs:var(--red-soft);--on:#fff}
+.lvl.puppy{margin-bottom:0}.lvl.tech{margin-bottom:22px}.lvl.vtne{margin-bottom:44px}
+.lvl-art{grid-area:art;display:grid;place-items:center;border-radius:18px;background:var(--cs)}
+.lvl-art svg{width:66px;height:66px}
+.lvl.puppy .lvl-art svg{transform:rotate(-16deg)}.lvl.tech .lvl-art svg{transform:rotate(8deg)}.lvl.vtne .lvl-art svg{transform:rotate(-6deg)}
+.lvl-body{grid-area:body;display:flex;flex-direction:column;gap:3px;padding-top:6px;min-width:0}
+.lk{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ln{font-family:var(--display);font-weight:800;font-size:31px;letter-spacing:-.03em;line-height:1.02}
+.ld{color:var(--muted);font-size:14px;font-weight:600}
+.lvl-play{grid-area:play;display:flex;align-items:center;justify-content:space-between;gap:10px;height:60px;padding:0 8px 0 20px;border-radius:17px;background:var(--c);color:var(--on);font-weight:800;font-size:20px}
+.lvl-play .best{font-weight:500;opacity:.8;font-size:12px;margin-left:auto}
+.lvl-play i{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.24)}
+.lvl.tech .lvl-play i{background:rgba(255,255,255,.4)}
+.rules{grid-column:1/-1;margin:6px 0 0;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 18px}
+.rules span::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brand);margin-right:8px;vertical-align:middle}
+
+/* ---------- Shared bars and buttons ---------- */
+.miniword{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.04em;line-height:1}
+.miniword span{color:var(--brand)}
+.chip{font-weight:800;font-size:13px;border-radius:999px;padding:5px 12px;background:var(--brand);color:#fff}
+.chip[data-level="puppy"]{background:var(--green);color:#fff}.chip[data-level="tech"]{background:var(--yellow);color:var(--on-yellow)}.chip[data-level="vtne"]{background:var(--red);color:#fff}
+.spacer{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 24px;border:0;border-radius:15px;background:var(--brand);color:#fff;font-weight:800;font-size:17px;cursor:pointer;transition:transform .12s,filter .12s}
+.btn:hover{filter:brightness(1.06)}.btn:active{transform:scale(.97)}
+.btn.alt{background:var(--soft);color:var(--ink)}
+.btn.big{height:60px;padding:0 34px;font-size:19px;border-radius:17px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- Buddy Run (full screen) ---------- */
+.play{position:fixed;inset:0;z-index:50;background:var(--sky)}
+.stage{position:absolute;inset:0;overflow:hidden;background:var(--sky);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+canvas#cv{display:block;width:100%;height:100%;cursor:pointer}
+.topbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;pointer-events:none;
+  padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+.topbar > *{pointer-events:auto}
+.topbar .miniword{margin-right:4px}
+.pill{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 14px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-line);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 4px 14px rgba(0,0,0,.06);color:var(--ink)}
+.pill small{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.pill b{font-family:var(--mono);font-weight:500;font-size:18px;font-variant-numeric:tabular-nums}
+.btnpill{cursor:pointer;font-weight:800;font-size:14px;border:1px solid var(--glass-line)}
+.btnpill svg{width:16px;height:16px}
+.paws{display:inline-flex;gap:3px;color:var(--coral)}
+.paws svg{width:19px;height:19px}.paws .off{opacity:.2}
+.toast{position:absolute;top:calc(env(safe-area-inset-top,0px) + 66px);right:max(16px,env(safe-area-inset-right,0px));font-family:var(--mono);font-size:12px;
+  background:var(--ink);color:var(--bg);padding:6px 12px;border-radius:999px;opacity:0;transform:translateY(-6px);transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+.hints{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);display:flex;justify-content:center;gap:10px;flex-wrap:wrap;pointer-events:none;transition:opacity .6s;padding:0 16px}
+.hints span{display:flex;align-items:center;gap:6px;font-weight:700;font-size:14px;background:var(--glass);border:1px solid var(--glass-line);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:999px;padding:7px 14px}
+.hints.fade{opacity:0}
+
+.overlay{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-start;
+  padding:76px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
+.overlay.center{align-items:center;justify-content:center;background:color-mix(in srgb,var(--bg) 35%,transparent);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:22px 22px 20px;max-width:480px;width:100%;box-shadow:var(--shadow-lg);max-height:100%;overflow:auto}
+.overlay.center .panel{text-align:center;padding:28px 26px 24px;max-width:460px}
+.overlay.center .row{justify-content:center}
+.panel h2{font-family:var(--display);font-weight:800;font-size:36px;letter-spacing:-.035em;line-height:1;margin:2px 0 12px;text-wrap:balance}
+.panel p{margin:0 0 14px;font-size:14.5px;color:var(--muted)}
+.kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--coral);margin-bottom:6px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px;text-align:left}
+.controls div{background:var(--soft);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.controls b{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.02em}
+.controls span{font-size:13px;color:var(--muted);font-weight:600}
+.bestline{margin:12px 0 0!important;font-family:var(--mono);font-size:12px}
+.missedlist{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:8px;font-size:13px;max-height:32vh;overflow:auto;text-align:left}
+.missedlist li{background:var(--soft);border-radius:12px;padding:8px 12px}
+.missedlist b{display:block;color:var(--brand)}
+.quiz .q{font-weight:800;font-size:17px;line-height:1.35;margin:0 0 14px;color:var(--ink)}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;font-size:15px;font-weight:600;padding:11px 14px;border:1.5px solid transparent;border-radius:15px;background:var(--soft);cursor:pointer;transition:border-color .12s}
+.opt:hover:not(:disabled){border-color:var(--brand)}
+.opt .k{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:9px;background:var(--surface);font-family:var(--mono);font-size:13px;color:var(--muted)}
+.opt.right{background:var(--green-soft);border-color:var(--green)}
+.opt.wrong{background:var(--red-soft);border-color:var(--red)}
+.opt:disabled{cursor:default}
+.explain{margin-top:12px;font-size:13.5px;padding:10px 12px;background:var(--green-soft);border-radius:13px}
+.explain.bad{background:var(--red-soft)}
+
+/* ---------- Vet Terms ---------- */
+.appbar{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap}
+.chip.terms-chip{background:var(--terms-bg);color:#fff}
+.ghost{background:none;border:1px solid var(--line);border-radius:999px;height:40px;padding:0 16px;font-weight:700;cursor:pointer}
+.ghost:hover{background:var(--soft)}
+.board{margin-top:16px;max-width:780px;background:var(--surface);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow);padding:clamp(20px,4vw,38px)}
+.btitle{font-family:var(--display);font-weight:800;font-size:clamp(40px,7vw,58px);letter-spacing:-.045em;line-height:.95;margin:6px 0 10px}
+.bsub{color:var(--muted);margin:0 0 18px;max-width:52ch}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:4px;margin-bottom:18px}
+.seg button{border:0;background:none;border-radius:999px;padding:8px 16px;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.dall{display:flex;align-items:center;gap:16px 20px;flex-wrap:wrap;width:100%;text-align:left;cursor:pointer;border:0;border-radius:24px;padding:22px 22px 22px 26px;
+  background:var(--terms-bg);color:#fff;box-shadow:0 0 0 5px color-mix(in srgb,var(--brand) 22%,transparent),var(--shadow-lg);transition:transform .15s}
+.dall:hover{transform:translateY(-2px)}
+.dall-txt{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
+.dall-t{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,46px);letter-spacing:-.04em;line-height:1}
+.dall-s{color:var(--terms-muted);font-weight:600;font-size:14px}
+.dall-b{font-family:var(--mono);font-size:12px;color:var(--terms-muted)}
+.dall .bigplay{background:#fff;color:#12372f;min-width:150px}
+.seclabel{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:24px 0 10px}
+.dcats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.dcat{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1.5px solid transparent;background:var(--soft);border-radius:16px;padding:12px 14px;font-weight:800;font-size:15px;cursor:pointer}
+.dcat small{font-family:var(--mono);font-weight:400;font-size:11.5px;color:var(--muted)}
+.dcat:hover{border-color:var(--brand)}
+.keyhint{margin:18px 0 0;font-size:13px;color:var(--muted)}
+.dstats{display:flex;gap:10px 28px;flex-wrap:wrap}
+.dstats div{display:flex;flex-direction:column}
+.dstats small{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dstats b{font-family:var(--mono);font-weight:500;font-size:26px;font-variant-numeric:tabular-nums;line-height:1.1}
+.dstats .tleft{margin-left:auto;text-align:right}
+.timer{height:8px;border-radius:999px;background:var(--soft);margin:14px 0 26px;overflow:hidden}
+.timer i{display:block;height:100%;width:100%;background:var(--brand);border-radius:999px;transition:background .2s}
+.timer.low i{background:var(--coral)}
+.dtag{display:inline-block;font-size:12px;font-weight:700;color:var(--brand);background:color-mix(in srgb,var(--brand) 12%,transparent);border-radius:999px;padding:3px 10px;margin:0 0 8px}
+.prompt{font-family:var(--mono);font-weight:500;font-size:clamp(54px,11vw,104px);line-height:1;letter-spacing:-.02em;margin:0 0 6px;word-break:break-word}
+.prompt.long{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px);letter-spacing:-.03em;line-height:1.1}
+.askline{color:var(--muted);margin:0 0 20px}
+.dopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dopt{display:flex;gap:12px;align-items:center;text-align:left;min-height:64px;font-weight:700;font-size:16px;padding:12px 16px;border:1.5px solid transparent;border-radius:18px;background:var(--soft);cursor:pointer;min-width:0}
+.dopt:hover:not(:disabled){border-color:var(--brand)}
+.dopt .k{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:9px;background:var(--surface);font-family:var(--mono);font-size:13px;color:var(--muted)}
+.dopt.mono span:last-child{font-family:var(--mono);font-size:19px;font-weight:500}
+.dopt.right{background:var(--green-soft);border-color:var(--green)}
+.dopt.wrong{background:var(--red-soft);border-color:var(--red)}
+.dfeed{min-height:24px;margin-top:14px;font-weight:700}
+.dfeed.ok{color:var(--green)}.dfeed.bad{color:var(--red)}
+.dmissed{list-style:none;margin:0 0 20px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.dmissed li{display:flex;gap:12px;align-items:baseline;background:var(--soft);border-radius:12px;padding:8px 12px;font-size:14px}
+.dmissed b{font-family:var(--mono);font-weight:500;color:var(--coral);min-width:56px}
+
+@media (max-width:860px){
+  .landing{grid-template-columns:1fr;gap:20px}
+  .hero{padding-top:96px}
+  #peek{left:auto;right:0;width:150px;height:110px}
+  .levels{grid-template-columns:1fr;gap:12px}
+  .lvl.tech,.lvl.vtne{margin-bottom:0}
+  .lvl{grid-template-columns:76px minmax(0,1fr)}.lvl-art svg{width:54px;height:54px}
+  .ln{font-size:28px}
+  .runhead{order:2;margin-top:4px}.levels{order:3}.terms{order:4;transform:none}.rules{order:5}
+  .terms .bigplay{max-width:none}
+  .panel{max-width:none}.panel h2{font-size:30px}
+  .overlay:not(.center){background:linear-gradient(0deg,color-mix(in srgb,var(--bg) 70%,transparent),transparent 70%)}
+}
+@media (max-width:560px){
+  .topbar{gap:6px}.topbar .miniword,.topbar .chip{display:none}
+  .pill{height:36px;padding:0 11px}.pill small{display:none}.pill b{font-size:16px}.paws svg{width:16px;height:16px}
+  .dopts{grid-template-columns:1fr}.dopt{min-height:56px}
+  .controls{grid-template-columns:1fr 1fr}
+  .dstats{gap:8px 18px}.dstats b{font-size:22px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <!-- Landing -->
+  <section class="landing" id="landing" aria-label="Choose a game">
+    <div class="hero">
+      <canvas id="peek" aria-hidden="true"></canvas>
+      <h1 class="mega"><span>Buddy</span><span class="s">Study</span></h1>
+      <p class="lede">Two quick study games for vet techs. <b>Run Buddy through the clinic route</b>, or <b>race the clock on chart shorthand.</b></p>
+    </div>
+
+    <button class="terms" id="drillBtn" aria-label="Play Vet Terms">
+      <svg class="bgpaw" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><ellipse cx="12" cy="16" rx="5.5" ry="4.5"/><circle cx="5.5" cy="10" r="2.4"/><circle cx="9.5" cy="5.8" r="2.4"/><circle cx="14.5" cy="5.8" r="2.4"/><circle cx="18.5" cy="10" r="2.4"/></g></svg>
+      <span class="eyebrow">Game 2 · 60-second rounds</span>
+      <span class="tt">Vet Terms</span>
+      <span class="tdesc">Match the shorthand you see on every chart, treatment sheet and whiteboard.</span>
+      <span class="chips" aria-hidden="true"><span>NPO</span><span>q8h</span><span>BAR</span><span>PRN</span><span>OU</span></span>
+      <span class="tfoot"><span class="bigplay">Play <svg class="playicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span><span class="best" id="termsBest">Best 0</span></span>
+    </button>
+
+    <div class="runhead"><span class="eyebrow">Game 1</span><h2>Buddy Run</h2><p>Pick a level. Hit anything and you answer a vet tech question.</p></div>
+    <div class="levels" role="group" aria-label="Buddy Run levels">
+      <button class="lvl puppy" data-level="puppy" aria-label="Play Puppy level">
+        <span class="lvl-art"><svg viewBox="0 0 240 120" aria-hidden="true"><g fill="var(--green)"><rect x="42" y="32" width="156" height="56" rx="10"/><circle cx="42" cy="36" r="28"/><circle cx="42" cy="84" r="28"/><circle cx="198" cy="36" r="28"/><circle cx="198" cy="84" r="28"/></g></svg></span>
+        <span class="lvl-body"><span class="lk">Level 1</span><span class="ln">Puppy</span><span class="ld">Easier pace · core basics</span></span>
+        <span class="lvl-play">Play<span class="best" data-best="puppy">Best 0</span><i><svg class="playicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></i></span>
+      </button>
+      <button class="lvl tech" data-level="tech" aria-label="Play Vet Tech level">
+        <span class="lvl-art"><svg viewBox="0 0 176 196" aria-hidden="true"><circle cx="88" cy="108" r="84" fill="var(--yellow)"/><circle cx="88" cy="40" r="13" fill="var(--yellow-soft)"/></svg></span>
+        <span class="lvl-body"><span class="lk">Level 2</span><span class="ln">Vet Tech</span><span class="ld">Faster pace · full question mix</span></span>
+        <span class="lvl-play">Play<span class="best" data-best="tech">Best 0</span><i><svg class="playicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></i></span>
+      </button>
+      <button class="lvl vtne" data-level="vtne" aria-label="Play VTNE level">
+        <span class="lvl-art"><svg viewBox="0 0 186 200" aria-hidden="true"><path d="M93 6 L176 52 L176 148 L93 194 L10 148 L10 52 Z" fill="var(--red)" stroke="var(--red)" stroke-width="10" stroke-linejoin="round"/><circle cx="93" cy="42" r="13" fill="var(--red-soft)"/></svg></span>
+        <span class="lvl-body"><span class="lk">Level 3</span><span class="ln">VTNE</span><span class="ld">Fastest pace · exam-level questions</span></span>
+        <span class="lvl-play">Play<span class="best" data-best="vtne">Best 0</span><i><svg class="playicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></i></span>
+      </button>
+    </div>
+    <p class="rules"><span>3 paws on every level</span><span>Jump the obstacles, duck the vaccines</span><span>Right answer keeps your paw, wrong costs one</span><span>Lose all 3 and the shift ends</span></p>
+  </section>
+
+  <!-- Buddy Run -->
+  <section id="play" class="play" hidden aria-label="Buddy Run">
+    <div class="stage" id="stage">
+      <canvas id="cv" aria-label="Buddy Run. Swipe up or press space to jump; swipe down or hold the down arrow to duck."></canvas>
+      <div class="topbar">
+        <span class="miniword">Buddy<span>Study</span></span>
+        <span class="chip" id="lvlChip">Puppy</span>
+        <span class="pill"><small>Score</small><b id="vScore">0</b></span>
+        <span class="pill"><span class="paws" id="vPaws"></span></span>
+        <span class="pill"><small>Bones</small><b id="vBones">0</b></span>
+        <span class="spacer"></span>
+        <button class="pill btnpill" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg></button>
+        <button class="pill btnpill" id="changeBtn">Exit</button>
+      </div>
+      <div class="toast" id="toast"></div>
+      <div class="hints" id="hints" hidden aria-hidden="true"><span><kbd>Space</kbd> or <kbd>↑</kbd> to jump</span><span>Hold <kbd>↓</kbd> to duck</span></div>
+
+      <div class="overlay center" id="readyOv" hidden>
+        <div class="panel">
+          <div class="kicker" id="readyKick">Puppy level</div>
+          <h2>Ready, Buddy?</h2>
+          <div class="controls"><div><b>Jump</b><span>Swipe up · Space · ↑</span></div><div><b>Duck</b><span>Swipe down · hold ↓</span></div></div>
+          <p>Duck under the flying vaccines. Every hit asks a question: right keeps your paw, wrong costs one.</p>
+          <button class="btn big" id="goBtn">Start run</button>
+          <p class="bestline" id="bestLine"></p>
+        </div>
+      </div>
+      <div class="overlay" id="quizOv" hidden>
+        <div class="panel quiz">
+          <div class="kicker" id="qTopic">Ouch!</div>
+          <p class="q" id="qText"></p>
+          <div class="opts" id="qOpts"></div>
+          <div class="explain" id="qExplain" hidden></div>
+          <div class="row" id="qNext" hidden style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div class="overlay center" id="overOv" hidden>
+        <div class="panel">
+          <div class="kicker">Shift over</div>
+          <h2 id="overTitle">Good run, Buddy</h2>
+          <p id="overText"></p>
+          <ul class="missedlist" id="notes"></ul>
+          <div class="row"><button class="btn big" id="againBtn">Run again</button><button class="btn alt big" id="lvlBtn">Change level</button></div>
+        </div>
+      </div>
+      <div class="overlay center" id="pauseOv" hidden>
+        <div class="panel">
+          <div class="kicker">Paused</div>
+          <h2>Water break</h2>
+          <div class="row"><button class="btn big" id="resumeBtn">Resume</button><button class="btn alt big" id="pauseExit">Exit</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vet Terms -->
+  <section id="drill" hidden aria-label="Vet Terms">
+    <div class="appbar">
+      <span class="miniword">Buddy<span>Study</span></span>
+      <span class="chip terms-chip">Vet Terms</span>
+      <span class="spacer"></span>
+      <button class="ghost" id="drillBack">← All games</button>
+    </div>
+    <div class="board">
+      <div id="dStart">
+        <p class="eyebrow">60-second rounds</p>
+        <h2 class="btitle">Vet Terms</h2>
+        <p class="bsub">Match clinic shorthand to what it means. A right answer scores a point and builds your streak. A wrong answer costs 3 seconds.</p>
+        <div class="seg" role="group" aria-label="Direction"><button id="mTM" aria-pressed="true">Term → meaning</button><button id="mMT" aria-pressed="false">Meaning → term</button></div>
+        <button class="dall" id="dGo">
+          <span class="dall-txt"><span class="dall-t">All terms</span><span class="dall-s" id="dAllSub">85 terms · every section mixed</span><span class="dall-b" id="dAllBest">Best 0</span></span>
+          <span class="bigplay">Play <svg class="playicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg></span>
+        </button>
+        <p class="seclabel">Or practice one section</p>
+        <div class="dcats" id="dCats" role="group" aria-label="Sections"></div>
+        <p class="keyhint">On a keyboard, press <kbd>1</kbd>–<kbd>4</kbd> to answer.</p>
+      </div>
+      <div id="dGame" hidden>
+        <div class="dstats">
+          <div><small>Score</small><b id="dScore">0</b></div>
+          <div><small>Streak</small><b id="dStreak">0</b></div>
+          <div><small>Best</small><b id="dBest">0</b></div>
+          <div class="tleft"><small>Time</small><b><span id="dTime">60</span>s</b></div>
+        </div>
+        <div class="timer" id="dTimer"><i id="dBar"></i></div>
+        <span class="dtag" id="dTag">Orders</span>
+        <p class="prompt" id="dPrompt">NPO</p>
+        <p class="askline" id="dAsk">What does this mean?</p>
+        <div class="dopts" id="dOpts"></div>
+        <div class="dfeed" id="dFeed" aria-live="polite"></div>
+      </div>
+      <div id="dEnd" hidden>
+        <p class="eyebrow" id="dEndKick"></p>
+        <h2 class="btitle" id="dEndTitle"></h2>
+        <p class="bsub" id="dEndText"></p>
+        <ul class="dmissed" id="dMissed"></ul>
+        <div class="row"><button class="btn big" id="dAgain">Play again</button><button class="btn alt big" id="dSetup">Change section</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+// ---------- VTNE domains (AAVSB 2026 handbook) ----------
+const DOMAINS=[["Pharmacy & pharmacology",13,20],["Surgical nursing",13,20],["Dentistry",7,10],["Laboratory procedures",9,14],["Animal care & nursing",20,30],["Diagnostic imaging",6,9],["Anesthesia",13,20],["Emergency & critical care",7,10],["Pain management",7,10],["Communication & support",5,7]];
+
+// ---------- Question bank: [domain, level 1-3, question, correct, wrong, wrong, wrong, explanation] ----------
+const BANK=[
+[0,1,"On a treatment sheet, “BID” means:","Twice a day","Once a day","Every other day","As needed","BID is twice daily. SID is once, TID three times and QID four times a day."],
+[0,1,"A higher needle gauge number means the needle is:","Thinner","Wider","Longer","Shorter","A 25 g needle is thinner than an 18 g. Use lower gauges for thick drugs or fast fluids."],
+[0,1,"Which agency registers prescribers and oversees controlled drug logs in the US?","DEA","FDA","OSHA","USDA","Every controlled drug withdrawal needs the date, patient, amount and your initials."],
+[0,1,"“PO” on a prescription label means give the drug:","By mouth","Under the skin","Into the muscle","Into the vein","PO is by mouth. SC/SQ is under the skin, IM into the muscle and IV into the vein."],
+[0,2,"A 20 kg dog needs 10 mg/kg of a drug supplied at 50 mg/mL. How many mL do you draw up?","4 mL","2 mL","10 mL","0.4 mL","20 kg × 10 mg/kg = 200 mg. Then 200 mg ÷ 50 mg/mL = 4 mL."],
+[0,2,"1 mg equals how many micrograms (mcg)?","1,000 mcg","100 mcg","10 mcg","1,000,000 mcg","Mixing up mg and mcg causes 1,000-fold errors. Always write the unit."],
+[0,2,"Atipamezole is used to reverse:","Dexmedetomidine","Hydromorphone","Diazepam","Propofol","Atipamezole is an alpha-2 antagonist that reverses dexmedetomidine."],
+[0,2,"Naloxone reverses which drug class?","Opioids","Benzodiazepines","Alpha-2 agonists","NSAIDs","Naloxone reverses opioids. Flumazenil reverses benzodiazepines."],
+[0,2,"Melarsomine is used to treat:","Adult heartworms","Tapeworms","Ear mites","Giardia","It is the heartworm adulticide, given by deep IM injection in the epaxial muscles."],
+[0,2,"Dogs on long-term phenobarbital need which values monitored?","Liver values and drug levels","Thyroid only","Urine glucose only","Clotting times only","Phenobarbital can stress the liver. Serum levels guide seizure control."],
+[0,3,"A 2% lidocaine solution contains how many mg/mL?","20 mg/mL","2 mg/mL","0.2 mg/mL","200 mg/mL","Percent means grams per 100 mL. 2 g/100 mL = 20 mg/mL."],
+[0,3,"A 10 kg dog is 8% dehydrated. What is the fluid deficit?","800 mL","80 mL","8 L","1,800 mL","Weight (kg) × % dehydration = liters. 10 × 0.08 = 0.8 L."],
+[0,3,"Buprenorphine is in which DEA schedule?","Schedule III","Schedule I","Schedule II","Schedule V","Buprenorphine and ketamine are C-III. Hydromorphone and fentanyl are C-II. Butorphanol is C-IV."],
+[0,3,"Collies may react badly to ivermectin because of a mutation in:","MDR1 (ABCB1)","DEA 1.1","Factor VIII","Taurine transport","The MDR1 mutation lets some drugs cross into the brain. A cheek swab can screen dogs."],
+[0,3,"Giving an NSAID with a corticosteroid mainly raises the risk of:","GI ulceration","Hypoglycemia","Hyperkalemia","Bradycardia","Both reduce protective prostaglandins in the stomach. Protocols use a washout period."],
+[1,1,"An autoclave sterilizes with:","Steam under pressure","Ethylene oxide gas","UV light","Boiling water","Pressurized steam kills spores. Common cycles run at 121 °C (250 °F) or higher."],
+[1,1,"Surgical skin prep starts at the incision site and moves:","Outward toward the edges","Inward from the edges","Back and forth randomly","Only with the hair growth","Center to periphery keeps dirtier skin from being dragged over the incision."],
+[1,1,"Indicator tape on the outside of a surgical pack proves:","The pack went through a sterilization cycle","The contents are sterile","The pack is under a day old","The instruments are clean","Tape only shows exposure. An internal indicator confirms conditions inside the pack."],
+[1,1,"A circulating technician in surgery:","Is non-sterile and supplies the sterile team","Hands instruments while gowned","Makes the incision","Stays outside the OR","The circulator opens packs, adjusts lights and records, without touching sterile items."],
+[1,2,"Heat-sensitive items are often sterilized with:","Ethylene oxide gas","A steam autoclave","Dry heat at 300 °F","A chlorhexidine soak","Ethylene oxide works at low temperatures but needs aeration because the gas is toxic."],
+[1,2,"Metzenbaum scissors are designed for:","Delicate tissue dissection","Cutting suture","Cutting bone","Cutting bandages","Metzenbaums are fine scissors. Never cut suture with them."],
+[1,2,"Which needle holder has built-in scissors?","Olsen-Hegar","Mayo-Hegar","Castroviejo","Mathieu","Olsen-Hegar lets the surgeon tie and cut without switching instruments."],
+[1,2,"For a gowned and gloved person, the sterile zone is:","Front from chest to waist, and the sleeves","The whole gown, back included","Only the gloved hands","Everything above the shoulders","The back, below the waist and above the chest are non-sterile."],
+[1,2,"An ovariohysterectomy (OHE) removes:","Ovaries and uterus","Ovaries only","Uterus only","Testicles","OHE is the standard spay. An ovariectomy removes only the ovaries."],
+[1,3,"Which suture material is nonabsorbable?","Nylon","Polydioxanone (PDS)","Poliglecaprone 25","Polyglactin 910","Nylon is common for skin. PDS, Monocryl and Vicryl are absorbable."],
+[1,3,"Rochester-Carmalt forceps are commonly used to:","Clamp large tissue pedicles","Grasp delicate bowel","Hold a needle","Retract skin","Carmalts are used to clamp pedicles during a spay."],
+[1,3,"An ultrasonic instrument cleaner removes debris by:","Cavitation","Steam pressure","Ethylene oxide","UV radiation","Sound waves form tiny bubbles that implode and lift debris before sterilization."],
+[2,1,"How many permanent teeth does an adult dog have?","42","30","28","36","Adult dogs have 42, adult cats 30, and puppies 28 deciduous teeth."],
+[2,1,"How many permanent teeth does an adult cat have?","30","42","26","38","Cats have 30 permanent and 26 deciduous teeth."],
+[2,1,"Plaque that mineralizes on teeth becomes:","Calculus (tartar)","Enamel","Pulp","Cementum","Calculus has to be removed by scaling. Brushing won't take it off."],
+[2,2,"In the modified Triadan system, tooth 108 is the:","Right maxillary fourth premolar","Left maxillary canine","Right mandibular first molar","Left mandibular fourth premolar","Quadrant 1 is the right maxilla and 08 is the fourth premolar, the upper carnassial."],
+[2,2,"What does COHAT stand for?","Comprehensive Oral Health Assessment and Treatment","Canine Oral Hygiene and Tartar","Complete Oral Health Anesthetic Test","Cleaning Of Hard And Tartar","A COHAT is done under anesthesia: probing, charting, radiographs, scaling and polishing."],
+[2,2,"Which hand instrument is safe to use below the gumline?","Curette","Sickle scaler","Ultrasonic tip at full power","Extraction forceps","Curettes have a rounded back and toe. Sharp scalers stay above the gumline."],
+[2,2,"Polishing after scaling is done to:","Smooth the enamel so plaque sticks less","Whiten the teeth","Numb the gums","Remove the pulp","Scaling leaves micro-scratches that polishing smooths out."],
+[2,3,"Why limit ultrasonic scaler contact to a few seconds per tooth?","To prevent heat damage to the pulp","To save water","To protect the probe","To keep the patient awake","Long contact heats the tooth. Keep the tip moving with water spray."],
+[2,3,"Tooth resorption in cats is best confirmed with:","Dental radiographs","Visual exam only","Blood work","Urinalysis","Much of the lesion is below the gumline, so full-mouth radiographs are the standard."],
+[2,3,"The bisecting angle technique is mostly used to radiograph:","Maxillary teeth","Mandibular molars only","The thoracic spine","Long bones","The palate blocks parallel sensor placement for upper teeth."],
+[2,3,"AVDC periodontal stage 4 means attachment loss of:","More than 50%","Less than 25%","25–50%","None, gingivitis only","Stage 1 is gingivitis only. Stage 4 is advanced periodontitis."],
+[3,1,"Which blood tube is used for a CBC?","Lavender top (EDTA)","Red top","Light blue top","Gray top","EDTA preserves cell shape. Fill correctly and invert gently."],
+[3,1,"Reddish serum from ruptured red blood cells is called:","Hemolysis","Lipemia","Icterus","Clotting","Hemolysis can skew chemistry results. Use gentle draws and a proper needle size."],
+[3,1,"Urine specific gravity is read with a:","Refractometer","Hemocytometer","Centrifuge","Glucometer","A refractometer reads USG and total solids from a few drops."],
+[3,1,"The most sterile urine sample comes from:","Cystocentesis","Free catch","The litter box","Expressing the bladder","A needle placed into the bladder through the body wall avoids contamination."],
+[3,2,"A light blue top (sodium citrate) is used for:","Coagulation tests","Chemistry panels","Blood typing only","Glucose","The blood-to-citrate ratio matters, so fill to the line."],
+[3,2,"A gray top tube (sodium fluoride) is mainly used for:","Glucose","CBC","Coagulation","Blood culture","Fluoride stops cells from using up glucose in the tube."],
+[3,2,"In a spun hematocrit tube, the buffy coat contains:","White blood cells and platelets","Red blood cells","Plasma proteins only","Serum","The thin white layer above the red cells is the buffy coat."],
+[3,2,"Coffin-lid shaped crystals in urine sediment are:","Struvite","Calcium oxalate","Bilirubin","Cystine","Struvite is common in alkaline urine."],
+[3,2,"Fecal flotation works because parasite eggs are:","Less dense than the solution","Magnetic","Heavier than the solution","Sticky","The solution's higher specific gravity floats eggs up to the coverslip."],
+[3,2,"Peanut-shaped yeast on ear cytology is:","Malassezia","Candida","Cryptococcus","Microsporum","Malassezia pachydermatis is a common cause of ear infections."],
+[3,2,"A modified Knott's test looks for:","Heartworm microfilariae","Giardia cysts","Ear mites","Tapeworm segments","It concentrates microfilariae so you can identify them."],
+[3,3,"Calcium oxalate monohydrate crystals may point to:","Ethylene glycol toxicity","Normal cat urine","A liver shunt only","Overhydration","Picket-fence-shaped monohydrate crystals are a classic antifreeze finding."],
+[3,3,"Cloudy white serum after a meal is called:","Lipemia","Hemolysis","Icterus","Polycythemia","Fat in the sample interferes with tests. Fasting before the draw prevents it."],
+[3,3,"Demodex mites are best found with a:","Deep skin scrape","Tape impression only","Fecal float","Wood's lamp","Demodex lives in hair follicles, so scrape until capillary bleeding."],
+[3,3,"Diff-Quik is which type of stain?","Romanowsky","Gram","Acid-fast","New methylene blue","It is a fast Romanowsky-type stain for blood smears and cytology."],
+[3,3,"Toxocara canis can cause which condition in people?","Visceral larva migrans","Cutaneous larva migrans","Toxoplasmosis","Giardiasis","Roundworm larvae migrate through organs. Hookworms cause cutaneous larva migrans."],
+[4,1,"Normal rectal temperature for an adult dog or cat is:","100.5–102.5 °F","97–99 °F","103.5–105 °F","98.6 °F","Above 103 °F is a fever worth flagging."],
+[4,1,"A normal capillary refill time is:","Under 2 seconds","3–4 seconds","5–6 seconds","Over 10 seconds","A long CRT suggests poor perfusion, shock or dehydration."],
+[4,1,"The cephalic vein is on the:","Front leg","Hind leg","Neck","Tail","It runs on the front of the forelimb and is a common IV catheter site."],
+[4,1,"Signalment includes:","Species, breed, age, sex and reproductive status","Vaccine history","Owner address","Diet and exercise","A “2 y/o MN Lab” is a 2-year-old neutered male Labrador."],
+[4,1,"Normal resting respiratory rate for a dog is about:","10–30 breaths/min","40–60 breaths/min","2–6 breaths/min","60–90 breaths/min","Count for 15 seconds and multiply by 4. Panting isn't a resting rate."],
+[4,1,"An Elizabethan collar is used to:","Stop licking or chewing","Restrain for blood draws","Keep the patient warm","Measure the neck","E-collars protect incisions, bandages and eyes."],
+[4,1,"Which species cannot vomit?","Rabbits","Dogs","Cats","Ferrets","Rabbits usually don't need to fast before anesthesia."],
+[4,1,"A female ferret is called a:","Jill","Queen","Jenny","Doe","Jill is a female ferret, queen a female cat, and doe a female rabbit."],
+[4,1,"Which vaccine is required by law in most US states?","Rabies","Bordetella","Leptospirosis","Lyme","Rabies is zoonotic and fatal, so states mandate it."],
+[4,1,"Heartworm is transmitted by:","Mosquitoes","Fleas","Ticks","Contaminated food","Year-round prevention is the standard."],
+[4,2,"Yellow (icteric) mucous membranes indicate:","Elevated bilirubin","Low oxygen","Normal pigment","Carbon monoxide","Icterus points to liver disease, bile obstruction or hemolysis."],
+[4,2,"Heart rate range for a healthy adult cat:","140–220 bpm","40–60 bpm","60–90 bpm","250–350 bpm","Cats run faster than dogs and often higher in the clinic from stress."],
+[4,2,"In cats, the hind leg vein most used for blood draws is the:","Medial saphenous","Lateral saphenous","Cephalic","Femoral artery","Dogs usually get the lateral saphenous. Cats' medial saphenous is easier to reach."],
+[4,2,"On a 9-point body condition scale, the ideal score is:","4–5","1–2","7–8","9","Ribs are easy to feel and the waist is visible from above."],
+[4,2,"A Doppler blood pressure reading measures:","Systolic pressure","Diastolic pressure","Mean pressure only","Oxygen saturation","Oscillometric devices give systolic, diastolic and mean values."],
+[4,2,"A Robert Jones bandage is:","A bulky padded bandage to stabilize a limb","A tail wrap","A chest bandage","A sterile drape","It temporarily immobilizes fractures below the elbow or stifle."],
+[4,2,"Fluorescein stain helps detect:","Corneal ulcers","Glaucoma","Cataracts","Dry eye","The stain sticks to exposed corneal stroma and glows green."],
+[4,2,"The Schirmer tear test measures:","Tear production","Eye pressure","Retinal health","Corneal thickness","Under 15 mm/min suggests dry eye (KCS)."],
+[4,2,"Cats need dietary taurine. A deficiency can cause:","Dilated cardiomyopathy","Hip dysplasia","Hyperthyroidism","Hairballs","Low taurine also causes retinal degeneration."],
+[4,2,"Guinea pigs must get which vitamin from their diet?","Vitamin C","Vitamin K","Vitamin B12","Vitamin A","Guinea pigs can't make vitamin C. A deficiency causes scurvy."],
+[4,2,"Reptiles kept without UVB light are at risk of:","Metabolic bone disease","Heartworm","Hyperthyroidism","Ringworm","UVB lets reptiles make vitamin D3 so they can use calcium."],
+[4,2,"Rabbit and guinea pig incisors grow continuously, so they need:","High-fiber hay to wear them down","Daily brushing","Soft food only","Calcium supplements","Without enough hay, malocclusion is common."],
+[4,2,"Canine parvovirus classically causes:","Bloody vomiting and diarrhea","Coughing and sneezing","Hair loss","Joint swelling","Isolate suspected cases and use a disinfectant proven to kill parvo."],
+[4,2,"Kennel cough is most commonly linked to:","Bordetella bronchiseptica","Leptospira","Toxoplasma","Clostridium","Bordetella often teams up with parainfluenza virus."],
+[4,2,"Fleas are the intermediate host for which tapeworm?","Dipylidium caninum","Taenia pisiformis","Echinococcus","Toxocara canis","Pets get it by swallowing infected fleas while grooming."],
+[4,2,"The FVRCP vaccine protects cats against:","Herpesvirus, calicivirus and panleukopenia","FIV, FeLV and rabies","Ringworm and fleas","Feline coronavirus","FVRCP is a core feline vaccine."],
+[4,2,"Microsporum canis may fluoresce apple-green under a:","Wood's lamp","Otoscope","Ophthalmoscope","Doppler","Only about half of cases glow. A fungal culture confirms ringworm."],
+[4,3,"A normal canine intraocular pressure is roughly:","15–25 mmHg","40–60 mmHg","0–5 mmHg","80–100 mmHg","Pressures well above this suggest glaucoma, which is an emergency."],
+[4,3,"Recumbent patients should be turned about every:","4 hours","24 hours","15 minutes","Never","Turning prevents pressure sores and lung congestion on the down side."],
+[4,3,"When restraining a bird, avoid pressing on the chest because:","Birds need body wall movement to breathe","It causes feather loss","It breaks the keel","It triggers vomiting","Birds have no diaphragm, so chest pressure can suffocate them."],
+[4,3,"Which disinfectant is NOT reliable against parvovirus?","Quaternary ammonium alone","Diluted bleach","Accelerated hydrogen peroxide","Potassium peroxymonosulfate","Parvo is a tough non-enveloped virus that many quats alone don't kill."],
+[4,3,"Feline infectious peritonitis (FIP) comes from a mutated:","Feline coronavirus","Feline herpesvirus","Calicivirus","FeLV","The enteric coronavirus mutates inside the cat."],
+[4,3,"Hard paw pads plus respiratory and neurologic signs suggest:","Canine distemper","Parvovirus","Lyme disease","Kennel cough","Distemper used to be called hard pad disease."],
+[5,1,"Bone looks white on a radiograph because it is:","Radiopaque","Radiolucent","Anechoic","Hypoechoic","Dense tissue blocks X-rays. Air is radiolucent and looks black."],
+[5,1,"A patient lying on its back is in:","Dorsal recumbency","Ventral recumbency","Lateral recumbency","Sternal recumbency","Dorsal recumbency is used for VD views and many surgeries."],
+[5,1,"ALARA in radiation safety stands for:","As Low As Reasonably Achievable","All Lead At Radiograph Area","Always Limit All Radiation","Animal Lying And Restrained Appropriately","Use time, distance and shielding to keep your dose low."],
+[5,2,"A dosimetry badge should be worn:","Outside the lead apron at collar level","Under the lead apron","On the X-ray table","In a pocket","Outside the apron shows what your thyroid and eyes receive."],
+[5,2,"In a VD view, the X-ray beam enters the:","Ventral surface","Dorsal surface","Left side","Right side","Views are named from entry to exit."],
+[5,2,"Thoracic radiographs are taken at:","Peak inspiration","End expiration","Mid-swallow","Any time","Full lungs give the best contrast. Abdominal films are taken at end expiration."],
+[5,2,"Measure the patient for technique at the:","Thickest part of the area being imaged","Thinnest part","Base of the tail","Skull only","This sets enough penetration for the whole field."],
+[5,3,"kVp mainly controls:","Penetration and contrast","Exposure time only","Number of X-rays only","Film size","kVp sets beam energy. mAs controls the quantity of X-rays and density."],
+[5,3,"On ultrasound, urine in the bladder appears:","Black (anechoic)","White (hyperechoic)","Gray (isoechoic)","Striped","Fluid passes sound without echoes, so it looks black."],
+[5,3,"The standard OFA hip view is a:","VD view with hind legs extended","Lateral pelvis view","DV view with legs tucked","Skyline view","The legs are extended and parallel with the patellae centered."],
+[6,1,"Patients fast before anesthesia mainly to reduce the risk of:","Aspiration","Hypothermia","Hypertension","Hair loss","Vomiting under anesthesia can lead to aspiration pneumonia."],
+[6,1,"Which reflex helps judge anesthetic depth?","Palpebral reflex","Knee-jerk reflex","Startle reflex","Scratch reflex","Palpebral reflex, jaw tone and eye position all help judge depth."],
+[6,2,"Normal end-tidal CO2 under anesthesia is about:","35–45 mmHg","5–10 mmHg","60–80 mmHg","95–100 mmHg","High ETCO2 means the patient is hypoventilating."],
+[6,2,"SpO2 should ideally stay above:","95%","70%","85%","50%","Below 90%, check the tube, oxygen flow and probe placement right away."],
+[6,2,"Cats on ketamine usually keep their eyes open, so you should:","Apply eye lubricant","Tape the eyes shut","Ignore the eyes","Flush with saline every minute","Lube prevents corneal drying and ulcers."],
+[6,2,"Exhausted soda lime typically turns:","Purple","Green","Bright yellow","Black","The indicator dye changes color as the granules fill with CO2."],
+[6,2,"The pop-off (APL) valve should be:","Open except when giving a manual breath","Closed the whole procedure","Removed during surgery","Open only at induction","A closed pop-off builds pressure that can damage the lungs."],
+[6,2,"Non-rebreathing circuits are generally used for patients under about:","5–7 kg","20 kg","50 kg","1 kg","Small patients can't easily breathe through a circle system's valves."],
+[6,2,"Brachycephalic dogs should be extubated:","As late as safely possible, once they swallow","Right after the last suture","Before the gas is off","While deeply asleep","Their narrow airways can obstruct, so keep the tube until they can protect the airway."],
+[6,3,"Oxygen flow for a non-rebreathing circuit is about:","200–300 mL/kg/min","5–10 mL/kg/min","20–40 mL/kg/min","1–2 L/kg/min","High flow flushes out CO2 since there is no absorbent."],
+[6,3,"MAC is the inhalant concentration that:","Prevents movement in 50% of patients","Kills 50% of patients","Puts every patient to sleep","Is safe for 24 hours","A lower MAC means a more potent inhalant."],
+[6,3,"A mean arterial pressure below about ___ mmHg is concerning under anesthesia.","60","120","100","90","Below 60, kidneys and brain may not get enough blood flow."],
+[6,3,"Propofol given too quickly commonly causes:","Apnea","Hypertension","Seizures","Hyperthermia","Give it slowly to effect and be ready to ventilate."],
+[6,3,"Compared with isoflurane, sevoflurane gives:","Faster induction and recovery","Slower recovery","No need for a vaporizer","Stronger analgesia","Lower blood solubility makes sevoflurane faster on and off."],
+[7,1,"Triage priorities follow:","Airway, Breathing, Circulation","Bloodwork, Bandage, Chart","Weight, Temperature, Vaccines","Owner, Payment, Patient","Life-threatening problems come first, in that order."],
+[7,1,"GDV (bloat) is most common in:","Large, deep-chested dogs","Toy breeds","Cats","Rabbits","Great Danes, shepherds and standard poodles are high risk."],
+[7,2,"The immediate danger in a blocked male cat is:","Hyperkalemia","Hypoglycemia","Hypercalcemia","Hypernatremia","High potassium can cause bradycardia and fatal arrhythmias."],
+[7,2,"RECOVER guidelines recommend chest compressions at:","100–120 per minute","40–60 per minute","150–180 per minute","20 per minute","Push hard and fast, allow full recoil, and switch compressors every 2 minutes."],
+[7,2,"During CPR on an intubated patient, ventilate at about:","10 breaths per minute","30 breaths per minute","2 breaths per minute","60 breaths per minute","Over-ventilating reduces blood return to the heart."],
+[7,2,"The antidote for anticoagulant rodenticide toxicity is:","Vitamin K1","Atropine","Fomepizole","Naloxone","These poisons block vitamin K recycling. K1 restores clotting over weeks."],
+[7,2,"Fomepizole is the antidote for:","Ethylene glycol","Chocolate","Xylitol","Lilies","It blocks the enzyme that turns antifreeze into toxic metabolites."],
+[7,2,"When cooling a heatstroke patient, stop active cooling at about:","103 °F","98 °F","100 °F","106 °F","Stopping there prevents overshooting into hypothermia."],
+[7,2,"Xylitol ingestion in dogs can cause:","Hypoglycemia and liver failure","Kidney stones","High calcium","Hair loss","Xylitol triggers a large insulin release in dogs."],
+[7,2,"Lily ingestion in cats mainly damages the:","Kidneys","Lungs","Heart","Skin","Even pollen from true lilies can cause acute kidney injury."],
+[7,2,"Grapes and raisins can cause what in dogs?","Acute kidney injury","Liver torsion","Blindness","Hyperthyroidism","The toxic dose is unpredictable, so treat any ingestion seriously."],
+[7,2,"The main toxic compound in chocolate for dogs is:","Theobromine","Xylitol","Ethylene glycol","Capsaicin","Dark and baking chocolate carry the most theobromine."],
+[7,3,"Acetaminophen is dangerous to cats because it causes:","Methemoglobinemia","Hyperkalemia","Retinal detachment","Bone fractures","Gums turn brown as hemoglobin is oxidized."],
+[7,3,"Weak pulses, pale gums, a fast heart rate and long CRT suggest:","Hypovolemic shock","Normal stress","Hyperthyroidism","Hypertension","Expect oxygen, IV access and fluid resuscitation per the vet's orders."],
+[7,3,"Removing fluid or air from around the lungs is called:","Thoracocentesis","Cystocentesis","Abdominocentesis","Arthrocentesis","It can quickly relieve dyspnea from pleural effusion or pneumothorax."],
+[7,3,"The universal blood donor type for dogs is:","DEA 1 negative","DEA 1 positive","Type A","Type AB","Cats have no universal donor, so always type them first."],
+[7,3,"Most cats have which blood type?","Type A","Type B","Type AB","DEA 1.1","Cats carry strong natural antibodies, so a mismatched transfusion can be fatal."],
+[8,1,"A painful cat is most likely to:","Hide, hunch and squint","Knead and play","Eat more","Seek attention","Cats hide pain well. Posture and face are key clues."],
+[8,1,"Which drug is a full mu opioid agonist?","Hydromorphone","Butorphanol","Meloxicam","Gabapentin","Hydromorphone, methadone, morphine and fentanyl are full mu agonists."],
+[8,2,"Multimodal analgesia means:","Combining drugs that act at different points in the pain pathway","One drug at a high dose","Local blocks only","Switching drugs hourly","Combining classes improves control at lower doses of each."],
+[8,2,"Preemptive analgesia is given:","Before the painful stimulus","Only after the patient cries","At discharge","Only for dentals","Treating pain early reduces wind-up and total drug needs."],
+[8,2,"The Feline Grimace Scale scores pain using:","Ears, eyes, muzzle, whiskers and head position","Heart rate only","Blood work","Weight loss","It is a quick, validated facial pain score for cats."],
+[8,2,"A common side effect of morphine in dogs is:","Vomiting","Hypertension","Seizures","Hair loss","Morphine often causes nausea and vomiting, especially IM or SC."],
+[8,3,"NSAIDs reduce pain and inflammation by inhibiting:","COX enzymes","Opioid receptors","Sodium channels","NMDA receptors","Less COX activity means fewer prostaglandins, which also explains GI and kidney risks."],
+[8,3,"Compared with lidocaine, bupivacaine as a local block has:","Slower onset and longer duration","Faster onset, shorter duration","No nerve effect","The same profile","Lidocaine works fast. Bupivacaine lasts for hours."],
+[8,3,"Gabapentin is often used for:","Chronic pain and pre-visit anxiety in cats","Reversing sedation","Heartworm","Fluid therapy","It is popular for low-stress vet visits."],
+[8,3,"NSAIDs should be avoided in patients that are:","Dehydrated or have kidney disease","Young and healthy","Recovering from a spay","On flea prevention","NSAIDs reduce kidney blood flow, which is risky when perfusion is low."],
+[9,1,"Which task is outside a credentialed vet tech's scope?","Diagnosing and prescribing","Placing IV catheters","Monitoring anesthesia","Taking radiographs","Vet techs cannot diagnose, give a prognosis, prescribe or perform surgery."],
+[9,1,"SOAP in medical records stands for:","Subjective, Objective, Assessment, Plan","Signs, Observations, Actions, Prognosis","Species, Owner, Age, Patient","Symptoms, Orders, Antibiotics, Pain","SOAP notes let the whole team follow a case."],
+[9,2,"To correct an error in a paper record, you:","Draw one line through it, then initial and date","Use correction fluid","Erase it","Tear out the page","Records are legal documents, so the original must stay readable."],
+[9,2,"Before euthanasia, the clinic must have:","Signed owner consent","A second vet present","A necropsy request","Payment only","Consent forms confirm the owner's decision and aftercare wishes."],
+[9,2,"Safety Data Sheets (SDS) for chemicals are required by:","OSHA","DEA","AAVSB","FDA","Every hazardous chemical in the clinic needs an accessible SDS."],
+[9,3,"A vet can only prescribe when there is a valid:","VCPR (veterinarian-client-patient relationship)","Pet insurance policy","Microchip registration","Rabies certificate","A VCPR means the vet has examined the patient and taken responsibility for its care."],
+[9,3,"Which zoonotic disease spreads through the urine of infected animals?","Leptospirosis","Parvovirus","FIV","Kennel cough","Wear gloves when handling suspected lepto patients and their urine."]
+];
+
+// ---------- Glossary: [term, meaning, category] ----------
+const TERMS=[
+["SID","Once a day","Orders"],["BID","Twice a day","Orders"],["TID","Three times a day","Orders"],["QID","Four times a day","Orders"],
+["q8h","Every 8 hours","Orders"],["PRN","As needed","Orders"],["NPO","Nothing by mouth (no food or water)","Orders"],["PO","By mouth","Orders"],
+["SC / SQ","Under the skin (subcutaneous)","Orders"],["IM","Into the muscle","Orders"],["IV","Into the vein","Orders"],["CRI","Constant rate infusion","Orders"],
+["OU","Both eyes","Orders"],["OD","Right eye","Orders"],["OS","Left eye","Orders"],["AU","Both ears","Orders"],["AD","Right ear","Orders"],["AS","Left ear","Orders"],
+["Rx","Prescription","Orders"],["mg/kg","Milligrams of drug per kilogram of body weight","Orders"],
+["Hx","History","Charting"],["Dx","Diagnosis","Charting"],["DDx","Differential diagnoses (the possible causes)","Charting"],["Tx","Treatment","Charting"],["Px","Prognosis","Charting"],
+["TPR","Temperature, pulse and respiration","Charting"],["MM","Mucous membranes (gum color)","Charting"],["CRT","Capillary refill time","Charting"],
+["BAR","Bright, alert, responsive","Charting"],["QAR","Quiet, alert, responsive","Charting"],["WNL","Within normal limits","Charting"],["NSF","No significant findings","Charting"],
+["ADR","“Ain't doing right”: vague signs of illness","Charting"],["PE","Physical exam","Charting"],["BCS","Body condition score","Charting"],["DNR","Do not resuscitate","Charting"],["SOAP","Subjective, Objective, Assessment, Plan","Charting"],
+["MN","Male neutered","Signalment"],["FS","Female spayed","Signalment"],["MI / MC","Male intact","Signalment"],["FI","Female intact","Signalment"],
+["DSH","Domestic shorthair cat","Signalment"],["DLH","Domestic longhair cat","Signalment"],["K9","Canine (dog)","Signalment"],["y/o","Years old","Signalment"],
+["V/D","Vomiting and diarrhea","Clinical signs"],["PU/PD","Drinking and urinating more than normal","Clinical signs"],["Dyspnea","Difficult, labored breathing","Clinical signs"],
+["Tachycardia","Fast heart rate","Clinical signs"],["Bradycardia","Slow heart rate","Clinical signs"],["Pruritus","Itching","Clinical signs"],["Anorexia","Not eating at all","Clinical signs"],
+["Hyporexia","Eating less than normal","Clinical signs"],["Melena","Dark, tarry stool from digested blood","Clinical signs"],["Hematochezia","Fresh red blood in the stool","Clinical signs"],
+["Hematuria","Blood in the urine","Clinical signs"],["Stranguria","Straining to urinate","Clinical signs"],["Tenesmus","Straining to defecate","Clinical signs"],
+["Epistaxis","Nosebleed","Clinical signs"],["Ataxia","Wobbly, uncoordinated gait","Clinical signs"],["Icterus","Yellow skin or gums (jaundice)","Clinical signs"],
+["Pyrexia","Fever","Clinical signs"],["FB","Foreign body (something swallowed)","Clinical signs"],
+["CBC","Complete blood count","Diagnostics"],["Chem","Blood chemistry panel","Diagnostics"],["UA","Urinalysis","Diagnostics"],["PCV/TS","Packed cell volume and total solids","Diagnostics"],
+["BUN","Blood urea nitrogen, a kidney value","Diagnostics"],["ALT","Liver enzyme","Diagnostics"],["T4","Thyroid hormone level","Diagnostics"],["ECG","Electrical tracing of the heart","Diagnostics"],
+["SpO2","Blood oxygen saturation from a pulse oximeter","Diagnostics"],["ETCO2","Exhaled carbon dioxide at the end of a breath","Diagnostics"],["FNA","Fine needle aspirate","Diagnostics"],
+["Rads","Radiographs (X-rays)","Diagnostics"],["AUS","Abdominal ultrasound","Diagnostics"],["USG","Urine specific gravity","Diagnostics"],
+["OHE","Ovariohysterectomy (spay)","Procedures"],["Neuter","Castration of a male","Procedures"],["COHAT","Comprehensive oral health assessment and treatment","Procedures"],
+["IVC","Intravenous catheter","Procedures"],["Cysto","Cystocentesis (needle urine sample)","Procedures"],["ET tube","Endotracheal tube for the airway","Procedures"],
+["Sx","Surgery","Procedures"],["Euth","Euthanasia","Procedures"]
+];
+
+
+// ---------- Helpers ----------
+const $=id=>document.getElementById(id);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const rr=(g,x,y,w,h,r)=>{g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h);};
+
+// ---------- Levels ----------
+const LEVELS={
+ puppy:{name:"Puppy",start:360,max:620,acc:7,gap:1.0,dbl:500,bags:300,nets:120,lv:[1,1,2]},
+ tech:{name:"Vet Tech",start:430,max:760,acc:10,gap:.85,dbl:200,bags:100,nets:0,lv:[1,2,2,3]},
+ vtne:{name:"VTNE",start:510,max:880,acc:13,gap:.74,dbl:0,bags:0,nets:0,lv:[2,3,3]}};
+let level="puppy";
+const bestOf=l=>+store.get("buddyBest_"+l)||0;
+function paintBests(){document.querySelectorAll("[data-best]").forEach(el=>el.textContent="Best "+bestOf(el.dataset.best));}
+paintBests();
+let missed=[];
+
+// ---------- Theme colors for the canvas ----------
+let colors={};
+const CKEYS=["sky","sky2","hill","hill2","house","roof","ground","path","pathline","cloud","sun","ink","surface","brand","coral","green","yellow","red"];
+function readColors(){const s=getComputedStyle(document.documentElement);CKEYS.forEach(k=>colors[k]=s.getPropertyValue("--"+k).trim());}
+readColors();
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",readColors)}catch(e){}
+new MutationObserver(readColors).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+const C=()=>colors;
+
+// ---------- Canvas ----------
+const cv=$("cv"),ctx=cv.getContext("2d"),stage=$("stage");
+const peek=$("peek"),pctx=peek.getContext("2d");
+let LH=300,LW=600,scale=1,dpr=1,PORT=false;
+function resize(){const r=stage.getBoundingClientRect();if(!r.width)return;dpr=Math.min(window.devicePixelRatio||1,2);
+ cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
+ const port=r.height>r.width;scale=Math.min(r.height/320,r.width/(port?440:760));LW=r.width/scale;LH=r.height/scale;PORT=port;
+ if(S&&S.dog&&S.dog.vy===0)S.dog.y=GY();}
+function resizePeek(){const r=peek.getBoundingClientRect();const d=Math.min(window.devicePixelRatio||1,2);peek.width=Math.round(r.width*d);peek.height=Math.round(r.height*d);}
+new ResizeObserver(resize).observe(stage);new ResizeObserver(resizePeek).observe(peek);
+const TOUCH=(()=>{try{return matchMedia("(pointer:coarse)").matches}catch(e){return false}})();
+const GY=()=>TOUCH?Math.round(LH*(PORT?0.5:0.58)):(PORT?Math.round(LH*0.66):LH-Math.max(46,LH*0.12));
+
+// ---------- State ----------
+let S;
+function fresh(){const L=LEVELS[level];return{mode:"ready",t:0,dist:0,score:0,speed:L.start,bones:0,lives:3,hits:0,qRight:0,qTotal:0,
+ dog:{x:70,y:GY(),vy:0},duck:false,duckUntil:0,dk:0,inv:0,obs:[],items:[],spawnIn:1.4,boneIn:2.2,milestone:500};}
+S=fresh();
+
+// ---------- Questions ----------
+const pools={1:[],2:[],3:[]};
+function nextQ(){const L=LEVELS[level];const lv=L.lv[Math.floor(Math.random()*L.lv.length)];
+ if(!pools[lv].length)pools[lv]=shuffle(BANK.filter(q=>q[1]===lv));const r=pools[lv].pop();
+ return{d:r[0],topic:DOMAINS[r[0]][0],q:r[2],a:[r[3],r[4],r[5],r[6]],e:r[7]};}
+
+// ---------- Views ----------
+const ov={ready:$("readyOv"),quiz:$("quizOv"),over:$("overOv"),pause:$("pauseOv")};
+function show(name){for(const k in ov)ov[k].hidden=k!==name;}
+function toLanding(){S.mode="ready";D.running=false;document.body.style.overflow="";
+ try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}
+ $("play").hidden=true;$("drill").hidden=true;$("landing").hidden=false;paintBests();paintTermsBest();window.scrollTo({top:0});}
+function pickLevel(l){level=l;$("landing").hidden=true;$("play").hidden=false;document.body.style.overflow="hidden";
+ const chip=$("lvlChip");chip.textContent=LEVELS[l].name;chip.dataset.level=l;
+ try{const el=document.documentElement;if(el.requestFullscreen&&!document.fullscreenElement)el.requestFullscreen().catch(()=>{})}catch(e){}
+ $("readyKick").textContent=LEVELS[l].name+" level";$("bestLine").textContent="Best "+bestOf(l);
+ requestAnimationFrame(()=>{resize();S=fresh();show("ready");hud(true);$("goBtn").focus({preventScroll:true});});}
+document.querySelectorAll(".lvl").forEach(b=>b.onclick=()=>pickLevel(b.dataset.level));
+$("changeBtn").onclick=toLanding;$("lvlBtn").onclick=toLanding;$("pauseExit").onclick=toLanding;
+$("goBtn").onclick=start;$("againBtn").onclick=start;$("resumeBtn").onclick=resume;
+$("pauseBtn").onclick=()=>{if(S.mode==="run")pause();else if(S.mode==="pause")resume();};
+
+function start(){resize();S=fresh();missed=[];S.mode="run";show(null);hud(true);showHints();}
+let hintT;function showHints(){if(TOUCH)return;const h=$("hints");h.hidden=false;h.classList.remove("fade");clearTimeout(hintT);hintT=setTimeout(()=>h.classList.add("fade"),3500);}
+function pause(){S.mode="pause";show("pause");$("resumeBtn").focus({preventScroll:true})}
+function resume(){S.mode="run";show(null)}
+
+// ---------- Input ----------
+let keyDuck=false,swipe=null;
+function jump(){if(S.mode!=="run")return;const d=S.dog;if(d.y>=GY()-0.5)d.vy=-740;}
+addEventListener("keydown",e=>{
+ if(!$("drill").hidden){drillKey(e);return}
+ if($("play").hidden||e.target.tagName==="INPUT")return;
+ const k=e.key;
+ if(S.mode==="quiz"&&/^[1-4]$/.test(k)){const b=$("qOpts").children[+k-1];if(b&&!b.disabled)b.click();return}
+ if(k===" "||k==="ArrowUp"||k==="w"||k==="W"){
+   if(e.target.tagName==="BUTTON"&&S.mode!=="run")return;
+   e.preventDefault();
+   if(S.mode==="ready"||S.mode==="over")start();else if(S.mode==="pause")resume();else jump();
+ }
+ if(k==="ArrowDown"||k==="s"||k==="S"){e.preventDefault();keyDuck=true;}
+ if(k==="p"||k==="P"||k==="Escape"){if(S.mode==="run")pause();else if(S.mode==="pause")resume();}
+});
+addEventListener("keyup",e=>{if(e.key==="ArrowDown"||e.key==="s"||e.key==="S")keyDuck=false;});
+addEventListener("blur",()=>{keyDuck=false;swipe=null;});
+// Swipe up = jump. Swipe down = duck (held while the finger stays down, at least 0.55 s).
+const SWIPE=28;
+stage.addEventListener("pointerdown",e=>{if(e.target!==cv)return;e.preventDefault();
+ if(S.mode==="ready"){start();return}if(S.mode!=="run")return;
+ swipe={id:e.pointerId,y:e.clientY,done:false,down:false};try{cv.setPointerCapture(e.pointerId)}catch(_){}});
+cv.addEventListener("pointermove",e=>{if(!swipe||e.pointerId!==swipe.id||S.mode!=="run")return;const dy=e.clientY-swipe.y;
+ if(!swipe.done&&dy<-SWIPE){swipe.done=true;jump();}
+ else if(!swipe.done&&dy>SWIPE){swipe.done=true;swipe.down=true;S.duckUntil=S.t+0.55;}
+ if(swipe.done&&swipe.down&&dy<-SWIPE){swipe.down=false;S.duckUntil=0;jump();}});
+const endSwipe=e=>{if(swipe&&e.pointerId===swipe.id){if(swipe.down)S.duckUntil=Math.max(S.duckUntil,S.t+0.15);swipe=null;}};
+cv.addEventListener("pointerup",endSwipe);cv.addEventListener("pointercancel",endSwipe);
+
+let toastT;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),1400)}
+
+// ---------- Question on every hit ----------
+const OBNAME={vax:"Poked by a flying vaccine",hydrant:"Bonked a hydrant",cone:"Tripped on a cone collar",tub:"Splashed into the bath tub",bags:"Crashed into the kibble bags"};
+function askQ(kind){
+ S.mode="quiz";S.hits++;show("quiz");const Q=nextQ();
+ const order=shuffle(Q.a.map((txt,i)=>({txt,ok:i===0})));
+ $("qTopic").textContent=OBNAME[kind]+" · "+Q.topic;$("qText").textContent=Q.q;
+ const box=$("qOpts");box.innerHTML="";$("qExplain").hidden=true;$("qNext").hidden=true;
+ order.forEach((o,i)=>{const b=document.createElement("button");b.className="opt";b.id="opt"+i;
+  const k=document.createElement("span");k.className="k";k.textContent=i+1;const sp=document.createElement("span");sp.textContent=o.txt;b.append(k,sp);
+  b.onclick=()=>answer(o.ok,b,order,Q);box.appendChild(b)});
+ hud(true);box.firstChild.focus({preventScroll:true});
+}
+function answer(ok,btn,order,Q){
+ S.qTotal++;if(ok)S.qRight++;else S.lives--;
+ [...$("qOpts").children].forEach((b,i)=>{b.disabled=true;if(order[i].ok)b.classList.add("right")});
+ if(!ok){btn.classList.add("wrong");missed.unshift({q:Q.q,a:Q.a[0]});}
+ const ex=$("qExplain");ex.hidden=false;ex.className="explain"+(ok?"":" bad");
+ ex.textContent=(ok?"Correct, paw saved. ":S.lives>0?"Not quite, you lost a paw. ":"Not quite, that was your last paw. ")+Q.e;
+ const next=$("qNext");next.hidden=false;next.innerHTML="";const b=document.createElement("button");b.className="btn";
+ if(S.lives>0){b.textContent="Keep running";b.onclick=()=>{S.recover=Math.max(S.recover||0,S.speed);S.speed=Math.max(LEVELS[level].start*0.8,S.speed*0.6);toast("Easing back in");S.inv=1.4;S.obs=S.obs.filter(o=>o.x>S.dog.x+220);S.mode="run";show(null);hud(true)};}
+ else{b.textContent="End shift";b.onclick=gameOver;}
+ next.appendChild(b);hud(true);b.focus({preventScroll:true});
+}
+function gameOver(){
+ S.mode="over";const sc=Math.floor(S.score);const nb=sc>bestOf(level);if(nb)store.set("buddyBest_"+level,sc);
+ $("overTitle").textContent=nb?"New best score!":"Good run, Buddy";
+ $("overText").textContent=`${LEVELS[level].name} level · score ${sc} · ${S.bones} bones · ${S.qRight} of ${S.qTotal} questions right.${missed.length?" Review what you missed:":""}`;
+ const ol=$("notes");ol.innerHTML="";
+ missed.slice(0,15).forEach(m=>{const li=document.createElement("li");const b=document.createElement("b");b.textContent=m.a;li.append(b,document.createTextNode(m.q));ol.appendChild(li)});
+ ol.hidden=!missed.length;
+ show("over");hud(true);$("againBtn").focus({preventScroll:true});
+}
+
+// ---------- HUD ----------
+const PAW='<svg viewBox="0 0 24 24"><g fill="currentColor"><ellipse cx="12" cy="16" rx="5.5" ry="4.5"/><circle cx="5.5" cy="10" r="2.4"/><circle cx="9.5" cy="5.8" r="2.4"/><circle cx="14.5" cy="5.8" r="2.4"/><circle cx="18.5" cy="10" r="2.4"/></g></svg>';
+let lastHud=0;
+function hud(force){const now=performance.now();if(!force&&now-lastHud<100)return;lastHud=now;
+ $("vScore").textContent=Math.floor(S.score);$("vBones").textContent=S.bones;
+ $("vPaws").innerHTML=[0,1,2].map(i=>i<S.lives?PAW:PAW.replace("<svg",'<svg class="off"')).join("");}
+
+// ---------- Vet Terms ----------
+const D={mode:"tm",cat:"All",running:false,time:60,score:0,streak:0,top:0,missed:[],cur:null,lock:false,pool:[]};
+const DCATS=[...new Set(TERMS.map(t=>t[2]))];
+const bestFor=(c,m=D.mode)=>+store.get("buddyDrill_"+m+"_"+c)||0;
+function paintTermsBest(){let m=0;["tm","mt"].forEach(md=>["All",...DCATS].forEach(c=>{m=Math.max(m,bestFor(c,md))}));$("termsBest").textContent="Best "+m;}
+function renderMenu(){$("dAllBest").textContent="Best "+bestFor("All");$("dAllSub").textContent=TERMS.length+" terms · every section mixed";
+ const box=$("dCats");box.innerHTML="";DCATS.forEach(c=>{const b=document.createElement("button");b.className="dcat";
+  const n=TERMS.filter(t=>t[2]===c).length;b.textContent=c;const sm=document.createElement("small");sm.textContent=n+" terms · best "+bestFor(c);b.appendChild(sm);
+  b.onclick=()=>{D.cat=c;startDrill()};box.appendChild(b)});}
+function setMode(m){D.mode=m;$("mTM").setAttribute("aria-pressed",m==="tm");$("mMT").setAttribute("aria-pressed",m==="mt");renderMenu();}
+$("mTM").onclick=()=>setMode("tm");$("mMT").onclick=()=>setMode("mt");
+function drillView(v){$("dStart").hidden=v!=="start";$("dGame").hidden=v!=="game";$("dEnd").hidden=v!=="end";}
+function openDrill(){$("landing").hidden=true;$("play").hidden=true;$("drill").hidden=false;S.mode="ready";D.running=false;
+ drillView("start");renderMenu();window.scrollTo({top:0});$("dGo").focus({preventScroll:true});}
+function startDrill(){D.pool=TERMS.filter(t=>D.cat==="All"||t[2]===D.cat);D.running=true;D.time=60;D.score=0;D.streak=0;D.top=0;D.missed=[];D.cur=null;
+ $("dScore").textContent=0;$("dStreak").textContent=0;$("dBest").textContent=bestFor(D.cat);$("dFeed").textContent="";
+ drillView("game");window.scrollTo({top:0});nextTerm();}
+function nextTerm(){D.lock=false;let t;do{t=D.pool[Math.floor(Math.random()*D.pool.length)]}while(D.pool.length>1&&t===D.cur);D.cur=t;
+ const field=D.mode==="tm"?1:0;
+ const others=shuffle(D.pool.filter(x=>x[field]!==t[field])).reduce((acc,x)=>{if(acc.length<3&&!acc.includes(x[field]))acc.push(x[field]);return acc},[]);
+ const opts=shuffle([t[field],...others]);
+ const pr=$("dPrompt");pr.textContent=D.mode==="tm"?t[0]:t[1];pr.className="prompt"+(D.mode==="mt"?" long":"");
+ $("dTag").textContent=t[2];$("dAsk").textContent=D.mode==="tm"?"What does this mean on a chart?":"Which shorthand means this?";
+ const box=$("dOpts");box.innerHTML="";
+ opts.forEach((o,i)=>{const b=document.createElement("button");b.className="dopt"+(D.mode==="mt"?" mono":"");
+  const k=document.createElement("span");k.className="k";k.textContent=i+1;const sp=document.createElement("span");sp.textContent=o;b.append(k,sp);
+  b.onclick=()=>pickAnswer(o===t[field],b,t[field]);box.appendChild(b)});}
+function pickAnswer(ok,btn,right){if(!D.running||D.lock)return;D.lock=true;const f=$("dFeed");
+ [...$("dOpts").children].forEach(b=>{b.disabled=true;if(b.lastChild.textContent===right)b.classList.add("right")});
+ if(ok){D.score++;D.streak++;D.top=Math.max(D.top,D.streak);f.className="dfeed ok";f.textContent=D.streak>=5?"Correct · "+D.streak+" in a row":"Correct";setTimeout(()=>D.running&&nextTerm(),330);}
+ else{btn.classList.add("wrong");D.streak=0;D.time=Math.max(0,D.time-3);D.missed.push(D.cur);f.className="dfeed bad";f.textContent="Missed: “"+D.cur[0]+"” = "+D.cur[1]+" · −3 s";setTimeout(()=>D.running&&nextTerm(),1100);}
+ $("dScore").textContent=D.score;$("dStreak").textContent=D.streak;}
+function endDrill(){D.running=false;const nb=D.score>bestFor(D.cat);if(nb)store.set("buddyDrill_"+D.mode+"_"+D.cat,D.score);
+ $("dEndKick").textContent=(D.cat==="All"?"All terms":D.cat)+" · "+(D.mode==="tm"?"Term → meaning":"Meaning → term");
+ $("dEndTitle").textContent=nb?"New best: "+D.score:"Time's up: "+D.score;
+ $("dEndText").textContent=`Longest streak ${D.top}. ${D.missed.length?"Review the ones you missed:":"No misses. Clean round."}`;
+ const ul=$("dMissed");ul.innerHTML="";[...new Set(D.missed)].forEach(t=>{const li=document.createElement("li");const b=document.createElement("b");b.textContent=t[0];const sp=document.createElement("span");sp.textContent=t[1];li.append(b,sp);ul.appendChild(li)});
+ ul.hidden=!D.missed.length;drillView("end");paintTermsBest();$("dAgain").focus({preventScroll:true});}
+function drillTick(dt){if(!D.running)return;D.time-=dt;if(D.time<=0){D.time=0;endDrill();}
+ $("dTime").textContent=Math.ceil(D.time);$("dBar").style.width=(D.time/60*100)+"%";$("dTimer").classList.toggle("low",D.time<10);}
+function drillKey(e){if(D.running&&/^[1-4]$/.test(e.key)){const b=$("dOpts").children[+e.key-1];if(b&&!b.disabled)b.click();}}
+$("drillBtn").onclick=openDrill;$("drillBack").onclick=toLanding;$("dGo").onclick=()=>{D.cat="All";startDrill()};$("dAgain").onclick=startDrill;
+$("dSetup").onclick=()=>{drillView("start");renderMenu();$("dGo").focus({preventScroll:true})};
+paintTermsBest();
+
+// ---------- Spawning ----------
+const OB={hydrant:{w:24,h:44},cone:{w:36,h:30},tub:{w:56,h:30},bags:{w:30,h:54},vax:{w:64,h:0,air:true}};
+function spawn(){const L=LEVELS[level];const types=["hydrant","cone","tub"];if(S.score>=L.bags)types.push("bags");
+ if(S.score>=L.nets)types.push("vax","vax");
+ const k=types[Math.floor(Math.random()*types.length)];S.obs.push({k,x:LW+20,...OB[k],ph:Math.random()*6});
+ if(S.score>=L.dbl&&Math.random()<.3){
+   if(k==="vax"){const k2=Math.random()<.5?"cone":"hydrant";S.obs.push({k:k2,x:LW+20+S.speed*0.62,...OB[k2]});}
+   else if(S.score>=L.nets&&Math.random()<.5){S.obs.push({k:"vax",x:LW+20+S.speed*0.72,...OB.vax,ph:0});}
+   else{const k2=Math.random()<.5?"cone":"hydrant";S.obs.push({k:k2,x:LW+20+OB[k].w+6,...OB[k2]});}}}
+function spawnBones(){const high=Math.random()<.45;const y=high?GY()-120:GY()-28;for(let i=0;i<3;i++)S.items.push({x:LW+20+i*34,y,got:false,bob:Math.random()*6});}
+
+// ---------- Update ----------
+function update(dt){
+ S.t+=dt;if(S.mode!=="run")return;const L=LEVELS[level];
+ if(S.recover){S.speed=Math.min(S.recover,S.speed+S.recover*0.13*dt);if(S.speed>=S.recover)S.recover=0;}
+ else S.speed=Math.min(L.max,S.speed+L.acc*dt);
+ const dx=S.speed*dt;S.dist+=dx;S.score+=dx*0.05;
+ if(S.score>=S.milestone){toast("Checkup passed · "+S.milestone);S.milestone+=500;}
+ S.duck=keyDuck||(swipe&&swipe.down)||S.t<S.duckUntil;
+ const d=S.dog;d.vy+=(S.duck&&d.y<GY()?4600:2200)*dt;d.y+=d.vy*dt;if(d.y>=GY()){d.y=GY();d.vy=0;}
+ const low=S.duck&&d.y>=GY()-0.5;S.dk+=((low?1:0)-S.dk)*Math.min(1,dt*26);
+ S.inv=Math.max(0,S.inv-dt);
+ S.spawnIn-=dt;if(S.spawnIn<=0){spawn();S.spawnIn=Math.max(.74,(0.7+Math.random()*0.75)*L.gap*(400/S.speed)**0.45);}
+ S.boneIn-=dt;if(S.boneIn<=0){spawnBones();S.boneIn=2+Math.random()*2.5;}
+ S.obs.forEach(o=>o.x-=o.air?dx*1.18:dx);S.obs=S.obs.filter(o=>o.x+o.w>-20);
+ S.items.forEach(b=>b.x-=dx);S.items=S.items.filter(b=>b.x>-30&&!b.got);
+ const dl=d.x+12,dr=d.x+(low?80:62),dtop=d.y-(low?28:54),db=d.y-2;
+ for(const b of S.items){if(b.x+12>dl&&b.x-12<dr&&b.y+8>dtop&&b.y-8<db){b.got=true;S.bones++;S.score+=15;}}
+ if(S.inv<=0){for(const o of S.obs){const ox=o.x+4,ow=o.w-8,oy=GY()-o.h+4;
+   const hitY=o.air?(dtop<GY()-42&&db>GY()-112):oy<db;
+   if(ox<dr&&ox+ow>dl&&hitY){S.obs=S.obs.filter(x=>x!==o);askQ(o.k);break;}}}
+ hud();
+}
+
+// ---------- Scene ----------
+function hash(i){const s=Math.sin(i*127.1+11.7)*43758.5453;return s-Math.floor(s);}
+function drawBG(){const c=C(),G=GY();
+ const g=ctx.createLinearGradient(0,0,0,G);g.addColorStop(0,c.sky);g.addColorStop(1,c.sky2);ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
+ const sx=LW-110,sy=Math.max(96,G-215);ctx.fillStyle=c.sun;ctx.globalAlpha=.2;ctx.beginPath();ctx.arc(sx,sy,48,0,7);ctx.fill();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(sx,sy,26,0,7);ctx.fill();
+ ctx.fillStyle=c.cloud;ctx.globalAlpha=.92;const co=(S.dist*0.08)%(LW+300);
+ for(let i=0;i<3;i++){const x=((i*280+LW+200-co)%(LW+300))-120,y=Math.max(70,G-250)+(i%2?28:0);rr(ctx,x,y,96,24,12);ctx.fill();ctx.beginPath();ctx.arc(x+34,y+4,17,0,7);ctx.arc(x+60,y,21,0,7);ctx.fill();}
+ ctx.globalAlpha=1;
+ ctx.fillStyle=c.hill;ctx.beginPath();ctx.moveTo(0,LH);const ho=S.dist*0.15;
+ for(let x=0;x<=LW+10;x+=10)ctx.lineTo(x,G-60-Math.sin((x+ho)*0.008)*24-Math.sin((x+ho)*0.021)*10);ctx.lineTo(LW,LH);ctx.fill();
+ const seg=170,off=S.dist*0.4,first=Math.floor(off/seg)-1;
+ for(let i=first;i<first+Math.ceil(LW/seg)+3;i++){const x=i*seg-off,h=hash(i);if(h<0.22)drawClinic(x+20);else if(h<0.75)drawHouse(x+30,h);else drawTree(x+60,h);}
+ ctx.fillStyle=c.hill2;const no=S.dist*0.7%60;for(let x=-60;x<LW+60;x+=60){ctx.beginPath();ctx.arc(x-no,G-2,22,Math.PI,0);ctx.fill();}
+ ctx.fillStyle=c.ground;ctx.fillRect(0,G,LW,LH-G);
+ ctx.fillStyle=c.path;ctx.fillRect(0,G+6,LW,22);ctx.fillStyle=c.pathline;ctx.fillRect(0,G+6,LW,2.5);
+ ctx.strokeStyle=c.pathline;ctx.lineWidth=2;const to=S.dist%44;ctx.beginPath();for(let x=-to;x<LW+10;x+=44){ctx.moveTo(x,G+9);ctx.lineTo(x-5,G+28);}ctx.stroke();
+ if(TOUCH){const top=G+46,h=LH-top-14;if(h>40){ctx.save();
+   ctx.fillStyle=c.surface;ctx.globalAlpha=.3;rr(ctx,16,top,LW-32,h,22);ctx.fill();
+   ctx.globalAlpha=.75;ctx.strokeStyle=c.surface;ctx.lineWidth=2;ctx.setLineDash([7,8]);rr(ctx,16,top,LW-32,h,22);ctx.stroke();ctx.setLineDash([]);
+   ctx.globalAlpha=.72;ctx.fillStyle=c.ink;const fs=Math.min(20,h*0.18,LW/14);ctx.font="700 "+fs+"px 'Plus Jakarta Sans', sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.fillText("↑  Swipe up to jump",LW/2,top+h/2-fs*0.85);ctx.fillText("↓  Swipe down to duck",LW/2,top+h/2+fs*0.85);ctx.restore();}}
+}
+function drawHouse(x,h){const c=C(),w=70+h*30,ht=50+h*30,b=GY()-6;
+ ctx.fillStyle=c.house;rr(ctx,x,b-ht,w,ht,6);ctx.fill();
+ ctx.fillStyle=c.roof;ctx.beginPath();ctx.moveTo(x-8,b-ht+4);ctx.lineTo(x+w/2,b-ht-28);ctx.lineTo(x+w+8,b-ht+4);ctx.closePath();ctx.fill();
+ ctx.fillStyle=c.sky;rr(ctx,x+10,b-ht+16,16,14,4);ctx.fill();rr(ctx,x+w-26,b-ht+16,16,14,4);ctx.fill();
+ ctx.fillStyle=c.roof;rr(ctx,x+w/2-8,b-26,16,26,[8,8,0,0]);ctx.fill();}
+function drawClinic(x){const c=C(),w=120,ht=80,b=GY()-6;
+ ctx.fillStyle=c.surface;rr(ctx,x,b-ht,w,ht,8);ctx.fill();
+ ctx.fillStyle=c.brand;rr(ctx,x-4,b-ht-8,w+8,14,7);ctx.fill();rr(ctx,x+w/2-20,b-ht-50,40,34,10);ctx.fill();
+ ctx.fillStyle="#ffffff";rr(ctx,x+w/2-4,b-ht-45,8,24,2);ctx.fill();rr(ctx,x+w/2-12,b-ht-37,24,8,2);ctx.fill();
+ ctx.fillStyle=c.sky;rr(ctx,x+12,b-ht+22,28,22,5);ctx.fill();rr(ctx,x+w-40,b-ht+22,28,22,5);ctx.fill();
+ ctx.fillStyle=c.brand;rr(ctx,x+w/2-12,b-36,24,36,[10,10,0,0]);ctx.fill();
+ ctx.fillStyle=c.ink;ctx.globalAlpha=.8;ctx.font="800 8.5px 'Plus Jakarta Sans', sans-serif";ctx.textAlign="center";ctx.textBaseline="alphabetic";ctx.fillText("VET CLINIC",x+w/2,b-ht+16);ctx.globalAlpha=1;}
+function drawTree(x,h){const c=C(),b=GY()-6;ctx.fillStyle=c.roof;rr(ctx,x-4,b-42,8,42,3);ctx.fill();
+ ctx.fillStyle=c.hill2;ctx.beginPath();ctx.arc(x,b-58,26+h*8,0,7);ctx.arc(x-18,b-46,18,0,7);ctx.arc(x+18,b-46,18,0,7);ctx.fill();
+ ctx.fillStyle=c.hill;ctx.globalAlpha=.6;ctx.beginPath();ctx.arc(x-8,b-66,9,0,7);ctx.fill();ctx.globalAlpha=1;}
+function drawOb(o){const c=C(),b=GY()+2,x=o.x;
+ if(o.k==="vax"){const bob=Math.sin(S.t*6+o.ph)*2;drawSyringe(x,GY()-60+bob);drawSyringe(x+10,GY()-94-bob);
+  ctx.globalAlpha=.3;ctx.strokeStyle=c.ink;ctx.lineWidth=2;ctx.lineCap="round";for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(x+o.w+10+i*6,GY()-85+i*8);ctx.lineTo(x+o.w+24+i*6,GY()-85+i*8);ctx.stroke();}ctx.globalAlpha=1;return;}
+ if(o.k==="hydrant"){ctx.fillStyle=c.red;rr(ctx,x+4,b-36,16,36,4);ctx.fill();ctx.beginPath();ctx.arc(x+12,b-36,9,Math.PI,0);ctx.fill();
+  rr(ctx,x,b-27,24,8,4);ctx.fill();rr(ctx,x+9,b-49,6,6,2);ctx.fill();
+  ctx.fillStyle="#ffffff";ctx.globalAlpha=.3;rr(ctx,x+7,b-34,3,28,2);ctx.fill();ctx.globalAlpha=1;ctx.fillStyle="rgba(0,0,0,.22)";rr(ctx,x+2,b-4,20,4,2);ctx.fill();}
+ else if(o.k==="cone"){ctx.fillStyle="rgba(120,200,235,.55)";ctx.strokeStyle="rgba(20,60,80,.45)";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(x,b);ctx.lineTo(x+8,b-o.h);ctx.lineTo(x+o.w-8,b-o.h);ctx.lineTo(x+o.w,b);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.ellipse(x+o.w/2,b-o.h,(o.w-16)/2,4,0,0,7);ctx.stroke();}
+ else if(o.k==="tub"){ctx.fillStyle="#f7fbfd";rr(ctx,x,b-o.h+6,o.w,o.h-10,[4,4,12,12]);ctx.fill();ctx.strokeStyle="rgba(0,0,0,.18)";ctx.lineWidth=1.5;ctx.stroke();
+  ctx.fillStyle="#9aa8a4";rr(ctx,x+8,b-5,6,5,2);ctx.fill();rr(ctx,x+o.w-14,b-5,6,5,2);ctx.fill();
+  ctx.fillStyle="#ffffff";for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(x+8+i*10,b-o.h+5-Math.sin(S.t*4+i)*2,6,0,7);ctx.fill();}
+  ctx.fillStyle="#bfe6f2";for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(x+14+i*14,b-o.h-6-((S.t*20+i*9)%14),2.5,0,7);ctx.fill();}}
+ else{[[0,c.yellow],[1,c.green]].forEach(([i,col])=>{const y=b-26*(i+1);ctx.fillStyle=col;rr(ctx,x+i*2,y,o.w-2,25,5);ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.9)";ctx.beginPath();ctx.arc(x+i*2+(o.w-2)/2,y+12,5.5,0,7);ctx.fill();ctx.fillStyle="rgba(0,0,0,.12)";rr(ctx,x+i*2,y+19,o.w-2,6,[0,0,5,5]);ctx.fill();});}}
+function drawSyringe(x,y){ctx.save();ctx.translate(x,y);
+ ctx.strokeStyle="#8b9794";ctx.lineWidth=1.6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(14,0);ctx.stroke();
+ ctx.fillStyle="#f4fafc";rr(ctx,13,-6.5,34,13,4);ctx.fill();ctx.fillStyle="#58b7e0";rr(ctx,13,-6.5,21,13,[4,0,0,4]);ctx.fill();
+ ctx.strokeStyle="rgba(20,40,50,.35)";ctx.lineWidth=1.2;rr(ctx,13,-6.5,34,13,4);ctx.stroke();
+ ctx.beginPath();for(let i=20;i<44;i+=6){ctx.moveTo(i,-6.5);ctx.lineTo(i,-2.5);}ctx.stroke();
+ ctx.fillStyle="#3c4744";rr(ctx,47,-9,3.5,18,1.5);ctx.fill();rr(ctx,50,-2,10,4,1);ctx.fill();rr(ctx,59,-7,4.5,14,2);ctx.fill();
+ ctx.fillStyle="#ec6a4c";rr(ctx,10,-3,5,6,1.5);ctx.fill();ctx.restore();}
+function drawBone(b){const c=C(),y=b.y+Math.sin(S.t*5+b.bob)*3;ctx.save();ctx.translate(b.x,y);ctx.rotate(-.3);ctx.fillStyle=c.yellow;
+ ctx.beginPath();ctx.rect(-8,-2.5,16,5);ctx.arc(-9,-3,3.5,0,7);ctx.moveTo(-6,3);ctx.arc(-9,3,3.5,0,7);ctx.moveTo(12,-3);ctx.arc(9,-3,3.5,0,7);ctx.moveTo(12,3);ctx.arc(9,3,3.5,0,7);ctx.fill();ctx.restore();}
+
+// ---------- Buddy: light-tan shepherd with a black muzzle mask and black ears ----------
+// Drawn facing right, feet at (0,0). o.k blends from standing (0) to a crouch (1): knees bend, body drops, head lowers, ears fold back.
+const DOG={coat:"#d9a660",shade:"#b98144",light:"#efcd96",mask:"#211812",nose:"#0b0806",ear:"#1b130e",earIn:"#4a3528",eye:"#120c08",tongue:"#ee8399",tip:"#9a6634"};
+function leg(g,hx,hy,fx,fy,L,dir,col,w){const dx=fx-hx,dy=fy-hy,dd=Math.hypot(dx,dy)||1,d=Math.min(dd,L*0.999);
+ const h=0.45*Math.sqrt(Math.max(0,(L/2)**2-(d/2)**2)),mx=(hx+fx)/2,my=(hy+fy)/2,kx=mx-dy/dd*h*dir,ky=my+dx/dd*h*dir;
+ g.strokeStyle=col;g.lineWidth=w;g.lineCap="round";g.lineJoin="round";g.beginPath();g.moveTo(hx,hy);g.lineTo(kx,ky);g.lineTo(fx,fy);g.stroke();
+ g.fillStyle=col;g.beginPath();g.ellipse(fx+1.6,fy-1.4,3.8,2.5,0,0,7);g.fill();}
+function drawDog(g,t,o){const k=o.k||0,air=o.air,run=o.run&&!air;
+ const ph=o.run?t*o.speed*0.045:0,wag=Math.sin(t*(o.run?14:5))*(o.run?4:7);
+ const bob=run?Math.sin(ph*2)*1.2:0,drop=16*k;
+ const hipX=16,shX=50,hipY=-30+drop+bob,shY=-32+drop+bob*0.6;
+ g.save();if(air)g.rotate(o.vy>0?0.07:-0.07);
+ if(!air){g.fillStyle="rgba(0,0,0,.13)";g.beginPath();g.ellipse(38,1,32,4,0,0,7);g.fill();}
+ const foot=(hx,off,front)=>{if(air)return front?[hx+12,shY+15]:[hx-11,hipY+14];
+  if(run){const s=Math.sin(ph+off);return[hx+s*(9-4*k),-Math.max(0,Math.cos(ph+off))*5*(1-0.6*k)];}
+  return[hx+(front?2:0),0];};
+ // far legs
+ let f=foot(hipX+5,Math.PI,false);leg(g,hipX+5,hipY+2,f[0],f[1],30,-1,DOG.shade,6);
+ f=foot(shX-3,0,true);leg(g,shX-3,shY+4,f[0],f[1],30,1,DOG.shade,6);
+ // tail (bushy, low-hanging shepherd tail)
+ const tx0=hipX-1,ty0=hipY-5,tcx=hipX-19,tcy=hipY-4+wag*0.3,tx1=hipX-22-(o.run?4:0),ty1=hipY+(o.run?7:15)+wag*0.7-k*4;
+ g.strokeStyle=DOG.coat;g.lineWidth=7;g.lineCap="round";g.beginPath();g.moveTo(tx0,ty0);g.quadraticCurveTo(tcx,tcy,tx1,ty1);g.stroke();
+ const q=(a,b,c,u)=>(1-u)*(1-u)*a+2*(1-u)*u*b+u*u*c;g.strokeStyle=DOG.tip;g.lineWidth=7;g.beginPath();g.moveTo(q(tx0,tcx,tx1,.72),q(ty0,tcy,ty1,.72));g.quadraticCurveTo(q(tx0,tcx,tx1,.86),q(ty0,tcy,ty1,.86),tx1,ty1);g.stroke();
+ // body
+ g.fillStyle=DOG.coat;g.beginPath();
+ g.moveTo(shX+8,shY-8);
+ g.bezierCurveTo(shX-6,shY-14,hipX+16,hipY-12,hipX,hipY-7.5);
+ g.bezierCurveTo(hipX-9.5,hipY-4,hipX-7.5,hipY+8.5,hipX+2.5,hipY+10);
+ g.bezierCurveTo(hipX+13,hipY+9,shX-17,shY+8,shX-5,shY+12);
+ g.bezierCurveTo(shX+6,shY+14,shX+13.5,shY+2,shX+8,shY-8);g.fill();
+ g.fillStyle=DOG.light;g.globalAlpha=.55;g.beginPath();g.ellipse(shX+4,shY+3,4.5,6,-.3,0,7);g.fill();g.globalAlpha=1;
+ // near legs
+ f=foot(hipX,0,false);leg(g,hipX,hipY+2,f[0],f[1],30,-1,DOG.coat,7);
+ f=foot(shX+2,Math.PI,true);leg(g,shX+2,shY+4,f[0],f[1],30,1,DOG.coat,7);
+ // neck and head
+ const hx=shX+15+7*k,hy=shY-21+15*k;
+ g.fillStyle=DOG.coat;g.beginPath();g.moveTo(shX-2,shY-10);g.quadraticCurveTo(shX+4,(shY+hy)/2-6,hx-6,hy-5);g.lineTo(hx+3,hy+6);g.quadraticCurveTo(shX+14,shY+2,shX+10,shY+8);g.closePath();g.fill();
+ const ear=(bx,tipUp,tipBack,col)=>{const tx=bx+(tipUp[0]*(1-k)+tipBack[0]*k),ty=hy+(tipUp[1]*(1-k)+tipBack[1]*k);
+  g.fillStyle=col;g.beginPath();g.moveTo(bx-4,hy-5);g.quadraticCurveTo(tx-2,ty+4,tx,ty);g.quadraticCurveTo(bx+3,ty+6,bx+4,hy-7);g.closePath();g.fill();return[tx,ty];};
+ ear(hx-4,[-5,-22],[-17,-11],DOG.ear);
+ g.fillStyle=DOG.coat;g.beginPath();g.ellipse(hx,hy,9.5,8.5,0,0,7);g.fill();
+ // black muzzle mask and nose
+ g.fillStyle=DOG.mask;g.beginPath();g.moveTo(hx+1,hy-5);g.quadraticCurveTo(hx+9,hy-5.5,hx+18,hy+0.5);g.quadraticCurveTo(hx+19.5,hy+5,hx+15,hy+6.5);g.lineTo(hx+5,hy+8);g.quadraticCurveTo(hx-1,hy+5,hx+1,hy-5);g.fill();
+ g.fillStyle=DOG.nose;g.beginPath();g.ellipse(hx+18,hy+1.5,2.8,2.3,0,0,7);g.fill();
+ if(o.tongue){g.fillStyle=DOG.tongue;g.beginPath();g.ellipse(hx+10,hy+10,2.6,4.2+Math.sin(t*8)*.5,.25,0,7);g.fill();}
+ const tip=ear(hx+1,[0,-23],[-12,-13],DOG.ear);
+ g.fillStyle=DOG.earIn;g.beginPath();g.moveTo(hx-1.5,hy-6);g.lineTo((hx+tip[0])/2+0.5,(hy+tip[1])/2);g.lineTo(hx+2.5,hy-7);g.closePath();g.fill();
+ g.fillStyle=DOG.eye;g.beginPath();g.arc(hx+2,hy-2.5,2,0,7);g.fill();g.fillStyle="#ffffff";g.beginPath();g.arc(hx+2.6,hy-3.1,.7,0,7);g.fill();
+ // collar and tag
+ const nx=(shX+8+hx)/2-3,ny=(shY-6+hy)/2+1;
+ g.strokeStyle=C().coral;g.lineWidth=4;g.lineCap="round";g.beginPath();g.moveTo(nx-3,ny-6);g.lineTo(nx+3,ny+6);g.stroke();
+ g.fillStyle=C().yellow;g.beginPath();g.arc(nx+4,ny+9,2.6,0,7);g.fill();
+ g.restore();}
+
+function draw(){
+ if(!$("play").hidden&&cv.width){ctx.setTransform(dpr*scale,0,0,dpr*scale,0,0);drawBG();S.items.forEach(drawBone);S.obs.forEach(drawOb);
+  const d=S.dog,air=d.y<GY()-1;
+  if(!(S.inv>0&&S.mode==="run"&&Math.floor(S.t*14)%2===0)){ctx.save();ctx.translate(d.x,d.y);
+   drawDog(ctx,S.t,{run:S.mode==="run",air,vy:d.vy,speed:S.speed,k:S.dk,tongue:S.mode==="run"&&!air});ctx.restore();}}
+ if(!$("landing").hidden&&peek.width){const s=peek.width/190;pctx.setTransform(s,0,0,s,0,0);pctx.clearRect(0,0,190,140);
+  pctx.save();pctx.translate(46,134);pctx.scale(1.42,1.42);drawDog(pctx,S.t,{run:false,air:false,vy:0,speed:0,k:0,tongue:true});pctx.restore();}
+}
+let last=performance.now();
+function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;update(dt);drillTick(dt);draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+hud(true);
+})();
+</script>
+
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
+</body>
+</html>
