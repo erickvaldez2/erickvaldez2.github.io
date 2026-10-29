@@ -12,12 +12,46 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800;62..125,900&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/site.css?v=5">
+<style>
+/* ---------- about: lopsided, motto-led ---------- */
+.about { background: var(--ink); padding-block: 40px 120px; }
+.about .max { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px 64px; align-items: start; }
+.about-k { font-family: var(--display); font-weight: 700; font-size: clamp(18px, 2vw, 22px); color: var(--flare); margin: 0 0 14px; letter-spacing: -0.01em; }
+.about-motto { position: sticky; top: 90px; }
+.about-motto q { display: block; quotes: none; font-family: var(--display); font-weight: 900; font-stretch: 112%; font-size: clamp(50px, 7.4vw, 104px); line-height: 0.88; letter-spacing: -0.045em; margin: 0; }
+.about-motto q em { font-style: normal; color: transparent; -webkit-text-stroke: 1.5px var(--bone); }
+.about-motto .sub { margin: 22px 0 0; color: var(--dim); font-size: 15px; max-width: 30ch; }
+.about-motto .sub b { color: var(--bone); font-weight: 600; }
+.about-story p { margin: 0 0 20px; font-size: 19px; color: #e4e1d9; max-width: 56ch; }
+.about-story p:first-child::first-line { color: var(--bone); font-weight: 600; }
+.traits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 40px 0 0; border-top: 1px solid rgba(243,241,234,0.18); }
+.traits div { padding: 16px 16px 0 0; }
+.traits div + div { padding-left: 16px; border-left: 1px solid rgba(243,241,234,0.12); }
+.traits b { display: block; font-family: var(--display); font-weight: 800; font-size: clamp(22px, 2.6vw, 30px); letter-spacing: -0.025em; line-height: 1.05; }
+.traits span { display: block; margin-top: 8px; color: #cfccc4; font-size: 15px; }
+.offclock { margin-top: 44px; background: #121210; border-radius: 22px; padding: 24px 26px; }
+.offclock h3 { margin: 0 0 14px; font-family: var(--display); font-weight: 800; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--olive); }
+.offclock ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; }
+.offclock li { font-size: 16px; color: #e4e1d9; padding-left: 18px; position: relative; }
+.offclock li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 8px; height: 8px; border-radius: 2px; background: var(--flare); transform: rotate(45deg); }
+@media (max-width: 820px) {
+  .about .max { grid-template-columns: 1fr; }
+  .about-motto { position: static; }
+  .about-story p { font-size: 17.5px; }
+  .offclock ul { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .traits { grid-template-columns: 1fr; }
+  .traits div + div { padding-left: 0; border-left: 0; border-top: 1px solid rgba(243,241,234,0.12); padding-bottom: 14px; }
+  .traits div:first-child { padding-bottom: 14px; }
+}
+</style>
 </head>
 <body>
 <header class="lnav gutter">
   <div class="max">
     <a class="name" href="#top">Erick Valdez</a>
-    <nav aria-label="Sections"><a href="#short">Overview</a><a href="#service">Service</a><a href="#packet">Projects</a><a href="#contact">Contact</a></nav>
+    <nav aria-label="Sections"><a href="#short">Overview</a><a href="#about">About</a><a href="#service">Service</a><a href="#packet">Projects</a><a href="#contact">Contact</a></nav>
     <a class="play" href="/games"><span class="dot" aria-hidden="true"></span>Play the games</a>
   </div>
 </header>
@@ -59,6 +93,36 @@
       <div class="stat-side">
         <div><b>2</b><span>Study editions</span></div>
         <div><b>2</b><span>Games built</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about gutter" id="about" aria-labelledby="ab-title">
+    <div class="max">
+      <div class="about-motto">
+        <p class="about-k" id="ab-title">About me</p>
+        <q>Control what you <em>can</em> control.</q>
+        <p class="sub">My motto. When it gets hard, I <b>keep moving forward</b>, a line from <i>Meet the Robinsons</i> I've held onto since I was a kid.</p>
+      </div>
+      <div class="about-story">
+        <p>I didn't set out to work in IT. I chose 25H in the Army, and the mentors I met there taught me most of what I know.</p>
+        <p>They also showed me the part I enjoy most: working behind the scenes to understand how connections work and why a problem is actually happening, not just that it is. I've always wanted to know why things work the way they do. IT lets me follow that curiosity every day.</p>
+        <p>I've been through hard times and missed opportunities, some because of things I couldn't control and some because I made excuses. Looking back taught me to be grateful for what I have and to take every opportunity I get.</p>
+        <p>That's why I like teaching. I've mentored my younger sister since she was in elementary school to stay focused on school and her goals, and I help anyone I can, so they get the chances I missed and don't repeat my mistakes.</p>
+        <div class="traits">
+          <div><b>Disciplined</b><span>I track progress toward my goals every day.</span></div>
+          <div><b>Organized</b><span>I keep many roles at work on track at once.</span></div>
+          <div><b>A teacher</b><span>I love seeing people grow and change their lives.</span></div>
+        </div>
+        <div class="offclock">
+          <h3>Off the clock</h3>
+          <ul>
+            <li>Building tools that make life easier, like my study games and a habit-tracking app</li>
+            <li>Working out and tracking what keeps me healthy</li>
+            <li>Learning something new whenever I can</li>
+            <li>Traveling and discovering new places</li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
