@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-X/PSe8+cdxZur31oEPoGGSnzWf4R58cFnbNDfERZHmk=' 'sha256-Mi4pOOtWdI7eAXG2W0DsrdOxQDLy7jjB9IuW9q6JFFU='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#050505">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Packet Racer: a lane-dodging runner where crashes are saved by answering CompTIA Security+ questions. Includes practice tests by exam domain. Built by Erick Valdez.">
 <title>Packet Racer</title>
 <script>(function(){var t;try{t=localStorage.getItem("ev-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500;62..125,700;62..125,800;62..125,900&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 /* Layout: full-height single-screen game. Glass HUD over the playfield, canvas below, overlays for start / question / game over. Light and dark themes via html[data-theme]. */
 :root {
@@ -36,8 +36,8 @@
   --flare: #ff6a1f;
   --paper: #efece4;
   --ink: #171613;
-  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Archivo", "Archivo Fallback", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Hanken Grotesk", "Hanken Fallback", "Helvetica Neue", Arial, sans-serif;
 }
 html, body { height: 100%; }
 * { box-sizing: border-box; }
@@ -245,7 +245,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block
 .overlay.see-through { background: rgba(5, 5, 5, 0.62); }
 .card {
   --fg: #171613; --muted: #5f5c55; --panel-2: #e3dfd5; --line: #cfc9bb;
-  --packet: #b2440d; --good: #2f6b3a; --bad: #b3362b; --firewall: #a8670d; --firewall-2: #a8670d; --malware: #b3362b; --bit: #171613;
+  --packet: #b2440d; --good: #2f6b3a; --bad: #b3362b; --firewall: #a8670d; --firewall-2: #8a5508; --malware: #b3362b; --bit: #171613;
   background: var(--paper); color: var(--fg); border: 0; border-radius: 6px; border-top: 5px solid var(--flare);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); padding: 24px 22px 22px;
 }
@@ -354,7 +354,7 @@ body { margin: 0; }
 </head>
 <body>
 
-<div class="app">
+<div class="app" role="main">
   <a class="back-link" href="/">&larr; erickvaldez.com</a>
   <button class="theme-toggle" id="theme-toggle" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg><span id="theme-label">Light mode</span></button>
   <div class="stage" id="stage">

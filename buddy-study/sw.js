@@ -1,6 +1,7 @@
 // Buddy Study offline cache. Bump VERSION whenever you upload a new index.html.
-const VERSION = "buddy-study-v4";
-const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+const VERSION = "buddy-study-v5";
+const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png",
+  "/fonts/fonts.css", "/fonts/bricolage-grotesque.woff2", "/fonts/plus-jakarta-sans.woff2", "/fonts/dm-mono-400.woff2", "/fonts/dm-mono-500.woff2"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -17,7 +18,7 @@ self.addEventListener("fetch", e => {
       .catch(() => caches.match("index.html")));
     return;
   }
-  // Everything else (icons, Google Fonts): cache first, then network.
+  // Everything else (icons, fonts): cache first, then network.
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => {
     if (r && (r.ok || r.type === "opaque")) { const copy = r.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }
     return r;

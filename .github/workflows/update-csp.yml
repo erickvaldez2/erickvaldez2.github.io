@@ -1,0 +1,32 @@
+name: Update CSP script hashes
+
+# Keeps each page's Content-Security-Policy in sync with its inline scripts.
+# If a page's JavaScript is edited (even in GitHub's web editor), this re-computes
+# the SHA-256 fingerprints and commits them, so the scripts keep running.
+on:
+  push:
+    branches: [main]
+    paths: ["**.html", "tools/update-csp.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-csp
+  cancel-in-progress: false
+
+jobs:
+  hash:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recompute script hashes
+        run: python3 tools/update-csp.py
+      - name: Commit if anything changed
+        run: |
+          if git diff --quiet; then echo "Hashes already up to date"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Update CSP script hashes"
+          git push

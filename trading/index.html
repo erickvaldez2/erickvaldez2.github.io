@@ -2,15 +2,15 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-D4mjQaDwcPL4YKCscFUkefph0+3sMua2+feY6P1+wcQ='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Trade Desk</title>
 <meta name="description" content="Paper trading planner, journal, and methods guide.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 :root {
   --ink: #050505; --ink-2: #121210; --ink-3: #1c1b18; --line: #2f2d28;
@@ -18,8 +18,8 @@
   --bone: #f3f1ea; --dim: #8f8c84; --dim-paper: #5f5c55;
   --flare: #ff6a1f; --olive: #8d9a5b;
   --good: #3ddc97; --bad: #ff4d6d; --warn: #ffc24d;
-  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --text: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --display: "Archivo", "Archivo Fallback", "Helvetica Neue", Arial, sans-serif;
+  --text: "Hanken Grotesk", "Hanken Fallback", "Helvetica Neue", Arial, sans-serif;
   --mono: "DM Mono", ui-monospace, Menlo, monospace;
   /* theme tokens (dark default) */
   --bg: var(--ink); --fg: var(--bone); --muted: var(--dim); --panel: var(--ink-2); --panel-2: var(--ink-3);
@@ -96,9 +96,9 @@ h3 { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spac
 .toggles { display: flex; gap: 12px; flex-wrap: wrap; }
 .method-note { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
 .checks { display: grid; gap: 8px; }
-.checks h4 { margin: 10px 0 2px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.checks h3 { margin: 10px 0 2px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .check { display: flex; gap: 12px; align-items: flex-start; padding: 11px 13px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); cursor: pointer; font-size: 15px; line-height: 1.4; }
-.check input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--accent); }
+.check input { width: 24px; height: 24px; margin: 0; flex: none; accent-color: var(--accent); }
 .check.on { border-color: color-mix(in srgb, var(--good) 60%, var(--border)); }
 .result { position: sticky; top: 76px; background: var(--panel); border: 1px solid var(--border); border-top: 5px solid var(--accent); border-radius: 8px; padding: 20px; display: grid; gap: 16px; }
 .result > * { min-width: 0; }
@@ -177,6 +177,8 @@ h3 { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spac
 .ref { padding-left: 2em; text-indent: -2em; }
 .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 140%); background: var(--fg); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 600; font-size: 15px; transition: transform 0.25s, visibility 0.25s; z-index: 50; visibility: hidden; }
 .toast.show { transform: translate(-50%, 0); visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+.lnav .name { display: inline-flex; align-items: center; min-height: 32px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 </style>
 </head>
@@ -538,9 +540,9 @@ Win: +$20 (+2R)   Loss: −$10 (−1R)</div>
   }
   function renderChecks() {
     var m = METHODS[$("method").value]; if (!m) return;
-    var html = "<h4>" + esc(m.name) + " checklist</h4>";
+    var html = "<h3>" + esc(m.name) + " checklist</h3>";
     m.checks.forEach(function (c, i) { html += item("m" + i, c); });
-    html += "<h4>Every trade</h4>";
+    html += "<h3>Every trade</h3>";
     BASE_CHECKS.forEach(function (c, i) { html += item("b" + i, c); });
     $("checks").innerHTML = html;
   }

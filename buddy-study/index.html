@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-xE8mG9CactLHycpVAk2IENmnA2arLlDdLR2qnqodFdI=' 'sha256-YRMP5kAJGoGKTdDcSH530ZFH4+afUIqAP65Yu/oPHM4='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Buddy Study: two vet tech study games. Run Buddy through the clinic route, or race the clock on chart shorthand.">
@@ -17,9 +17,9 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
 <title>Buddy Study</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
+<link rel="preload" href="/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/plus-jakarta-sans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 /* Layout: oversized wordmark with Buddy standing on it (left), a deep-green Vet Terms tile (right),
    then Buddy Run levels as three boxes stepping up like stairs (easy to hard). Games run in their own full views. */
@@ -117,7 +117,8 @@ kbd{font-family:var(--mono);font-size:12px;background:var(--soft);border:1px sol
 .ln{font-family:var(--display);font-weight:800;font-size:31px;letter-spacing:-.03em;line-height:1.02}
 .ld{color:var(--muted);font-size:14px;font-weight:600}
 .lvl-play{grid-area:play;display:flex;align-items:center;justify-content:space-between;gap:10px;height:60px;padding:0 8px 0 20px;border-radius:17px;background:var(--c);color:var(--on);font-weight:800;font-size:20px}
-.lvl-play .best{font-weight:500;opacity:.8;font-size:12px;margin-left:auto;white-space:nowrap}
+.lvl-play .best{font-weight:600;font-size:12px;margin-left:auto;white-space:nowrap;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.34)}
+.lvl.tech .lvl-play .best{background:rgba(255,255,255,.5)}
 @media (min-width:861px) and (max-width:1120px){.lvl-play .best{display:none}.lvl{grid-template-columns:80px minmax(0,1fr)}.lvl-art svg{width:56px;height:56px}}
 .lvl-play i{display:grid;place-items:center;width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.24)}
 .lvl.tech .lvl-play i{background:rgba(255,255,255,.4)}
@@ -285,7 +286,7 @@ canvas#cv{display:block;width:100%;height:100%;cursor:pointer}
 
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" role="main">
   <!-- Landing -->
   <section class="landing" id="landing" aria-label="Choose a game">
     <div class="hero">
