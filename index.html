@@ -14,6 +14,9 @@
 <link rel="stylesheet" href="/site.css?v=5">
 <style>
 /* ---------- about: lopsided, motto-led ---------- */
+.btn.ghost { background: transparent; color: var(--bone); box-shadow: inset 0 0 0 1.5px rgba(243,241,234,0.55); }
+.btn.ghost:hover { box-shadow: inset 0 0 0 1.5px var(--bone); }
+@media (max-width: 420px) { .hero-foot .ctas { flex-wrap: wrap; gap: 10px 12px; } }
 .about { background: var(--ink); padding-block: 40px 120px; }
 .about .max { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px 64px; align-items: start; }
 .about-k { font-family: var(--display); font-weight: 700; font-size: clamp(18px, 2vw, 22px); color: var(--flare); margin: 0 0 14px; letter-spacing: -0.01em; }
@@ -68,7 +71,7 @@
       </svg></div></div>
       <div class="hero-foot max">
         <p>U.S. Army network communications specialist with six years of service and an active Secret clearance. Pursuing a B.S. in Cybersecurity Technology and CompTIA Security+, with additional certifications planned to stay ahead in the field.</p>
-        <div class="ctas"><a class="btn fill" href="/games">Play my games</a><a class="link" href="#contact">Get in touch</a></div>
+        <div class="ctas"><a class="btn fill" href="/games">Play my games</a><a class="btn ghost" href="#about">About me</a><a class="link" href="#contact">Get in touch</a></div>
       </div>
     </div>
   </section>
