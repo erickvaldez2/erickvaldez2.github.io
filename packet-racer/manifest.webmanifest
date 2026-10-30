@@ -1,0 +1,26 @@
+{
+  "id": "/packet-racer/",
+  "name": "Packet Racer",
+  "short_name": "Packet Racer",
+  "description": "Race a data packet past firewalls and malware. Every crash is a Security+ or CySA+ question. Works offline.",
+  "start_url": "/packet-racer/?app=1",
+  "scope": "/packet-racer/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "categories": ["education", "games"],
+  "icons": [
+    {"src": "/packet-racer/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/packet-racer/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/packet-racer/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "Security+ edition", "url": "/packet-racer/", "icons": [{"src": "/packet-racer/icon-192.png", "sizes": "192x192"}]},
+    {"name": "CySA+ edition", "url": "/packet-racer/cysa/", "icons": [{"src": "/packet-racer/icon-192.png", "sizes": "192x192"}]}
+  ],
+  "screenshots": [
+    {"src": "/packet-racer/screenshots/phone.jpg", "sizes": "1080x2340", "type": "image/jpeg", "form_factor": "narrow", "label": "Pick your security posture and race"},
+    {"src": "/packet-racer/screenshots/wide.jpg", "sizes": "1920x1080", "type": "image/jpeg", "form_factor": "wide", "label": "Packet Racer on desktop"}
+  ]
+}

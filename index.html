@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-/RZjiMHGL3cDVU/sOiDC1ajomJSVhecfseJFxda3Dg0='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-g2uc+tlsS110fqzlqOH+9cxZe5PcaSUkhCH6MbYdDwo='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050505">
@@ -152,7 +152,7 @@
         </div>
         <div class="ed-detail" id="ed-detail" aria-live="polite">
           <p>176 questions across all five SY0-701 domains, plus a 50-question full practice exam.</p>
-          <a class="btn fill" href="/packet-racer">Play Security+ edition</a>
+          <a class="btn fill" href="/packet-racer/">Play Security+ edition</a>
         </div>
       </div>
       <div class="screen" aria-hidden="true" id="screen">
@@ -222,8 +222,8 @@
 
   // edition picker
   var ED = {
-    sec: { name: "Security+ edition", color: "#4fd1ff", tag: "SECURITY+", text: "176 questions across all five SY0-701 domains, plus a 50-question full practice exam.", cta: "Play Security+ edition", url: "/packet-racer" },
-    cysa: { name: "CySA+ edition", color: "#a78bfa", tag: "CYSA+", text: "101 analyst questions on logs, threat hunting, vulnerability management and incident response, plus a 47-question full exam.", cta: "Play CySA+ edition", url: "/packet-racer-cysa" }
+    sec: { name: "Security+ edition", color: "#4fd1ff", tag: "SECURITY+", text: "176 questions across all five SY0-701 domains, plus a 50-question full practice exam.", cta: "Play Security+ edition", url: "/packet-racer/" },
+    cysa: { name: "CySA+ edition", color: "#a78bfa", tag: "CYSA+", text: "101 analyst questions on logs, threat hunting, vulnerability management and incident response, plus a 47-question full exam.", cta: "Play CySA+ edition", url: "/packet-racer/cysa/" }
   };
   var screen = document.getElementById("screen");
   document.querySelectorAll(".edition-pick button").forEach(function (b) {

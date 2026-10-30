@@ -1,0 +1,1544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-mXcTI3dw7C6wDxHMnfGAWydT6yQ3YtZP9sR9xpdRQBU=' 'sha256-X/PSe8+cdxZur31oEPoGGSnzWf4R58cFnbNDfERZHmk=' 'sha256-Mi4pOOtWdI7eAXG2W0DsrdOxQDLy7jjB9IuW9q6JFFU='; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#050505">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Packet Racer: a lane-dodging runner where crashes are saved by answering CompTIA Security+ questions. Includes practice tests by exam domain. Built by Erick Valdez.">
+<title>Packet Racer</title>
+<link rel="manifest" href="/packet-racer/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/packet-racer/icon-192.png">
+<link rel="apple-touch-icon" href="/packet-racer/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Packet Racer">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/packet-racer/splash/splash-1320x2868.jpg">
+<link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/packet-racer/splash/splash-1206x2622.jpg">
+<link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/packet-racer/splash/splash-1290x2796.jpg">
+<link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/packet-racer/splash/splash-1179x2556.jpg">
+<link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/packet-racer/splash/splash-1170x2532.jpg">
+<link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/packet-racer/splash/splash-1284x2778.jpg">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/packet-racer/splash/splash-1125x2436.jpg">
+<link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/packet-racer/splash/splash-750x1334.jpg">
+<script>(function(){var ED="sec";try{if(/[?&]app=1/.test(location.search)){var last=localStorage.getItem("pr-edition");if(last&&last!==ED){location.replace(last==="cysa"?"/packet-racer/cysa/":"/packet-racer/");return;}}localStorage.setItem("pr-edition",ED);}catch(e){}if("serviceWorker" in navigator){addEventListener("load",function(){navigator.serviceWorker.register("/packet-racer/sw.js",{scope:"/packet-racer/"}).catch(function(){});});}})();</script>
+<script>(function(){var t;try{t=localStorage.getItem("ev-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="preload" href="/fonts/archivo.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/hanken-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+/* Layout: full-height single-screen game. Glass HUD over the playfield, canvas below, overlays for start / question / game over. Light and dark themes via html[data-theme]. */
+:root {
+  color-scheme: dark;
+  --bg: #050505;
+  --bg-2: #0d0c0b;
+  --panel: rgba(18, 18, 16, 0.9);
+  --panel-solid: #121210;
+  --panel-2: #1a1917;
+  --line: #2a2823;
+  --fg: #f3f1ea;
+  --muted: #8f8c84;
+  --packet: #4fd1ff;
+  --packet-hue: #4fd1ff;
+  --packet-core: #d9f6ff;
+  --firewall: #ff9f43;
+  --firewall-2: #ffcf6e;
+  --malware: #ff4d6d;
+  --bit: #f3f1ea;
+  --good: #3ddc97;
+  --bad: #ff4d6d;
+  --flare: #ff6a1f;
+  --paper: #efece4;
+  --ink: #171613;
+  --font-display: "Archivo", "Archivo Fallback", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Hanken Grotesk", "Hanken Fallback", "Helvetica Neue", Arial, sans-serif;
+}
+html, body { height: 100%; }
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-mono); font-size: 14px;
+  overflow: hidden; touch-action: manipulation; -webkit-user-select: none; user-select: none;
+}
+.app { height: 100%; position: relative; }
+.stage { position: absolute; inset: 0; }
+canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.hud {
+  position: absolute; left: 0; right: 0; top: 0; z-index: 3; pointer-events: none;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+  padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(to bottom, rgba(5, 9, 18, 0.92), rgba(5, 9, 18, 0));
+}
+.hud .stat { display: grid; gap: 2px; }
+.hud .stat.right { text-align: right; }
+.hud .k { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.hud .v { font-family: var(--font-display); font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; line-height: 1; }
+.hud .v.score { color: var(--packet); text-shadow: 0 0 14px rgba(79, 209, 255, 0.45); }
+.lives-wrap { display: grid; justify-items: center; gap: 4px; }
+.shields { display: flex; gap: 4px; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; color: var(--good); }
+.shields svg { width: 14px; height: 14px; }
+.lives { display: flex; gap: 10px; align-items: center; justify-content: center; }
+.life { width: 18px; height: 18px; transform: rotate(45deg); border-radius: 4px; border: 2px solid var(--line); position: relative; overflow: hidden; }
+.life::after { content: ""; position: absolute; inset: 0; background: var(--packet); transform-origin: left; }
+.life.full { border-color: var(--packet); box-shadow: 0 0 12px rgba(79, 209, 255, 0.55); }
+.life.half { border-color: var(--packet); }
+.life.half::after { background: linear-gradient(135deg, var(--packet) 50%, transparent 50%); }
+.life.lost::after { display: none; }
+.overlay {
+  position: absolute; inset: 0; z-index: 5; display: grid; place-items: center;
+  background: radial-gradient(ellipse at center, rgba(10, 18, 34, 0.78), rgba(5, 9, 18, 0.94));
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  padding-block: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-y: auto;
+}
+.card {
+  width: min(460px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px; display: grid; gap: 14px;
+  box-shadow: 0 0 0 1px rgba(79, 209, 255, 0.06), 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.card.danger { border-color: rgba(255, 77, 109, 0.55); box-shadow: 0 0 40px rgba(255, 77, 109, 0.18), 0 24px 60px rgba(0, 0, 0, 0.5); }
+.logo { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ed-switch { margin-left: auto; align-self: flex-start; font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: 0.04em; text-decoration: none; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; min-height: 30px; display: inline-flex; align-items: center; white-space: nowrap; }
+.ed-switch:hover { color: var(--fg); border-color: var(--fg); }
+
+.logo-mark { width: 34px; height: 34px; transform: rotate(45deg); border-radius: 8px; background: var(--packet); box-shadow: 0 0 24px rgba(79, 209, 255, 0.7); flex: none; }
+.card h1 { font-family: var(--font-display); font-size: 42px; line-height: 0.95; margin: 0; letter-spacing: 0.01em; text-wrap: balance; }
+.card h1 span { color: var(--packet); }
+.card h2 { font-family: var(--font-display); font-size: 26px; margin: 0; text-wrap: balance; }
+.card p { margin: 0; color: var(--muted); line-height: 1.55; }
+.rules { display: grid; gap: 8px; font-size: 13px; color: var(--fg); }
+.rules div { display: flex; gap: 10px; align-items: baseline; }
+.rules .tag { font-family: var(--font-display); font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 6px; flex: none; min-width: 64px; text-align: center; }
+.tag.g { background: rgba(61, 220, 151, 0.14); color: var(--good); }
+.tag.b { background: rgba(255, 77, 109, 0.14); color: var(--bad); }
+.tag.p { background: rgba(167, 139, 250, 0.16); color: var(--bit); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.sw { width: 14px; height: 8px; border-radius: 2px; display: inline-block; }
+.btn {
+  font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: 0.05em; cursor: pointer;
+  border: 0; border-radius: 12px; padding: 15px 18px; width: 100%; color: #03131d;
+  background: linear-gradient(180deg, #7fe0ff, var(--packet)); box-shadow: 0 8px 24px rgba(79, 209, 255, 0.3);
+}
+.btn:active { transform: translateY(1px); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--panel-2); border-radius: 12px; padding: 4px; gap: 4px; }
+.seg button { font-family: var(--font-display); font-weight: 700; font-size: 15px; cursor: pointer; border: 0; border-radius: 9px; padding: 9px; background: transparent; color: var(--muted); }
+.seg button[aria-selected="true"] { background: var(--packet); color: #03131d; }
+.seg button:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.panel-play, .panel-practice { display: grid; gap: 14px; }
+.tests { display: grid; gap: 8px; }
+.test-btn {
+  font: inherit; text-align: left; cursor: pointer; color: var(--fg); background: rgba(21, 32, 58, 0.7); border: 1px solid var(--line);
+  border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; align-items: center;
+}
+.test-btn:hover { border-color: var(--packet); }
+.test-btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.test-btn .num { grid-row: 1 / span 2; font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--packet); width: 26px; text-align: center; }
+.test-btn .nm { font-family: var(--font-display); font-weight: 600; font-size: 15px; line-height: 1.25; }
+.test-btn .mt { font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+.test-btn .bs { grid-row: 1 / span 2; grid-column: 3; text-align: right; font-size: 11px; color: var(--muted); }
+.test-btn .bs b { display: block; font-family: var(--font-display); font-size: 16px; color: var(--fg); }
+.test-btn.full { border-color: rgba(79, 209, 255, 0.45); background: rgba(79, 209, 255, 0.07); }
+.t-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.t-count { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.btn.small { width: auto; padding: 8px 14px; font-size: 13px; }
+.t-bar { height: 5px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+.t-bar span { display: block; height: 100%; width: 0; background: var(--packet); border-radius: 999px; transition: width 0.2s; }
+.opt.sel { border-color: var(--packet); background: rgba(79, 209, 255, 0.12); }
+#t-run, #t-done { display: grid; gap: 14px; }
+.t-score { display: flex; align-items: baseline; gap: 12px; }
+.t-score #t-pct { font-family: var(--font-display); font-weight: 700; font-size: 52px; line-height: 1; }
+.t-frac { color: var(--muted); }
+.t-breakdown { display: grid; gap: 6px; }
+.t-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: 12px; }
+.t-row .bar { grid-column: 1 / -1; height: 5px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+.t-row .bar span { display: block; height: 100%; border-radius: 999px; }
+.review { display: grid; gap: 8px; }
+.review-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.review-item { background: var(--panel-2); border-radius: 12px; padding: 12px 14px; border-left: 3px solid var(--line); display: grid; gap: 6px; }
+.review-item.ok { border-left-color: var(--good); }
+.review-item.no { border-left-color: var(--bad); }
+.review-q { font-family: var(--font-display); font-weight: 600; font-size: 15px; line-height: 1.3; }
+.review-a { font-size: 12px; line-height: 1.45; display: grid; gap: 2px; }
+.review-a .yours.no { color: var(--bad); }
+.review-a .yours.ok { color: var(--good); }
+.review-a .right { color: var(--good); }
+.review-e { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.btn.ghost { background: transparent; color: var(--packet); box-shadow: none; border: 1px solid var(--line); font-size: 15px; padding: 12px 18px; }
+.btn:focus-visible, .opt:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.keys { font-size: 12px; color: var(--muted); text-align: center; }
+.q-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.q-meta .tier { color: var(--firewall); }
+.q-meta .lc { color: var(--bad); font-weight: 600; }
+.steps { display: flex; gap: 6px; }
+.steps span { flex: 1; height: 5px; border-radius: 999px; background: var(--panel-2); }
+.steps span.ok { background: var(--good); }
+.steps span.now { background: var(--fg); }
+.steps span.miss { background: var(--bad); }
+.q-text { font-family: var(--font-display); font-weight: 600; font-size: 20px; line-height: 1.3; color: var(--fg); margin: 0; text-wrap: pretty; }
+.opts { display: grid; gap: 8px; }
+.opt {
+  font: inherit; font-size: 14px; text-align: left; cursor: pointer; color: var(--fg); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px; display: flex; gap: 12px; line-height: 1.4; align-items: baseline;
+}
+.opt b { color: var(--muted); font-weight: 600; font-family: var(--font-display); }
+.opt:hover:not(:disabled) { border-color: var(--packet); }
+.opt:disabled { cursor: default; }
+.opt.right { border-color: var(--good); background: rgba(61, 220, 151, 0.14); }
+.opt.wrong { border-color: var(--bad); background: rgba(255, 77, 109, 0.14); }
+.result { border-radius: 12px; padding: 12px 14px; font-size: 13px; line-height: 1.5; background: var(--panel-2); color: var(--fg); }
+.result strong { display: block; font-family: var(--font-display); font-size: 16px; margin-bottom: 2px; }
+.result.good strong { color: var(--good); }
+.result.bad strong { color: var(--bad); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stats div { background: var(--panel-2); border-radius: 12px; padding: 12px 8px; text-align: center; }
+.stats .k { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.stats .v { font-family: var(--font-display); font-weight: 700; font-size: 24px; font-variant-numeric: tabular-nums; }
+.newbest { color: var(--good); font-family: var(--font-display); font-weight: 700; letter-spacing: 0.1em; text-align: center; text-shadow: 0 0 14px rgba(61, 220, 151, 0.5); }
+.crash-head { display: flex; gap: 12px; align-items: center; }
+.crash-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; flex: none; font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: 0.04em; }
+.crash-icon.fw { background: rgba(255, 159, 67, 0.16); color: var(--firewall); border: 1px solid rgba(255, 159, 67, 0.5); }
+.crash-icon.mw { background: rgba(255, 77, 109, 0.16); color: var(--malware); border: 1px solid rgba(255, 77, 109, 0.5); }
+.crash-title { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.1; margin: 0; }
+.crash-title.fw { color: var(--firewall); }
+.crash-title.mw { color: var(--malware); }
+.crash-sub { font-size: 12px; color: var(--bad); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.choose-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.diffs { display: grid; gap: 8px; }
+.diff {
+  font: inherit; cursor: pointer; text-align: left; color: var(--fg); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center;
+}
+.diff:hover { border-color: var(--packet); }
+.diff:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.diff .n { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.diff .d { font-size: 12px; color: var(--muted); grid-column: 1; }
+.diff .r { grid-row: 1 / span 2; grid-column: 2; font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.diff.e .n { color: var(--muted); } .diff.e .r { color: var(--muted); }
+.diff.m .n { color: var(--firewall-2); } .diff.m .r { color: var(--firewall-2); }
+.diff.h .n { color: var(--good); } .diff.h .r { color: var(--good); }
+.overlay.see-through { background: radial-gradient(ellipse at center, rgba(5, 9, 18, 0.55), rgba(5, 9, 18, 0.88)); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.crash-text { font-size: 13px; }
+.modes { display: grid; gap: 8px; }
+.mode {
+  font: inherit; text-align: left; cursor: pointer; color: var(--fg); background: rgba(21, 32, 58, 0.7);
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.mode:hover { border-color: var(--muted); }
+.mode.e:hover { border-color: var(--good); }
+.mode.m:hover { border-color: var(--firewall-2); }
+.mode.h:hover { border-color: var(--bad); }
+.mode:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.mode-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.mode .n { font-family: var(--font-display); font-weight: 700; font-size: 18px; }
+.mode .r { font-family: var(--font-display); font-weight: 600; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.mode .d { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.mode .b { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.mode .go { font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; color: var(--packet); }
+.mode .foot { display: flex; justify-content: space-between; align-items: baseline; }
+.mode .b b { color: var(--fg); font-family: var(--font-display); font-size: 13px; letter-spacing: 0; }
+.mode.e .n, .mode.e .r { color: var(--good); }
+.mode.m .n, .mode.m .r { color: var(--firewall-2); }
+.mode.h .n, .mode.h .r { color: var(--bad); }
+.mode[aria-checked="true"].e { border-color: var(--good); background: rgba(61, 220, 151, 0.08); box-shadow: 0 0 22px rgba(61, 220, 151, 0.14); }
+.mode[aria-checked="true"].m { border-color: var(--firewall-2); background: rgba(255, 207, 110, 0.08); box-shadow: 0 0 22px rgba(255, 207, 110, 0.12); }
+.mode[aria-checked="true"].h { border-color: var(--bad); background: rgba(255, 77, 109, 0.08); box-shadow: 0 0 22px rgba(255, 77, 109, 0.14); }
+.hud .mode-chip { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.logo-mark { animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: rotate(45deg) translateY(0); } 50% { transform: rotate(45deg) translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .logo-mark { animation: none; } }
+@media (max-width: 380px) { .card h1 { font-size: 36px; } .hud .v { font-size: 22px; } }
+/* Site style: ink playfield, paper cards, Archivo display */
+.hud { background: linear-gradient(to bottom, rgba(5, 5, 5, 0.94), rgba(5, 5, 5, 0)); }
+.hud .k { font-family: var(--font-display); font-weight: 700; font-stretch: 85%; }
+.hud .v { font-weight: 900; font-stretch: 78%; font-size: 30px; }
+.hud .v.score { color: var(--fg); text-shadow: none; }
+.life.full { box-shadow: none; }
+.overlay { background: rgba(5, 5, 5, 0.86); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.overlay.see-through { background: rgba(5, 5, 5, 0.62); }
+.card {
+  --fg: #171613; --muted: #5f5c55; --panel-2: #e3dfd5; --line: #cfc9bb;
+  --packet: #b2440d; --good: #2f6b3a; --bad: #b3362b; --firewall: #a8670d; --firewall-2: #8a5508; --malware: #b3362b; --bit: #171613;
+  background: var(--paper); color: var(--fg); border: 0; border-radius: 6px; border-top: 5px solid var(--flare);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); padding: 24px 22px 22px;
+}
+.card.danger { border-top-color: var(--bad); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); }
+.logo-mark { background: var(--packet-hue); box-shadow: none; border-radius: 6px; }
+.card h1 { font-weight: 900; font-stretch: 72%; font-size: 52px; line-height: 0.86; letter-spacing: -0.01em; text-transform: uppercase; }
+.card h2, .crash-title, .q-text, .review-q, .t-count { font-stretch: 85%; letter-spacing: -0.005em; }
+.card h2 { font-weight: 800; }
+.btn { font-weight: 800; font-stretch: 85%; letter-spacing: 0.02em; border-radius: 999px; color: var(--paper); background: var(--ink); box-shadow: none; }
+.btn:hover { background: #000; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+.btn.ghost:hover { background: rgba(23, 22, 19, 0.06); }
+.seg { border-radius: 999px; }
+.seg button { border-radius: 999px; font-stretch: 85%; }
+.seg button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.test-btn, .mode, .opt, .diff { background: rgba(255, 255, 255, 0.45); border-radius: 6px; }
+.test-btn.full { border-color: rgba(178, 68, 13, 0.45); background: rgba(178, 68, 13, 0.06); }
+.opt.sel { background: rgba(178, 68, 13, 0.08); }
+.opt.right { background: rgba(47, 107, 58, 0.12); }
+.opt.wrong { background: rgba(179, 54, 43, 0.1); }
+.mode .n { font-weight: 900; font-stretch: 78%; font-size: 21px; text-transform: uppercase; }
+.mode[aria-checked="true"].e { background: rgba(47, 107, 58, 0.1); box-shadow: none; }
+.mode[aria-checked="true"].m { background: rgba(168, 103, 13, 0.1); box-shadow: none; }
+.mode[aria-checked="true"].h { background: rgba(179, 54, 43, 0.1); box-shadow: none; }
+.tag.g { background: rgba(47, 107, 58, 0.12); }
+.tag.b { background: rgba(179, 54, 43, 0.1); }
+.tag.p { background: rgba(23, 22, 19, 0.08); }
+.crash-icon { border-radius: 6px; }
+.crash-icon.fw { background: rgba(168, 103, 13, 0.12); border-color: rgba(168, 103, 13, 0.5); }
+.crash-icon.mw { background: rgba(179, 54, 43, 0.1); border-color: rgba(179, 54, 43, 0.5); }
+.review-item, .result, .stats div { border-radius: 6px; }
+.stats .v, .t-score #t-pct { font-weight: 900; font-stretch: 75%; }
+.newbest { text-shadow: none; }
+.btn:focus-visible, .opt:focus-visible, .mode:focus-visible, .test-btn:focus-visible, .diff:focus-visible, .seg button:focus-visible { outline-color: var(--ink); }
+.card .q-text { color: var(--fg); font-weight: 700; }
+.mode .n { white-space: nowrap; }
+.mode-top { flex-wrap: wrap; row-gap: 2px; }
+.q-meta .tier { white-space: nowrap; }
+@media (max-width: 380px) { .card h1 { font-size: 44px; } }
+</style>
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+.back-link { position: fixed; z-index: 6; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-decoration: none; background: rgba(18,18,16,0.85); border: 1px solid #2a2823; border-radius: 999px; padding: 6px 10px; }
+.back-link:hover { color: var(--fg); }
+.app:has(#start-screen[hidden]):has(#over-screen[hidden]) .back-link { display: none; }
+</style>
+<style>
+/* ---------- Themes ---------- */
+:root { --net-rgb: 243,241,234; --edge-rgb: 255,106,31; --veil-rgb: 5,5,5; --vig: 0.55; }
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #efece4; --bg-2: #e2ddd1; --line: #cfc9bb; --fg: #171613; --muted: #5f5c55;
+  --packet: #0b8fc4; --packet-core: #e6f8ff;
+  --firewall: #e0661a; --firewall-2: #f29a3f; --malware: #cf2f4c; --bit: #171613; --good: #2f6b3a; --bad: #b3362b;
+  --net-rgb: 23,22,19; --edge-rgb: 178,68,13; --veil-rgb: 239,236,228; --vig: 0.07;
+}
+.hud { background: linear-gradient(to bottom, rgba(var(--veil-rgb), 0.94), rgba(var(--veil-rgb), 0)); }
+.overlay { background: rgba(var(--veil-rgb), 0.86); }
+.overlay.see-through { background: rgba(var(--veil-rgb), 0.62); }
+:root[data-theme="light"] .overlay { background: rgba(var(--veil-rgb), 0.78); }
+:root[data-theme="light"] .overlay.see-through { background: rgba(var(--veil-rgb), 0.55); }
+:root[data-theme="light"] .card { background: #f8f6f0; box-shadow: 0 0 0 1px #dcd6c8, 0 24px 60px rgba(23, 22, 19, 0.18); }
+:root[data-theme="light"] .card.danger { box-shadow: 0 0 0 1px #dcd6c8, 0 24px 60px rgba(23, 22, 19, 0.18); }
+:root[data-theme="light"] .life.full { box-shadow: none; }
+
+:root[data-theme="dark"] .card {
+  --fg: #f3f1ea; --muted: #8f8c84; --panel-2: #1f1e1b; --line: #2f2d28;
+  --packet: #ff6a1f; --good: #3ddc97; --bad: #ff4d6d; --firewall: #ffb35c; --firewall-2: #ffb35c; --malware: #ff4d6d; --bit: #f3f1ea;
+  background: #121210; box-shadow: 0 0 0 1px #262420, 0 30px 80px rgba(0, 0, 0, 0.7);
+}
+:root[data-theme="dark"] .card.danger { box-shadow: 0 0 0 1px #262420, 0 30px 80px rgba(0, 0, 0, 0.7); }
+:root[data-theme="dark"] .btn { color: #050505; background: #f3f1ea; }
+:root[data-theme="dark"] .btn:hover { background: #fff; }
+:root[data-theme="dark"] .btn.ghost { background: transparent; color: #f3f1ea; border-color: #f3f1ea; }
+:root[data-theme="dark"] .btn.ghost:hover { background: rgba(243, 241, 234, 0.08); }
+:root[data-theme="dark"] .seg button[aria-selected="true"] { background: #f3f1ea; color: #050505; }
+:root[data-theme="dark"] .test-btn, :root[data-theme="dark"] .mode, :root[data-theme="dark"] .opt, :root[data-theme="dark"] .diff { background: rgba(255, 255, 255, 0.035); }
+:root[data-theme="dark"] .test-btn.full { border-color: rgba(255, 106, 31, 0.45); background: rgba(255, 106, 31, 0.07); }
+:root[data-theme="dark"] .opt.sel { background: rgba(255, 106, 31, 0.1); }
+:root[data-theme="dark"] .opt.right { background: rgba(61, 220, 151, 0.12); }
+:root[data-theme="dark"] .opt.wrong { background: rgba(255, 77, 109, 0.12); }
+:root[data-theme="dark"] .mode[aria-checked="true"].e { background: rgba(61, 220, 151, 0.08); }
+:root[data-theme="dark"] .mode[aria-checked="true"].m { background: rgba(255, 179, 92, 0.08); }
+:root[data-theme="dark"] .mode[aria-checked="true"].h { background: rgba(255, 77, 109, 0.08); }
+:root[data-theme="dark"] .tag.g { background: rgba(61, 220, 151, 0.14); }
+:root[data-theme="dark"] .tag.b { background: rgba(255, 77, 109, 0.14); }
+:root[data-theme="dark"] .tag.p { background: rgba(243, 241, 234, 0.1); }
+:root[data-theme="dark"] .crash-icon.fw { background: rgba(255, 179, 92, 0.12); border-color: rgba(255, 179, 92, 0.5); }
+:root[data-theme="dark"] .crash-icon.mw { background: rgba(255, 77, 109, 0.12); border-color: rgba(255, 77, 109, 0.5); }
+:root[data-theme="dark"] .btn:focus-visible, :root[data-theme="dark"] .opt:focus-visible, :root[data-theme="dark"] .mode:focus-visible, :root[data-theme="dark"] .test-btn:focus-visible, :root[data-theme="dark"] .diff:focus-visible, :root[data-theme="dark"] .seg button:focus-visible { outline-color: #f3f1ea; }
+
+.back-link, .theme-toggle { background: rgba(18, 18, 16, 0.85); border: 1px solid #2a2823; }
+:root[data-theme="light"] .back-link, :root[data-theme="light"] .theme-toggle { background: rgba(248, 246, 240, 0.92); border-color: #cfc9bb; }
+.theme-toggle {
+  position: fixed; z-index: 6; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px; color: var(--muted); border-radius: 999px; padding: 6px 10px;
+}
+.theme-toggle:hover { color: var(--fg); }
+.theme-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.theme-toggle svg { width: 12px; height: 12px; }
+.app:has(#start-screen[hidden]):has(#over-screen[hidden]) .theme-toggle { display: none; }
+</style>
+</head>
+<body>
+
+<div class="app" role="main">
+  <a class="back-link" href="/">&larr; erickvaldez.com</a>
+  <button class="theme-toggle" id="theme-toggle" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg><span id="theme-label">Light mode</span></button>
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="Packet Racer playfield"></canvas>
+
+    <div class="hud">
+      <div class="stat"><span class="k">Score</span><span class="v score" id="score">0</span></div>
+      <div class="lives-wrap"><div class="lives" id="lives" aria-label="Lives"></div><div class="shields" id="shields" hidden></div></div>
+      <div class="stat right"><span class="k">Best</span><span class="v" id="best">0</span><span class="mode-chip" id="mode-chip">Two-Factor</span></div>
+    </div>
+
+    <div class="overlay see-through" id="start-screen">
+      <div class="card">
+        <div class="logo"><span class="logo-mark"></span><h1>Packet<br><span>Racer</span></h1><a class="ed-switch" href="/packet-racer/cysa/">CySA+ edition &rarr;</a></div>
+        <div class="seg" role="tablist" aria-label="Menu">
+          <button role="tab" id="seg-play" aria-selected="true" type="button">Play</button>
+          <button role="tab" id="seg-practice" aria-selected="false" type="button">Practice test</button>
+        </div>
+        <div class="panel-play" id="panel-play">
+        <p>Race a data packet through the network. Dodge burning firewalls and malware, grab data bits, and chase your high score. Every crash costs a life and a Security+ question decides how much you get back.</p>
+        <div class="choose-label">Pick your security posture to start</div>
+        <div class="modes" role="radiogroup" aria-label="Difficulty">
+          <button class="mode e" data-mode="1" role="radio" type="button">
+            <span class="mode-top"><span class="n">Password123</span><span class="r">Easy &middot; +1</span></span>
+            <span class="d">1 easy question per crash. Answer right and get the life back. Basically a sticky note on the monitor.</span>
+            <span class="foot"><span class="b">Best <b data-best="1">0</b></span><span class="go">PLAY &#9654;</span></span>
+          </button>
+          <button class="mode m" data-mode="2" role="radio" type="button">
+            <span class="mode-top"><span class="n">Two-Factor</span><span class="r">Medium &middot; +&frac12; + Shield</span></span>
+            <span class="d">2 medium questions per crash. Get both right for half a life back plus a firewall shield. Something you know, something you dodge.</span>
+            <span class="foot"><span class="b">Best <b data-best="2">0</b></span><span class="go">PLAY &#9654;</span></span>
+          </button>
+          <button class="mode h" data-mode="3" role="radio" type="button">
+            <span class="mode-top"><span class="n">Zero Trust</span><span class="r">Hard &middot; +1 + Shield</span></span>
+            <span class="d">3 hard questions per crash. Go 3 for 3 for a full life back, a firewall shield and +10 bonus points. Never trust, always verify.</span>
+            <span class="foot"><span class="b">Best <b data-best="3">0</b></span><span class="go">PLAY &#9654;</span></span>
+          </button>
+        </div>
+        <div class="rules">
+          <div><span class="tag b">0 LIVES</span><span>Last chance: get 2 of 3 right to come back with 1 life. Once per run.</span></div>
+          <div><span class="tag p">+10</span><span>Every data bit you grab and every question you get right.</span></div>
+        </div>
+        <div class="keys">Swipe left or right (or tap a side) &middot; Arrow keys or A / D on a keyboard</div>
+        </div>
+        <div class="panel-practice" id="panel-practice" hidden>
+          <p>Classic practice tests by Security+ exam domain. No game, no timer. Answer everything, then see your score and a full review with explanations.</p>
+          <div class="choose-label">Full exam</div>
+          <div class="tests" id="tests-full"></div>
+          <div class="choose-label">By domain</div>
+          <div class="tests" id="tests-domains"></div>
+          <p class="keys">Domains and weights follow the SY0-701 exam objectives.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="test-screen" hidden>
+      <div class="card" role="dialog" aria-modal="true" aria-labelledby="t-text">
+        <div id="t-run">
+          <div class="t-head">
+            <div><div class="choose-label" id="t-domain">Domain</div><div class="t-count" id="t-count">Question 1 of 10</div></div>
+            <button class="btn ghost small" id="t-exit" type="button">Exit</button>
+          </div>
+          <div class="t-bar"><span id="t-bar"></span></div>
+          <p class="q-text" id="t-text"></p>
+          <div class="opts" id="t-opts"></div>
+          <button class="btn" id="t-next" type="button" disabled>Next</button>
+        </div>
+        <div id="t-done" hidden>
+          <div class="choose-label" id="t-done-domain">Results</div>
+          <div class="t-score"><span id="t-pct">0%</span><span class="t-frac" id="t-frac">0 of 0 correct</span></div>
+          <p id="t-verdict"></p>
+          <div class="t-breakdown" id="t-breakdown" hidden></div>
+          <div class="review">
+            <div class="choose-label">Review</div>
+            <ol class="review-list" id="t-review"></ol>
+          </div>
+          <button class="btn" id="t-retry" type="button">Retake test</button>
+          <button class="btn ghost" id="t-back" type="button">Back to tests</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="q-screen" hidden>
+      <div class="card" id="q-card" role="dialog" aria-modal="true" aria-labelledby="q-text">
+        <div class="crash-head" id="crash-head">
+          <div class="crash-icon" id="crash-icon">FW</div>
+          <div>
+            <p class="crash-title" id="crash-title">Blocked by a firewall</p>
+            <div class="crash-sub">&minus;1 life</div>
+          </div>
+        </div>
+        <p class="crash-text" id="crash-text"></p>
+        <div class="q-meta"><span id="q-label">Answer to recover</span><span class="tier" id="q-tier">Easy</span></div>
+        <div class="steps" id="q-steps" hidden><span></span><span></span><span></span></div>
+        <p class="q-text" id="q-text"></p>
+        <div class="opts" id="q-opts"></div>
+        <div class="result" id="q-result" hidden></div>
+        <button class="btn" id="q-continue" hidden>Continue</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="over-screen" hidden>
+      <div class="card">
+        <h2>Connection lost</h2>
+        <div class="newbest" id="newbest" hidden>NEW HIGH SCORE</div>
+        <div class="stats">
+          <div><div class="k">Score</div><div class="v" id="o-score">0</div></div>
+          <div><div class="k">Best</div><div class="v" id="o-best">0</div></div>
+          <div><div class="k">Correct</div><div class="v" id="o-correct">0/0</div></div>
+        </div>
+        <p id="o-tip"></p>
+        <div class="review" id="review" hidden>
+          <div class="choose-label" id="review-label">Your answers</div>
+          <ol class="review-list" id="review-list"></ol>
+        </div>
+        <button class="btn" id="again-btn">Play again</button>
+        <button class="btn ghost" id="menu-btn">Change mode</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Security+ question bank ----------
+  // t: 1 easy, 2 medium, 3 hard. a: index of the correct option.
+  var QUESTIONS = [
+    { d: 1, t: 1, q: "Which part of the CIA triad ensures data isn't changed without authorization?", o: ["Confidentiality", "Integrity", "Availability", "Non-repudiation"], a: 1, e: "Integrity means data stays accurate and unaltered. Hashing is a common way to verify it." },
+    { d: 2, t: 1, q: "A phishing attack sent through text messages is called:", o: ["Vishing", "Whaling", "Smishing", "Pharming"], a: 2, e: "Smishing is SMS phishing. Vishing is voice, and whaling targets executives." },
+    { d: 4, t: 1, q: "Which is an example of multifactor authentication?", o: ["Password and PIN", "Password and fingerprint", "Two different passwords", "Username and password"], a: 1, e: "MFA combines different factor types: something you know (password) and something you are (fingerprint)." },
+    { d: 2, t: 1, q: "Malware that encrypts files and demands payment is:", o: ["Spyware", "A worm", "Ransomware", "A rootkit"], a: 2, e: "Ransomware encrypts data and demands a ransom for the key. Offline backups are a key defense." },
+    { d: 4, t: 1, q: "Which protocol should replace Telnet for secure remote administration?", o: ["FTP", "SSH", "SNMPv1", "HTTP"], a: 1, e: "SSH encrypts the session. Telnet sends everything, including passwords, in clear text." },
+    { d: 4, t: 1, q: "The principle of least privilege means:", o: ["Users get only the access their job requires", "Admins have full access everywhere", "Access is granted by seniority", "Everyone shares one account"], a: 0, e: "Least privilege limits the damage if an account is misused or compromised." },
+    { d: 2, t: 1, q: "Following an employee through a secured door without badging in is:", o: ["Shoulder surfing", "Tailgating", "Dumpster diving", "Pretexting"], a: 1, e: "Tailgating (piggybacking) bypasses physical access controls. Access control vestibules help stop it." },
+    { d: 1, t: 1, q: "Which hashing algorithm is the most secure of these?", o: ["MD5", "SHA-1", "SHA-256", "CRC32"], a: 2, e: "MD5 and SHA-1 have known collision weaknesses. CRC32 is a checksum, not a security hash." },
+    { d: 1, t: 1, q: "Which is a symmetric encryption algorithm?", o: ["RSA", "AES", "ECC", "Diffie-Hellman"], a: 1, e: "AES uses the same key to encrypt and decrypt. RSA and ECC are asymmetric." },
+    { d: 1, t: 1, q: "A security guard at a building entrance is which category of control?", o: ["Technical", "Managerial", "Physical", "Compensating"], a: 2, e: "Guards, fences, locks and bollards are physical controls." },
+    { d: 3, t: 1, q: "A firewall's implicit deny rule:", o: ["Allows all traffic by default", "Blocks traffic not explicitly allowed", "Logs traffic without blocking", "Denies only known malware"], a: 1, e: "Implicit deny sits at the end of the rule list and drops anything no rule permitted." },
+    { d: 2, t: 1, q: "A phishing email crafted for one specific person or team is:", o: ["Spear phishing", "Spam", "Watering hole", "Typosquatting"], a: 0, e: "Spear phishing is targeted and uses details about the victim to look legitimate." },
+    { d: 4, t: 1, q: "Which wireless security protocol is the most secure?", o: ["WEP", "WPA", "WPA2", "WPA3"], a: 3, e: "WPA3 adds SAE, which resists offline password guessing better than WPA2's PSK." },
+    { d: 2, t: 1, q: "A vulnerability the vendor doesn't know about and hasn't patched is a:", o: ["Zero-day", "Legacy flaw", "Misconfiguration", "False positive"], a: 0, e: "Zero-days have no patch yet, so defenses rely on detection and layered controls." },
+    { d: 2, t: 1, q: "Searching through trash for passwords or sensitive papers is:", o: ["Tailgating", "Dumpster diving", "Baiting", "Vishing"], a: 1, e: "Shredding and secure disposal policies defend against dumpster diving." },
+
+    { d: 1, t: 2, q: "To send Bob a confidential message using asymmetric encryption, you encrypt it with:", o: ["Your private key", "Your public key", "Bob's public key", "Bob's private key"], a: 2, e: "Anyone can encrypt with Bob's public key, but only Bob's private key can decrypt it." },
+    { d: 1, t: 2, q: "A digital signature is created with the sender's:", o: ["Public key", "Private key", "Session key", "Shared secret"], a: 1, e: "Signing with the private key proves origin. Anyone can verify it with the sender's public key." },
+    { d: 2, t: 2, q: "Which BEST prevents SQL injection?", o: ["Parameterized queries", "Longer passwords", "Disabling ICMP", "Full-disk encryption"], a: 0, e: "Parameterized queries and input validation keep user input from being run as SQL." },
+    { d: 2, t: 2, q: "Injecting a malicious script into a web page that other users then load is:", o: ["CSRF", "XSS", "Directory traversal", "Replay attack"], a: 1, e: "Cross-site scripting runs attacker code in victims' browsers. Output encoding helps prevent it." },
+    { d: 1, t: 2, q: "Adding a random salt to password hashes mainly defends against:", o: ["Phishing", "Rainbow table attacks", "Keyloggers", "Session hijacking"], a: 1, e: "Salts make precomputed hash tables useless, since every hash is unique." },
+    { d: 3, t: 2, q: "The maximum amount of data loss, measured in time, an organization can accept is the:", o: ["RTO", "MTTR", "RPO", "MTBF"], a: 2, e: "RPO is acceptable data loss. RTO is how long you can be down before recovery." },
+    { d: 3, t: 2, q: "Which backup copies everything changed since the last FULL backup?", o: ["Incremental", "Differential", "Snapshot", "Full"], a: 1, e: "Differential grows until the next full. Incremental only copies changes since the last backup of any kind." },
+    { d: 1, t: 2, q: "A honeypot is used to:", o: ["Speed up the network", "Lure attackers and study their behavior", "Store encryption keys", "Filter spam"], a: 1, e: "Honeypots are decoys that reveal attacker techniques without risking real systems." },
+    { d: 4, t: 2, q: "A SIEM's main purpose is to:", o: ["Encrypt data at rest", "Collect and correlate logs to detect threats", "Assign IP addresses", "Block USB drives"], a: 1, e: "A SIEM aggregates logs from many sources, correlates events and raises alerts." },
+    { d: 4, t: 2, q: "When collecting forensic evidence, which should be captured FIRST?", o: ["Hard drive", "RAM", "Backups", "Archived logs"], a: 1, e: "Order of volatility: capture the most volatile data first. RAM is lost at power-off." },
+    { d: 4, t: 2, q: "An IDS that detects attacks by matching known patterns is:", o: ["Anomaly-based", "Heuristic", "Signature-based", "Behavioral"], a: 2, e: "Signature-based detection is accurate for known threats but misses new ones." },
+    { d: 1, t: 2, q: "Which issues and vouches for digital certificates?", o: ["Certificate authority", "Key escrow", "RADIUS server", "Domain controller"], a: 0, e: "A CA signs certificates, binding a public key to an identity." },
+    { d: 1, t: 2, q: "Which checks a certificate's revocation status in real time?", o: ["CRL", "OCSP", "CSR", "PEM"], a: 1, e: "OCSP queries status per certificate. A CRL is a periodically published list." },
+    { d: 5, t: 2, q: "Requiring two different people to complete a sensitive task is:", o: ["Job rotation", "Separation of duties", "Least privilege", "Mandatory vacation"], a: 1, e: "Separation of duties prevents one person from committing and hiding fraud." },
+    { d: 2, t: 2, q: "Registering a look-alike domain such as gooogle.com to trick users is:", o: ["Typosquatting", "DNS poisoning", "Domain hijacking", "Pharming"], a: 0, e: "Typosquatting relies on users mistyping or misreading a familiar domain." },
+    { d: 1, t: 2, q: "Which is a PREVENTIVE control?", o: ["Security camera", "Log review", "Firewall rule blocking traffic", "Restoring from backup"], a: 2, e: "Preventive controls stop an incident. Cameras and log review detect, backups correct." },
+    { d: 2, t: 2, q: "Many compromised machines flooding one target with traffic is a:", o: ["DoS", "DDoS", "MITM", "Brute force"], a: 1, e: "Distributed denial of service uses a botnet, so blocking one source doesn't stop it." },
+
+    { d: 3, t: 3, q: "Which BEST protects web traffic from on-path (man-in-the-middle) attacks?", o: ["Enforcing TLS with HSTS", "Longer passwords", "Disabling ICMP", "Antivirus on servers"], a: 0, e: "HSTS forces browsers to use HTTPS, blocking downgrade and stripping attacks." },
+    { d: 1, t: 3, q: "The main advantage of elliptic curve cryptography is:", o: ["It's symmetric", "Strong security with smaller keys", "It needs no key exchange", "It can't be broken"], a: 1, e: "ECC matches RSA's strength with much shorter keys, which suits mobile and IoT." },
+    { d: 1, t: 3, q: "Perfect forward secrecy ensures that:", o: ["Keys never expire", "A stolen long-term key can't decrypt past sessions", "Passwords are salted", "Certificates are pinned"], a: 1, e: "PFS uses unique ephemeral session keys, so old captured traffic stays protected." },
+    { d: 4, t: 3, q: "Which XML-based standard enables single sign-on across organizations?", o: ["OAuth", "SAML", "Kerberos", "RADIUS"], a: 1, e: "SAML passes authentication assertions between an identity provider and service providers." },
+    { d: 4, t: 3, q: "Which framework handles delegated AUTHORIZATION, not authentication?", o: ["OAuth", "LDAP", "TACACS+", "SAML"], a: 0, e: "OAuth grants apps limited access to resources without sharing the user's password." },
+    { d: 4, t: 3, q: "Classification labels like Secret and Top Secret are used by which access control model?", o: ["DAC", "RBAC", "MAC", "ABAC"], a: 2, e: "Mandatory access control compares a subject's clearance to the object's label." },
+    { d: 4, t: 3, q: "In which access control model does the data owner decide who gets access?", o: ["MAC", "DAC", "Rule-based", "ABAC"], a: 1, e: "Discretionary access control leaves permissions to the owner's discretion." },
+    { d: 5, t: 3, q: "Annualized loss expectancy (ALE) is calculated as:", o: ["SLE x ARO", "AV x EF", "ARO / SLE", "SLE + ARO"], a: 0, e: "ALE = single loss expectancy x annualized rate of occurrence. SLE = asset value x exposure factor." },
+    { d: 3, t: 3, q: "Data being subject to the laws of the country where it's stored is:", o: ["Data masking", "Data sovereignty", "Data retention", "Data minimization"], a: 1, e: "Data sovereignty affects where cloud data can legally be kept and processed." },
+    { d: 1, t: 3, q: "Replacing a card number with a meaningless value that maps back to it in a secure vault is:", o: ["Hashing", "Masking", "Tokenization", "Steganography"], a: 2, e: "Tokenization removes real data from systems while keeping a reversible mapping in the vault." },
+    { d: 4, t: 3, q: "After an incident is detected and analyzed, the next response step is:", o: ["Lessons learned", "Containment", "Preparation", "Recovery"], a: 1, e: "Containment limits the spread before eradication and recovery begin." },
+    { d: 3, t: 3, q: "Which disaster recovery site can take over almost immediately?", o: ["Cold site", "Warm site", "Hot site", "Mobile site"], a: 2, e: "A hot site is fully equipped with current data, so failover is fast but costly." },
+    { d: 4, t: 3, q: "SOAR platforms mainly help a security team by:", o: ["Replacing firewalls", "Automating response with playbooks", "Issuing certificates", "Encrypting backups"], a: 1, e: "SOAR orchestrates tools and automates repetitive response steps." },
+    { d: 2, t: 3, q: "Writing more data into memory than a buffer holds, overwriting nearby memory, is:", o: ["Race condition", "Buffer overflow", "Memory leak", "Integer underflow"], a: 1, e: "Buffer overflows can let attackers run code. Bounds checking and ASLR help prevent them." },
+    { d: 3, t: 3, q: "A hardened server admins connect through to reach internal systems is a:", o: ["Proxy server", "Jump server", "Honeynet", "Load balancer"], a: 1, e: "A jump server (bastion host) gives one controlled, monitored path into a secure zone." },
+    { d: 3, t: 1, q: "Information in transit is data that is:", o: ["Stored on a disk", "Moving across a network", "Loaded in memory", "Archived to tape"], a: 1, e: "In transit means moving between systems. Protect it with TLS, VPNs and other encrypted channels." },
+    { d: 3, t: 1, q: "Splitting a network into smaller zones to limit an attacker's lateral movement is:", o: ["NAT", "Segmentation", "Load balancing", "Port mirroring"], a: 1, e: "Segmentation (VLANs, subnets, firewalls between zones) contains a breach to one area." },
+    { d: 3, t: 2, q: "In which cloud model does the customer manage the OS, apps and data while the provider runs the hardware?", o: ["SaaS", "PaaS", "IaaS", "FaaS"], a: 2, e: "IaaS gives you virtual infrastructure; you're responsible for everything from the OS up." },
+    { d: 3, t: 2, q: "RAID 1 provides redundancy by:", o: ["Striping with no redundancy", "Mirroring data on two disks", "Parity across three or more disks", "Encrypting each disk"], a: 1, e: "RAID 1 mirrors, so either disk can fail without losing data. RAID 0 stripes with no redundancy; RAID 5 uses parity." },
+    { d: 3, t: 2, q: "A device that must BLOCK attacks in real time should be placed:", o: ["Inline", "On a SPAN port", "On a passive tap", "Out of band"], a: 0, e: "Only an inline device sees traffic before it passes, so it can drop it. Taps and SPAN ports only watch copies." },
+    { d: 3, t: 1, q: "A UPS mainly protects systems from:", o: ["Malware", "Short power outages and fluctuations", "Disk failure", "Data theft"], a: 1, e: "An uninterruptible power supply bridges brief outages and allows a clean shutdown or switch to a generator." },
+    { d: 3, t: 3, q: "Infrastructure as code improves security mainly by:", o: ["Removing the need for patching", "Making configurations consistent and repeatable", "Encrypting all traffic", "Eliminating admin accounts"], a: 1, e: "Defining infrastructure in version-controlled code reduces configuration drift and manual mistakes." },
+    { d: 5, t: 1, q: "A contract that defines a provider's expected uptime and responsibilities is a(n):", o: ["NDA", "MOU", "SLA", "BPA"], a: 2, e: "A service level agreement sets measurable commitments like uptime and response times." },
+    { d: 5, t: 1, q: "Buying cybersecurity insurance is which risk response?", o: ["Accept", "Avoid", "Transfer", "Mitigate"], a: 2, e: "Transferring shifts the financial impact of a risk to a third party, like an insurer." },
+    { d: 5, t: 1, q: "Which US law protects patients' health information?", o: ["SOX", "HIPAA", "GLBA", "FERPA"], a: 1, e: "HIPAA covers protected health information. SOX is financial reporting, GLBA is financial institutions, FERPA is student records." },
+    { d: 5, t: 2, q: "Which standard applies to organizations that process credit card payments?", o: ["ISO 27001", "PCI DSS", "NIST CSF", "GDPR"], a: 1, e: "PCI DSS is the payment card industry's security standard for cardholder data." },
+    { d: 5, t: 2, q: "A risk register is used to:", o: ["Store user passwords", "Track identified risks, owners and status", "Log firewall traffic", "List approved software"], a: 1, e: "The risk register documents each risk with its likelihood, impact, owner and planned response." },
+    { d: 5, t: 2, q: "A penetration test where testers get no prior details about the environment is:", o: ["Known environment", "Partially known environment", "Unknown environment", "Integrated test"], a: 2, e: "Unknown environment (formerly black box) testing simulates an outside attacker with no inside knowledge." },
+    { d: 5, t: 2, q: "Requiring employees to take mandatory vacation mainly helps:", o: ["Improve morale", "Detect fraud an employee has been hiding", "Reduce licensing costs", "Speed up onboarding"], a: 1, e: "When someone is away, others do their work and irregularities they were covering up can surface." },
+    { d: 5, t: 3, q: "Under GDPR, the organization that decides why and how personal data is processed is the:", o: ["Data processor", "Data controller", "Data custodian", "Data subject"], a: 1, e: "The controller determines purpose and means; the processor handles data on the controller's behalf." },
+    { d: 5, t: 3, q: "Single loss expectancy (SLE) is calculated as:", o: ["ALE x ARO", "Asset value x exposure factor", "ARO / ALE", "Asset value + ARO"], a: 1, e: "SLE = AV x EF, the cost of one occurrence. Multiply SLE by ARO to get ALE." },
+
+    { d: 1, t: 1, q: "Which provides non-repudiation, proving a sender can't deny sending a message?", o: ["Symmetric encryption", "Digital signature", "Encoding", "Compression"], a: 1, e: "A digital signature ties the message to the sender's private key, so they can't credibly deny it." },
+    { d: 1, t: 1, q: "Hiding a message inside an image file is:", o: ["Steganography", "Tokenization", "Hashing", "Obfuscation by encryption"], a: 0, e: "Steganography conceals that data exists at all by hiding it in another file." },
+    { d: 1, t: 1, q: "A chip on a laptop's motherboard that stores keys for full-disk encryption is a:", o: ["HSM", "TPM", "SED", "UEFI"], a: 1, e: "A Trusted Platform Module stores keys and supports secure boot on a single device." },
+    { d: 1, t: 2, q: "A dedicated appliance that manages and protects cryptographic keys for a data center is a(n):", o: ["TPM", "HSM", "KDC", "CASB"], a: 1, e: "A hardware security module handles key generation and storage at scale, often for servers and CAs." },
+    { d: 1, t: 2, q: "PBKDF2 and bcrypt are examples of:", o: ["Key stretching", "Symmetric ciphers", "Digital certificates", "Stream ciphers"], a: 0, e: "Key stretching runs a password through many rounds of hashing, making brute-force attacks much slower." },
+    { d: 1, t: 2, q: "A certificate issued for *.example.com is a:", o: ["Self-signed certificate", "Wildcard certificate", "Root certificate", "Code-signing certificate"], a: 1, e: "A wildcard certificate covers all first-level subdomains, such as mail.example.com and www.example.com." },
+    { d: 1, t: 2, q: "Before a change goes to production, it is normally reviewed and approved by the:", o: ["Help desk", "Change advisory board", "Data owner", "Incident response team"], a: 1, e: "The CAB weighs impact, backout plans and timing as part of change management." },
+    { d: 1, t: 2, q: "Comparing your current security controls against a target framework is a:", o: ["Gap analysis", "Penetration test", "Tabletop exercise", "Root cause analysis"], a: 0, e: "A gap analysis shows the difference between where you are and where you need to be." },
+    { d: 1, t: 3, q: "Fake credentials planted in a system to alert you when an intruder uses them are:", o: ["Honeypots", "Honeytokens", "Sinkholes", "Canary builds"], a: 1, e: "Honeytokens are decoy data. Any use of them signals unauthorized access." },
+    { d: 1, t: 3, q: "In a zero trust model, which component decides whether to grant access?", o: ["Policy enforcement point", "Policy engine", "Data plane", "Subject"], a: 1, e: "The policy engine makes the decision; the policy enforcement point carries it out." },
+
+    { d: 2, t: 1, q: "A phishing attack carried out over a phone call is:", o: ["Smishing", "Vishing", "Whaling", "Spoofing"], a: 1, e: "Vishing is voice phishing, often posing as a bank or IT support." },
+    { d: 2, t: 1, q: "Malware that records every key a user types is a:", o: ["Keylogger", "Worm", "Logic bomb", "Adware"], a: 0, e: "Keyloggers capture keystrokes, including passwords, and send them to the attacker." },
+    { d: 2, t: 1, q: "Malware that spreads across a network on its own, without user action, is a:", o: ["Trojan", "Virus", "Worm", "Rootkit"], a: 2, e: "Worms self-replicate through vulnerabilities. Viruses need a user to run an infected file." },
+    { d: 2, t: 1, q: "Malicious software disguised as a legitimate program is a:", o: ["Trojan", "Worm", "Ransomware", "Botnet"], a: 0, e: "A Trojan looks useful, so the user installs it, then it runs its hidden payload." },
+    { d: 2, t: 1, q: "A disgruntled employee stealing company data is which threat actor?", o: ["Hacktivist", "Insider threat", "Nation-state", "Script kiddie"], a: 1, e: "Insiders already have legitimate access, which makes them hard to detect." },
+    { d: 2, t: 1, q: "A hacktivist is mainly motivated by:", o: ["Money", "A political or social cause", "Espionage for a government", "Curiosity only"], a: 1, e: "Hacktivists attack to promote an ideology, often with defacements or leaks." },
+    { d: 2, t: 1, q: "Employees using cloud apps IT never approved is called:", o: ["Shadow IT", "BYOD", "Insider threat", "Typosquatting"], a: 0, e: "Shadow IT creates unmanaged risk because security teams can't see or protect it." },
+    { d: 2, t: 1, q: "Gaining admin rights from a standard user account is:", o: ["Lateral movement", "Privilege escalation", "Pivoting", "Session hijacking"], a: 1, e: "Privilege escalation exploits flaws or misconfigurations to gain higher permissions." },
+    { d: 2, t: 1, q: "Removing unneeded services, ports and accounts from a system is:", o: ["Hardening", "Segmentation", "Patching", "Sandboxing"], a: 0, e: "Hardening shrinks the attack surface so there's less for an attacker to exploit." },
+    { d: 2, t: 2, q: "Compromising a website a target group often visits, to infect them, is a:", o: ["Watering hole attack", "Pharming attack", "Drive-by download only", "Spear phishing"], a: 0, e: "Watering hole attacks go after the trusted sites victims already use." },
+    { d: 2, t: 2, q: "Trying a few common passwords against many accounts to avoid lockouts is:", o: ["Brute force", "Password spraying", "Credential stuffing", "Dictionary attack"], a: 1, e: "Spraying uses a small password list across many users, staying under lockout thresholds." },
+    { d: 2, t: 2, q: "Using username and password pairs leaked from one breach to log into other sites is:", o: ["Password spraying", "Credential stuffing", "Pass the hash", "Rainbow table attack"], a: 1, e: "Credential stuffing works because people reuse passwords. MFA blocks most of it." },
+    { d: 2, t: 2, q: "Malware that hides deep in the OS with admin-level access and evades detection is a:", o: ["Rootkit", "Keylogger", "Adware", "Spyware"], a: 0, e: "Rootkits modify the system to hide themselves. Removal often means reimaging." },
+    { d: 2, t: 2, q: "Code that stays dormant until a set date or event, then runs its payload, is a:", o: ["Logic bomb", "Worm", "Backdoor", "Polymorphic virus"], a: 0, e: "Logic bombs trigger on a condition, like an employee being removed from payroll." },
+    { d: 2, t: 2, q: "Which threat actor is most associated with advanced persistent threats (APTs)?", o: ["Script kiddie", "Hacktivist", "Nation-state", "Unskilled insider"], a: 2, e: "Nation-states have the funding and patience for long, stealthy campaigns." },
+    { d: 2, t: 2, q: "A rogue access point broadcasting the same SSID as a legitimate network is an:", o: ["Evil twin", "Bluesnarfing attack", "Jamming attack", "Disassociation attack"], a: 0, e: "Users connect to the evil twin by mistake, letting the attacker intercept their traffic." },
+    { d: 2, t: 2, q: "Stealing data from a phone over Bluetooth without permission is:", o: ["Bluejacking", "Bluesnarfing", "War driving", "NFC skimming"], a: 1, e: "Bluesnarfing steals data. Bluejacking only sends unsolicited messages." },
+    { d: 2, t: 2, q: "Using ../ sequences in a URL to read files outside the web root is:", o: ["SQL injection", "Directory traversal", "XSS", "Command injection"], a: 1, e: "Directory traversal escapes the intended folder. Input validation and least-privilege file access prevent it." },
+    { d: 2, t: 2, q: "Capturing a valid login exchange and resending it later to gain access is a:", o: ["Replay attack", "Downgrade attack", "Birthday attack", "Collision attack"], a: 0, e: "Timestamps, nonces and session tokens that expire stop replay attacks." },
+    { d: 2, t: 2, q: "Attackers inserting malware into a vendor's software update is a:", o: ["Supply chain attack", "Watering hole attack", "Zero-day attack", "Insider attack"], a: 0, e: "Supply chain attacks abuse the trust customers place in their vendors." },
+    { d: 2, t: 2, q: "Calling a user while pretending to be IT and inventing a story to get their password is:", o: ["Pretexting", "Tailgating", "Shoulder surfing", "Baiting"], a: 0, e: "Pretexting builds a believable scenario so the victim feels it's normal to share information." },
+    { d: 2, t: 2, q: "An attacker posing as the CEO by email to get finance to wire money is:", o: ["Business email compromise", "Smishing", "Pharming", "Vishing"], a: 0, e: "BEC relies on impersonation and urgency. Out-of-band verification of payment requests stops it." },
+    { d: 2, t: 2, q: "Changing DNS records so users are sent to a malicious site is:", o: ["DNS poisoning", "ARP poisoning", "Domain hijacking", "Typosquatting"], a: 0, e: "DNS poisoning corrupts name resolution. DNSSEC helps verify DNS responses." },
+    { d: 2, t: 3, q: "Tricking a logged-in user's browser into sending an unwanted request to a site they trust is:", o: ["XSS", "CSRF", "SSRF", "Clickjacking"], a: 1, e: "Cross-site request forgery rides on the victim's active session. Anti-CSRF tokens prevent it." },
+    { d: 2, t: 3, q: "Sending fake ARP replies to intercept traffic on a LAN is:", o: ["MAC flooding", "ARP poisoning", "DNS poisoning", "VLAN hopping"], a: 1, e: "ARP poisoning links the attacker's MAC to another host's IP, enabling an on-path attack." },
+    { d: 2, t: 3, q: "A flaw where a file is checked, then changed before it's used, is a:", o: ["Buffer overflow", "Time-of-check to time-of-use race condition", "Memory leak", "Integer overflow"], a: 1, e: "TOCTOU bugs exploit the gap between checking a resource and using it." },
+    { d: 2, t: 3, q: "Malware that changes its own code each time it spreads to avoid signature detection is:", o: ["Polymorphic", "Fileless", "Armored", "Macro"], a: 0, e: "Polymorphic malware defeats simple signatures, which is why behavior-based detection matters." },
+    { d: 2, t: 3, q: "Malware that runs only in memory using built-in tools like PowerShell is:", o: ["Fileless malware", "A rootkit", "A boot sector virus", "Spyware"], a: 0, e: "Fileless attacks leave little on disk, so EDR and script logging are key to catching them." },
+
+    { d: 3, t: 1, q: "A load balancer mainly improves:", o: ["Confidentiality", "Availability", "Non-repudiation", "Integrity"], a: 1, e: "Spreading traffic across servers keeps a service up if one server is overloaded or fails." },
+    { d: 3, t: 1, q: "A network zone between the internet and the internal network, for public-facing servers, is a:", o: ["Screened subnet (DMZ)", "VLAN trunk", "Intranet", "Air gap"], a: 0, e: "A screened subnet lets the public reach web servers without reaching the internal LAN." },
+    { d: 3, t: 1, q: "A VPN that permanently connects two office networks over the internet is a:", o: ["Remote access VPN", "Site-to-site VPN", "Split-tunnel VPN", "Clientless VPN"], a: 1, e: "Site-to-site VPNs link whole networks through gateways at each location." },
+    { d: 3, t: 1, q: "Labeling data as Public, Internal or Confidential is:", o: ["Data classification", "Data masking", "Data retention", "Tokenization"], a: 0, e: "Classification decides which protections each type of data needs." },
+    { d: 3, t: 1, q: "A network physically isolated from all other networks, including the internet, is:", o: ["Segmented", "Air-gapped", "Virtualized", "Screened"], a: 1, e: "Air gaps protect critical systems, but data moved in by USB can still carry malware." },
+    { d: 3, t: 1, q: "Full-disk encryption protects data:", o: ["In transit", "At rest", "In use", "In backups only"], a: 1, e: "If a laptop is stolen, data at rest stays unreadable without the key." },
+    { d: 3, t: 2, q: "Containers differ from virtual machines mainly because containers:", o: ["Each run a full OS", "Share the host's OS kernel", "Can't be patched", "Require a hypervisor per app"], a: 1, e: "Sharing the kernel makes containers light, but a kernel flaw can affect every container." },
+    { d: 3, t: 2, q: "In serverless computing, the customer is mainly responsible for:", o: ["Physical servers", "The OS patches", "Their function code and data", "The hypervisor"], a: 2, e: "The provider runs the servers and runtime. You secure your code, permissions and data." },
+    { d: 3, t: 2, q: "A web application firewall (WAF) mainly protects against:", o: ["Physical theft", "Attacks like SQL injection and XSS", "Wireless jamming", "Power failures"], a: 1, e: "A WAF inspects HTTP traffic at layer 7 to block common web app attacks." },
+    { d: 3, t: 2, q: "Industrial control systems that run power grids and water plants are commonly called:", o: ["SCADA", "SDN", "SASE", "SIEM"], a: 0, e: "SCADA systems often run old, hard-to-patch software, so segmentation is critical." },
+    { d: 3, t: 2, q: "A discussion-based walkthrough of a disaster scenario with key staff is a:", o: ["Failover test", "Tabletop exercise", "Simulation", "Parallel processing test"], a: 1, e: "Tabletop exercises test plans and roles without touching production systems." },
+    { d: 3, t: 2, q: "Keeping a backup data center in a different region from the primary is:", o: ["Geographic dispersion", "Load balancing", "Clustering", "Journaling"], a: 0, e: "Geographic dispersion keeps one regional disaster from taking out both sites." },
+    { d: 3, t: 2, q: "Two servers running together so the service stays up if one fails is:", o: ["High availability clustering", "Cold standby", "Snapshotting", "Tokenization"], a: 0, e: "Clustering provides automatic failover to keep a service available." },
+    { d: 3, t: 3, q: "An attacker breaking out of a virtual machine to reach the host is:", o: ["VM sprawl", "VM escape", "Resource reuse", "Hyperjacking"], a: 1, e: "VM escape is serious because it can expose every VM on that host. Patch hypervisors promptly." },
+    { d: 3, t: 3, q: "Software-defined networking separates the:", o: ["Control plane from the data plane", "LAN from the WAN", "Users from admins", "Encryption from hashing"], a: 0, e: "SDN centralizes decisions in a controller while switches just forward traffic." },
+    { d: 3, t: 3, q: "IPsec tunnel mode differs from transport mode because it:", o: ["Encrypts only the payload", "Encrypts the entire original packet", "Uses no encryption", "Works only on LANs"], a: 1, e: "Tunnel mode wraps the whole packet, headers included, which suits site-to-site VPNs." },
+
+    { d: 4, t: 1, q: "A documented, approved starting configuration for systems is a:", o: ["Baseline", "Benchmark score", "Change request", "Snapshot"], a: 0, e: "Baselines make it easy to spot drift from the secure, approved setup." },
+    { d: 4, t: 1, q: "Software that lets IT enforce policies and remotely wipe company phones is:", o: ["MDM", "SIEM", "DLP", "NAC"], a: 0, e: "Mobile device management handles enrollment, policies, app control and remote wipe." },
+    { d: 4, t: 1, q: "A policy allowing employees to use their personal phones for work is:", o: ["COPE", "BYOD", "CYOD", "VDI"], a: 1, e: "BYOD saves money but mixes personal and company data, so MDM or containerization helps." },
+    { d: 4, t: 1, q: "Testing patches before deploying them everywhere mainly prevents:", o: ["Zero-day attacks", "Breaking production systems", "Phishing", "Data exfiltration"], a: 1, e: "A bad patch can crash systems. Test, then roll out in stages with a backout plan." },
+    { d: 4, t: 1, q: "Keeping a complete, current list of hardware and software is:", o: ["Asset management", "Change management", "Risk transfer", "Data retention"], a: 0, e: "You can't protect what you don't know you have." },
+    { d: 4, t: 1, q: "CVSS is used to:", o: ["Name vulnerabilities", "Score a vulnerability's severity", "Encrypt logs", "Manage certificates"], a: 1, e: "The Common Vulnerability Scoring System rates severity from 0 to 10 to help prioritize fixes." },
+    { d: 4, t: 1, q: "A scanner flagging a vulnerability that isn't actually present is a:", o: ["True positive", "False positive", "False negative", "True negative"], a: 1, e: "False positives waste time. False negatives, missed real issues, are more dangerous." },
+    { d: 4, t: 1, q: "A tool that stops sensitive data like card numbers from leaving the network is:", o: ["DLP", "IDS", "VPN", "WAF"], a: 0, e: "Data loss prevention watches email, uploads and devices for sensitive data leaving." },
+    { d: 4, t: 1, q: "Blocking users from reaching known malicious domains at the name-lookup step is:", o: ["DNS filtering", "Port security", "Geofencing", "MAC filtering"], a: 0, e: "DNS filtering stops connections to bad domains before any traffic is exchanged." },
+    { d: 4, t: 1, q: "One login that gives access to many applications is:", o: ["MFA", "SSO", "RBAC", "PAM"], a: 1, e: "Single sign-on reduces password fatigue, but that one account becomes very valuable." },
+    { d: 4, t: 1, q: "Granting permissions based on a person's job function is:", o: ["DAC", "MAC", "RBAC", "ABAC"], a: 2, e: "Role-based access control assigns permissions to roles, and users get the role." },
+    { d: 4, t: 1, q: "Locking an account after several failed logins mainly defends against:", o: ["Brute-force attacks", "Phishing", "SQL injection", "DDoS"], a: 0, e: "Lockout stops attackers from guessing unlimited passwords on one account." },
+    { d: 4, t: 1, q: "What is the FIRST phase of incident response?", o: ["Detection", "Containment", "Preparation", "Eradication"], a: 2, e: "Preparation, with plans, tools and training, happens before any incident." },
+    { d: 4, t: 1, q: "The final phase of incident response, where the team reviews what happened, is:", o: ["Recovery", "Lessons learned", "Eradication", "Analysis"], a: 1, e: "Lessons learned improves the process so the next incident goes better." },
+    { d: 4, t: 1, q: "Documenting who handled evidence and when, from collection to court, is:", o: ["Chain of custody", "Legal hold", "E-discovery", "Order of volatility"], a: 0, e: "A broken chain of custody can make evidence inadmissible." },
+    { d: 4, t: 1, q: "Automating account creation for new hires mainly:", o: ["Increases errors", "Reduces mistakes and speeds up onboarding", "Removes the need for MFA", "Replaces backups"], a: 1, e: "Scripted provisioning applies the same correct permissions every time." },
+    { d: 4, t: 2, q: "Degaussing is an effective way to sanitize:", o: ["SSDs", "Magnetic hard drives and tapes", "Paper records", "Optical discs"], a: 1, e: "Degaussing scrambles magnetic media. It doesn't work on SSDs, which need crypto-erase or shredding." },
+    { d: 4, t: 2, q: "A credentialed vulnerability scan differs from a non-credentialed one because it:", o: ["Is always faster", "Logs in to see deeper, more accurate results", "Only scans ports", "Exploits each vulnerability"], a: 1, e: "Logged-in scans see missing patches and configs that an outside scan can't." },
+    { d: 4, t: 2, q: "CVE entries are used to:", o: ["Score severity", "Uniquely identify publicly known vulnerabilities", "Encrypt traffic", "Rank threat actors"], a: 1, e: "CVE gives each known vulnerability an ID. CVSS is the separate severity score." },
+    { d: 4, t: 2, q: "Checking a device's patch level and antivirus before letting it on the network is:", o: ["NAC", "DLP", "SIEM", "MDM"], a: 0, e: "Network access control can quarantine devices that fail its posture checks." },
+    { d: 4, t: 2, q: "Software that monitors endpoints for suspicious behavior and can isolate them is:", o: ["EDR", "WAF", "UTM", "CASB"], a: 0, e: "Endpoint detection and response goes beyond antivirus signatures to catch behavior." },
+    { d: 4, t: 2, q: "Which email record lists the servers allowed to send mail for a domain?", o: ["DKIM", "SPF", "DMARC", "MX"], a: 1, e: "SPF lists authorized senders. DKIM signs messages. DMARC sets the policy for failures." },
+    { d: 4, t: 2, q: "Which version of SNMP adds encryption and authentication?", o: ["SNMPv1", "SNMPv2c", "SNMPv3", "None of them"], a: 2, e: "SNMPv1 and v2c send community strings in plain text. Use SNMPv3." },
+    { d: 4, t: 2, q: "A secure file transfer protocol that runs over SSH is:", o: ["FTPS", "SFTP", "TFTP", "SCP over TLS"], a: 1, e: "SFTP uses SSH. FTPS is FTP wrapped in TLS. TFTP has no security at all." },
+    { d: 4, t: 2, q: "Vaulting admin passwords and granting admin rights only when needed is:", o: ["PAM", "SSO", "Federation", "RBAC"], a: 0, e: "Privileged access management limits and monitors the most powerful accounts." },
+    { d: 4, t: 2, q: "Which authentication protocol uses tickets issued by a key distribution center?", o: ["RADIUS", "Kerberos", "LDAP", "TACACS+"], a: 1, e: "Kerberos, used by Active Directory, issues time-limited tickets so passwords aren't resent." },
+    { d: 4, t: 2, q: "Finding the underlying reason an incident happened is:", o: ["Root cause analysis", "Threat hunting", "Triage", "Containment"], a: 0, e: "Fixing the root cause keeps the same incident from happening again." },
+    { d: 4, t: 2, q: "An order to preserve all data related to a lawsuit is a:", o: ["Legal hold", "Chain of custody", "Retention policy", "Subpoena response plan"], a: 0, e: "A legal hold suspends normal deletion so relevant data isn't destroyed." },
+    { d: 4, t: 2, q: "Proactively searching for threats that have evaded existing defenses is:", o: ["Threat hunting", "Vulnerability scanning", "Patch management", "Penetration testing"], a: 0, e: "Threat hunting assumes a breach may exist and looks for signs of it." },
+    { d: 4, t: 2, q: "Why should all systems sync their clocks with NTP?", o: ["To speed up the network", "So logs line up for accurate timelines", "To encrypt logs", "To reduce storage"], a: 1, e: "Mismatched clocks make it nearly impossible to correlate events across systems." },
+    { d: 4, t: 2, q: "Running a suspicious file in an isolated environment to watch what it does is:", o: ["Sandboxing", "Hardening", "Fuzzing", "Code signing"], a: 0, e: "A sandbox lets the file run safely so its behavior can be analyzed." },
+    { d: 4, t: 2, q: "Letting only pre-approved applications run on a system is:", o: ["Application allow listing", "Block listing", "Sandboxing", "Code obfuscation"], a: 0, e: "Allow listing blocks everything not approved, including new malware." },
+    { d: 4, t: 3, q: "Port-based network access control that uses RADIUS to authenticate devices is:", o: ["802.1X", "802.11ac", "802.3af", "802.1Q"], a: 0, e: "802.1X blocks a switch port or Wi-Fi connection until the device authenticates." },
+    { d: 4, t: 3, q: "Which email standard tells receivers what to do when SPF or DKIM checks fail?", o: ["DMARC", "S/MIME", "DKIM", "STARTTLS"], a: 0, e: "DMARC sets a policy (none, quarantine or reject) and sends reports to the domain owner." },
+    { d: 4, t: 3, q: "DKIM protects email by:", o: ["Listing allowed sending servers", "Digitally signing messages", "Encrypting the mailbox", "Blocking attachments"], a: 1, e: "DKIM adds a signature that receivers verify with a public key published in DNS." },
+    { d: 4, t: 3, q: "In biometrics, the point where false acceptance and false rejection rates are equal is the:", o: ["Crossover error rate", "Failure to enroll rate", "Threshold rate", "Accuracy index"], a: 0, e: "A lower crossover error rate means a more accurate biometric system." },
+    { d: 4, t: 3, q: "Why might you choose TACACS+ over RADIUS for managing network devices?", o: ["It uses UDP", "It encrypts the entire payload and separates AAA functions", "It's an open standard only", "It doesn't need a server"], a: 1, e: "TACACS+ encrypts everything and lets you control authorization per command." },
+
+    { d: 5, t: 1, q: "A policy that defines what employees may and may not do with company systems is the:", o: ["AUP", "SLA", "BIA", "MOU"], a: 0, e: "The acceptable use policy sets rules for things like email, internet and personal use." },
+    { d: 5, t: 1, q: "Leaving a low risk as is because fixing it would cost more than the loss is:", o: ["Avoidance", "Acceptance", "Transference", "Mitigation"], a: 1, e: "Risk acceptance is a documented decision that the risk is tolerable." },
+    { d: 5, t: 1, q: "An agreement that legally requires someone to keep information confidential is an:", o: ["SLA", "NDA", "MSA", "SOW"], a: 1, e: "Non-disclosure agreements protect trade secrets and sensitive business information." },
+    { d: 5, t: 1, q: "A policy for how long records are kept before secure deletion is a:", o: ["Retention policy", "Clean desk policy", "Change policy", "Password policy"], a: 0, e: "Retention policies balance legal requirements with the risk of keeping data too long." },
+    { d: 5, t: 1, q: "Sending fake phishing emails to staff to measure who clicks is part of:", o: ["Security awareness training", "Penetration testing only", "Incident response", "Vulnerability scanning"], a: 0, e: "Phishing simulations teach users to spot real attacks and track improvement." },
+    { d: 5, t: 1, q: "When an employee leaves, their accounts should be:", o: ["Kept active for a month", "Disabled promptly", "Shared with their manager", "Converted to guest accounts"], a: 1, e: "Prompt offboarding stops former employees from using leftover access." },
+    { d: 5, t: 1, q: "A program that pays outside researchers for reporting vulnerabilities is a:", o: ["Bug bounty", "Red team", "Audit", "Tabletop"], a: 0, e: "Bug bounties crowdsource testing and give researchers a legal way to report flaws." },
+    { d: 5, t: 1, q: "Requiring employees to lock away papers and clear their desks at day's end is a:", o: ["Clean desk policy", "Data retention policy", "AUP", "Need-to-know policy"], a: 0, e: "A clean desk policy reduces exposure to snooping, theft and dumpster diving." },
+    { d: 5, t: 2, q: "The amount of risk an organization is willing to take on to reach its goals is its:", o: ["Risk appetite", "Risk register", "Residual risk", "Inherent risk"], a: 0, e: "Risk appetite guides which risks get accepted versus mitigated." },
+    { d: 5, t: 2, q: "Deciding to stop offering a risky service entirely is risk:", o: ["Acceptance", "Avoidance", "Transference", "Mitigation"], a: 1, e: "Avoidance removes the risk by removing the activity that causes it." },
+    { d: 5, t: 2, q: "Rating risks as High, Medium or Low instead of in dollars is a:", o: ["Quantitative analysis", "Qualitative analysis", "Gap analysis", "Cost-benefit analysis"], a: 1, e: "Qualitative uses ratings and judgment. Quantitative uses numbers like SLE and ALE." },
+    { d: 5, t: 2, q: "Identifying critical business functions and the impact of losing them is a:", o: ["BIA", "SLA", "AUP", "MOU"], a: 0, e: "A business impact analysis drives recovery priorities, RTOs and RPOs." },
+    { d: 5, t: 2, q: "MTTR measures:", o: ["Average time between failures", "Average time to repair or restore a system", "Maximum acceptable data loss", "Time to detect an attack"], a: 1, e: "Mean time to repair. A lower MTTR means faster recovery." },
+    { d: 5, t: 2, q: "A less formal agreement that outlines two parties' shared goals is a(n):", o: ["MOU", "SLA", "NDA", "MSA"], a: 0, e: "A memorandum of understanding states intent but usually isn't legally binding like a contract." },
+    { d: 5, t: 2, q: "A document that sets the scope, timing and limits for a penetration test is the:", o: ["Rules of engagement", "Statement of work", "Risk register", "Attestation"], a: 0, e: "Rules of engagement define what testers may touch, when, and how to handle issues." },
+    { d: 5, t: 2, q: "Under GDPR, a person asking a company to delete their personal data is exercising the:", o: ["Right to be forgotten", "Right to audit", "Data sovereignty rule", "Due care principle"], a: 0, e: "The right to erasure lets people request removal of their personal data." },
+    { d: 5, t: 2, q: "Who is responsible for deciding how a set of data is classified?", o: ["Data custodian", "Data owner", "Help desk", "Data processor"], a: 1, e: "The data owner, usually a senior business leader, decides classification and access." },
+    { d: 5, t: 2, q: "An independent outside firm reviewing your controls against a standard is an:", o: ["Internal assessment", "External audit", "Self-assessment", "Vulnerability scan"], a: 1, e: "External audits give independent assurance to customers and regulators." },
+    { d: 5, t: 3, q: "A contract clause letting you inspect a vendor's security practices is a:", o: ["Right-to-audit clause", "Non-compete clause", "Indemnity clause", "Force majeure clause"], a: 0, e: "Right-to-audit clauses support third-party risk management after the contract is signed." },
+    { d: 5, t: 3, q: "Due diligence differs from due care in that due diligence is:", o: ["Acting on known risks day to day", "Researching and understanding risks before acting", "Buying insurance", "Firing negligent staff"], a: 1, e: "Due diligence is investigating risks. Due care is taking reasonable steps to address them." },
+    { d: 5, t: 3, q: "A system that can't meet a policy requirement is allowed to run with a compensating control through a(n):", o: ["Exception", "Attestation", "Audit finding", "Risk transfer"], a: 0, e: "Policy exceptions are documented, approved and reviewed, with other controls covering the gap." },
+    { d: 5, t: 3, q: "The risk that remains after controls are applied is:", o: ["Inherent risk", "Residual risk", "Risk appetite", "Risk tolerance"], a: 1, e: "Inherent risk is before controls. Residual risk is what's left after them." }
+  ];
+
+  // ---------- DOM ----------
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+  var stage = document.getElementById("stage");
+  var elScore = document.getElementById("score"), elBest = document.getElementById("best"), elLives = document.getElementById("lives");
+  var startScreen = document.getElementById("start-screen"), qScreen = document.getElementById("q-screen"), overScreen = document.getElementById("over-screen");
+
+  var C = {}, PK = "79,209,255";
+  function readColors() {
+    var cs = getComputedStyle(document.documentElement);
+    ["bg", "bg-2", "line", "packet", "packet-core", "firewall", "firewall-2", "malware", "bit", "muted", "good", "net-rgb", "edge-rgb", "vig"].forEach(function (k) { C[k] = cs.getPropertyValue("--" + k).trim(); });
+    C.light = document.documentElement.getAttribute("data-theme") === "light";
+    C.blend = C.light ? "source-over" : "lighter";
+    var h = (C.packet || "#4fd1ff").replace("#", "");
+    PK = parseInt(h.slice(0, 2), 16) + "," + parseInt(h.slice(2, 4), 16) + "," + parseInt(h.slice(4, 6), 16);
+  }
+  readColors();
+
+  // ---------- theme ----------
+  var themeBtn = document.getElementById("theme-toggle"), themeLabel = document.getElementById("theme-label");
+  function applyTheme(t, save) {
+    document.documentElement.setAttribute("data-theme", t);
+    if (save) { try { localStorage.setItem("ev-theme", t); } catch (e) {} }
+    readColors();
+    themeLabel.textContent = t === "light" ? "Dark mode" : "Light mode";
+    themeBtn.setAttribute("aria-label", "Switch to " + (t === "light" ? "dark" : "light") + " mode");
+    var mc = document.querySelector('meta[name="theme-color"]'); if (mc) mc.content = t === "light" ? "#efece4" : "#050505";
+  }
+  applyTheme(document.documentElement.getAttribute("data-theme") || "dark", false);
+  themeBtn.addEventListener("click", function () { applyTheme(C.light ? "dark" : "light", true); });
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: light)");
+    var onSys = function (e) { var saved = null; try { saved = localStorage.getItem("ev-theme"); } catch (err) {} if (!saved) applyTheme(e.matches ? "light" : "dark", false); };
+    if (mq.addEventListener) mq.addEventListener("change", onSys); else if (mq.addListener) mq.addListener(onSys);
+  }
+  var FONT_DISPLAY = getComputedStyle(document.documentElement).getPropertyValue("--font-display");
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var MODES = { 1: "Password123", 2: "Two-Factor", 3: "Zero Trust" };
+  var gameMode = 2;
+  try { gameMode = parseInt(localStorage.getItem("pd-mode") || "2", 10) || 2; } catch (e) {}
+  if (!MODES[gameMode]) gameMode = 2;
+  function loadBest(m) { try { return parseInt(localStorage.getItem("pd-best-" + m) || "0", 10) || 0; } catch (e) { return 0; } }
+  function saveBest(m, v) { try { localStorage.setItem("pd-best-" + m, String(v)); } catch (e) {} }
+  var best = loadBest(gameMode);
+  function showModeUI() {
+    best = loadBest(gameMode);
+    elBest.textContent = best;
+    document.getElementById("mode-chip").textContent = MODES[gameMode];
+    document.querySelectorAll(".mode").forEach(function (b) {
+      b.setAttribute("aria-checked", String(+b.dataset.mode === gameMode));
+      b.querySelector("[data-best]").textContent = loadBest(+b.dataset.mode);
+    });
+  }
+  showModeUI();
+  document.querySelector(".modes").addEventListener("click", function (e) {
+    var b = e.target.closest(".mode"); if (!b) return;
+    gameMode = +b.dataset.mode;
+    try { localStorage.setItem("pd-mode", String(gameMode)); } catch (err) {}
+    showModeUI();
+    startRun();
+  });
+
+  // ---------- sizing ----------
+  var W = 0, H = 0, DPR = 1, PW = 0, PX = 0, laneW = 0, packetY = 0, pSize = 0;
+  var nodes = [];
+  function resize() {
+    var r = stage.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    PW = Math.min(W - 24, 440); PX = (W - PW) / 2; laneW = PW / 3;
+    packetY = H * 0.78; pSize = Math.min(laneW * 0.34, 32);
+    // background network nodes (parallax layer)
+    nodes = [];
+    var n = Math.round((W * H) / 14000);
+    for (var i = 0; i < n; i++) nodes.push({ x: Math.random() * W, y: Math.random() * H, r: 1 + Math.random() * 1.6 });
+    if (!running) draw(0);
+  }
+  window.addEventListener("resize", resize);
+
+  // ---------- state ----------
+  var running = false, mode = "idle"; // idle | play | crash | question | over
+  var lane = 1, packetX = 0, lives = 3, score = 0, dist = 0, bonus = 0, speed = 0, elapsed = 0;
+  var rows = [], spawnAcc = 0, shieldUntil = 0, lastT = 0, scroll = 0, shake = 0, crashTimer = 0;
+  var particles = [], popups = [], trail = [];
+  var asked = {}, qRight = 0, qTotal = 0, history = [];
+  var lastChanceUsed = false, lastChance = null; // {step, right}
+  var shields = 0, MAX_SHIELDS = 3;
+
+  function laneX(l) { return PX + laneW * l + laneW / 2; }
+
+  function renderShields() {
+    var el = document.getElementById("shields");
+    if (!shields) { el.hidden = true; return; }
+    var icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6l8-3z"/></svg>';
+    var h = ""; for (var i = 0; i < shields; i++) h += icon;
+    el.innerHTML = h + "<span>SHIELD</span>";
+    el.setAttribute("aria-label", shields + " shield" + (shields === 1 ? "" : "s"));
+    el.hidden = false;
+  }
+
+  function renderLives() {
+    var h = "";
+    for (var i = 0; i < 3; i++) {
+      var cls = lives >= i + 1 ? "full" : lives >= i + 0.5 ? "half" : "lost";
+      h += '<span class="life ' + cls + '"></span>';
+    }
+    elLives.innerHTML = h;
+    elLives.setAttribute("aria-label", lives + " lives left");
+  }
+
+  function reset() {
+    lane = 1; packetX = laneX(1); lives = 3; score = 0; dist = 0; bonus = 0; elapsed = 0;
+    speed = H * 0.55; rows = []; spawnAcc = H * 0.5; shieldUntil = 0; asked = {}; qRight = 0; qTotal = 0; history = [];
+    particles = []; popups = []; trail = []; shake = 0; lastChanceUsed = false; lastChance = null; shields = 0; renderShields();
+    renderLives(); elScore.textContent = "0";
+  }
+
+  // ---------- spawning ----------
+  function spawnRow() {
+    var free = Math.floor(Math.random() * 3);
+    var twoFree = elapsed < 10 ? Math.random() < 0.55 : Math.random() < 0.2;
+    var free2 = twoFree ? (free + 1 + Math.floor(Math.random() * 2)) % 3 : -1;
+    var fwRow = Math.random() < 0.45;
+    var blocks = [];
+    for (var l = 0; l < 3; l++) {
+      if (l === free || l === free2) continue;
+      blocks.push({ lane: l, type: fwRow ? "fw" : (Math.random() < 0.5 ? "fw" : "mw"), seed: Math.random() * 6 });
+    }
+    var bit = Math.random() < 0.55 ? (twoFree && Math.random() < 0.5 ? free2 : free) : -1;
+    rows.push({ y: -50, blocks: blocks, bit: bit, bitTaken: false });
+  }
+  function hitBox(l, type) {
+    var cx = laneX(l);
+    if (type === "fw") return { x: cx - laneW / 2 + 6, w: laneW - 12, h: 24 };
+    var s = laneW * 0.36; return { x: cx - s / 2, w: s, h: s };
+  }
+
+  // ---------- effects ----------
+  function burst(x, y, color, count, power) {
+    if (reduceMotion) count = Math.ceil(count / 3);
+    for (var i = 0; i < count; i++) {
+      var a = Math.random() * Math.PI * 2, v = (0.3 + Math.random()) * power;
+      particles.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: 0.5 + Math.random() * 0.5, color: color, s: 2 + Math.random() * 3 });
+    }
+  }
+  function popup(x, y, text, color) { popups.push({ x: x, y: y, text: text, color: color, life: 0 }); }
+
+  function stepEffects(dt) {
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.94; p.vy *= 0.94;
+      if (p.life > p.max) particles.splice(i, 1);
+    }
+    for (var j = popups.length - 1; j >= 0; j--) { popups[j].life += dt; popups[j].y -= 40 * dt; if (popups[j].life > 0.8) popups.splice(j, 1); }
+    shake = Math.max(0, shake - dt * 30);
+  }
+
+  // ---------- update ----------
+  function update(dt) {
+    elapsed += dt;
+    speed = H * 0.55 * Math.min(3, 1 + elapsed / 40);
+    var dy = speed * dt;
+    dist += dy; scroll += dy;
+    score = Math.floor(dist / 10) + bonus;
+
+    packetX += (laneX(lane) - packetX) * Math.min(1, dt * 32);
+    trail.unshift({ x: packetX, y: packetY });
+    if (trail.length > 10) trail.pop();
+    for (var t = 0; t < trail.length; t++) trail[t].y = packetY + t * dy * 1.1;
+
+    spawnAcc += dy;
+    var gap = Math.max(laneW * 1.7, H * 0.3 - elapsed * 0.6);
+    if (spawnAcc >= gap) { spawnAcc = 0; spawnRow(); }
+
+    var now = performance.now();
+    var pBox = { x: packetX - pSize * 0.36, y: packetY - pSize * 0.36, w: pSize * 0.72, h: pSize * 0.72 };
+    for (var i = rows.length - 1; i >= 0; i--) {
+      var r = rows[i];
+      r.y += dy;
+      if (r.y > H + 60) { rows.splice(i, 1); continue; }
+      if (r.bit >= 0 && !r.bitTaken) {
+        var bx = laneX(r.bit), by = r.y - laneW * 0.6;
+        if (Math.abs(bx - packetX) < pSize * 0.75 && Math.abs(by - packetY) < pSize * 0.75) {
+          r.bitTaken = true; bonus += 10; burst(bx, by, C.bit, 14, 160); popup(bx, by - 10, "+10", C.bit);
+        }
+      }
+      if (now < shieldUntil) continue;
+      for (var b = 0; b < r.blocks.length; b++) {
+        var bl = r.blocks[b], hb = hitBox(bl.lane, bl.type), top = r.y - hb.h / 2;
+        if (pBox.x < hb.x + hb.w && pBox.x + pBox.w > hb.x && pBox.y < top + hb.h && pBox.y + pBox.h > top) {
+          if (shields > 0) {
+            shields--; renderShields();
+            shieldUntil = now + 1200;
+            burst(packetX, packetY, C.good, 28, 280);
+            popup(packetX, packetY - pSize, "BLOCKED", C.good);
+            shake = reduceMotion ? 0 : 5;
+            r.blocks.splice(b, 1);
+            break;
+          }
+          startCrash(bl.type); return;
+        }
+      }
+    }
+    elScore.textContent = score;
+  }
+
+  var crashType = "fw";
+  // attract mode behind the start screen: world scrolls, packet steers itself, no collisions
+  function demoUpdate(dt) {
+    elapsed += dt;
+    speed = H * 0.5;
+    var dy = speed * dt;
+    scroll += dy;
+    spawnAcc += dy;
+    if (spawnAcc >= Math.max(laneW * 1.9, H * 0.32)) { spawnAcc = 0; spawnRow(); }
+    var next = null;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i]; r.y += dy;
+      if (r.y < packetY - 20 && r.y > packetY - H * 0.55 && (!next || r.y > next.y)) next = r;
+    }
+    rows = rows.filter(function (r) { return r.y < H + 60; });
+    if (next) {
+      var blocked = {}; next.blocks.forEach(function (b) { blocked[b.lane] = true; });
+      if (blocked[lane]) {
+        var opts = [0, 1, 2].filter(function (l) { return !blocked[l]; }).sort(function (a, b) { return Math.abs(a - lane) - Math.abs(b - lane); });
+        if (opts.length) lane = opts[0];
+      }
+    }
+    packetX += (laneX(lane) - packetX) * Math.min(1, dt * 14);
+    trail.unshift({ x: packetX, y: packetY });
+    if (trail.length > 10) trail.pop();
+    for (var t = 0; t < trail.length; t++) trail[t].y = packetY + t * dy * 1.1;
+  }
+
+  function startCrash(type) {
+    mode = "crash"; crashTimer = 0.5; crashType = type;
+    shake = reduceMotion ? 0 : 12;
+    burst(packetX, packetY, type === "fw" ? C.firewall : C.malware, 26, 260);
+    burst(packetX, packetY, C.packet, 16, 200);
+  }
+
+  // ---------- drawing ----------
+  function draw(dt) {
+    ctx.save();
+    if (shake > 0) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+
+    // background
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, C.bg); g.addColorStop(1, C["bg-2"]);
+    ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, H + 40);
+
+    // parallax network nodes + links
+    var par = (scroll * 0.25) % H;
+    ctx.lineWidth = 1;
+    for (var i = 0; i < nodes.length; i++) {
+      var a = nodes[i], ay = (a.y + par) % H;
+      for (var j = i + 1; j < nodes.length; j++) {
+        var b = nodes[j], by = (b.y + par) % H;
+        var dx = a.x - b.x, dy = ay - by, d2 = dx * dx + dy * dy;
+        if (d2 < 9000) { ctx.strokeStyle = "rgba(" + C["net-rgb"] + "," + ((C.light ? 0.1 : 0.06) * (1 - d2 / 9000)).toFixed(3) + ")"; ctx.beginPath(); ctx.moveTo(a.x, ay); ctx.lineTo(b.x, by); ctx.stroke(); }
+      }
+    }
+    ctx.fillStyle = "rgba(" + C["net-rgb"] + "," + (C.light ? 0.2 : 0.16) + ")";
+    nodes.forEach(function (n) { ctx.beginPath(); ctx.arc(n.x, (n.y + par) % H, n.r, 0, Math.PI * 2); ctx.fill(); });
+
+    // track
+    var tg = ctx.createLinearGradient(PX, 0, PX + PW, 0);
+    var NR = C["net-rgb"]; tg.addColorStop(0, "rgba(" + NR + ",0.045)"); tg.addColorStop(0.5, "rgba(" + NR + ",0.012)"); tg.addColorStop(1, "rgba(" + NR + ",0.045)");
+    ctx.fillStyle = tg; ctx.fillRect(PX, 0, PW, H);
+    ctx.strokeStyle = "rgba(" + C["edge-rgb"] + "," + (C.light ? 0.75 : 0.55) + ")"; ctx.lineWidth = 2;
+    ctx.shadowColor = "rgba(" + C["edge-rgb"] + "," + (C.light ? 0.25 : 0.6) + ")"; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.moveTo(PX, 0); ctx.lineTo(PX, H); ctx.moveTo(PX + PW, 0); ctx.lineTo(PX + PW, H); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(" + C["net-rgb"] + "," + (C.light ? 0.2 : 0.14) + ")"; ctx.lineWidth = 2; ctx.setLineDash([18, 22]); ctx.lineDashOffset = -(scroll % 40);
+    for (var l = 1; l < 3; l++) { var lx = PX + laneW * l; ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx, H); ctx.stroke(); }
+    ctx.setLineDash([]);
+
+    // speed streaks
+    if (mode === "play" && elapsed > 8 && !reduceMotion) {
+      var intensity = Math.min(1, (elapsed - 8) / 30);
+      ctx.strokeStyle = "rgba(" + C["net-rgb"] + "," + (0.1 * intensity).toFixed(3) + ")"; ctx.lineWidth = 1;
+      for (var s = 0; s < 6; s++) {
+        var sx = PX + ((s * 97 + Math.floor(scroll / 7)) % PW), sy = (scroll * 1.5 + s * 173) % H;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx, sy + 40 + 60 * intensity); ctx.stroke();
+      }
+    }
+
+    // obstacles + bits
+    var tsec = performance.now() / 1000;
+    rows.forEach(function (r) {
+      r.blocks.forEach(function (bl) {
+        var hb = hitBox(bl.lane, bl.type), top = r.y - hb.h / 2;
+        if (bl.type === "fw") {
+          // flames licking off the top of the wall
+          var nf = Math.max(4, Math.floor(hb.w / 13)), fwid = hb.w / nf;
+          ctx.save(); ctx.globalCompositeOperation = C.blend;
+          for (var f = 0; f < nf; f++) {
+            var fx = hb.x + (f + 0.5) * fwid;
+            var flick = 0.5 + 0.5 * Math.sin(tsec * 11 + f * 1.9 + bl.seed * 3);
+            var fh = 12 + 14 * flick + (f % 2 ? 4 : 0);
+            var sway = Math.sin(tsec * 7 + f * 2.3 + bl.seed) * 3;
+            var flg = ctx.createLinearGradient(0, top - fh, 0, top + 4);
+            flg.addColorStop(0, "rgba(255,240,170,0)"); flg.addColorStop(0.35, "rgba(255,190,70,0.85)"); flg.addColorStop(1, "rgba(255,80,30,0.95)");
+            ctx.fillStyle = flg;
+            ctx.beginPath(); ctx.moveTo(fx - fwid * 0.55, top + 4);
+            ctx.quadraticCurveTo(fx - fwid * 0.5, top - fh * 0.45, fx + sway, top - fh);
+            ctx.quadraticCurveTo(fx + fwid * 0.5, top - fh * 0.45, fx + fwid * 0.55, top + 4);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = "rgba(255,245,200,0.55)";
+            ctx.beginPath(); ctx.moveTo(fx - fwid * 0.22, top + 2);
+            ctx.quadraticCurveTo(fx - fwid * 0.2, top - fh * 0.25, fx + sway * 0.6, top - fh * 0.5);
+            ctx.quadraticCurveTo(fx + fwid * 0.2, top - fh * 0.25, fx + fwid * 0.22, top + 2);
+            ctx.closePath(); ctx.fill();
+          }
+          for (var em = 0; em < 4; em++) {
+            var ph = (tsec * 0.9 + em * 0.27 + bl.seed) % 1;
+            var ex = hb.x + ((em * 0.29 + bl.seed * 0.13) % 1) * hb.w + Math.sin(tsec * 5 + em) * 4;
+            ctx.fillStyle = "rgba(255,200,90," + (0.9 * (1 - ph)).toFixed(3) + ")";
+            ctx.fillRect(ex, top - 8 - ph * 34, 2.5, 2.5);
+          }
+          ctx.restore();
+          // brick wall with a FIREWALL label and a padlock
+          ctx.shadowColor = C.firewall; ctx.shadowBlur = 22;
+          var fg = ctx.createLinearGradient(0, top, 0, top + hb.h);
+          fg.addColorStop(0, C["firewall-2"]); fg.addColorStop(1, C.firewall);
+          ctx.fillStyle = fg; roundRect(hb.x, top, hb.w, hb.h, 5); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = "rgba(5,5,5,0.22)";
+          var bw = 18, rh = hb.h / 3;
+          for (var k = 0; k < 3; k++) {
+            var rowY = top + k * rh, off = k % 2 ? bw / 2 : 0;
+            if (k) ctx.fillRect(hb.x + 2, rowY - 0.6, hb.w - 4, 1.2);
+            for (var bx2 = hb.x + off + bw; bx2 < hb.x + hb.w - 4; bx2 += bw) ctx.fillRect(bx2, rowY + 1, 1.2, rh - 2);
+          }
+          // label plate
+          var label = hb.w > 104 ? "FIREWALL" : "FW";
+          ctx.font = "700 11px " + FONT_DISPLAY;
+          var tw = ctx.measureText(label).width, lockW = 12, plateW = tw + lockW + 18, cxp = hb.x + hb.w / 2;
+          ctx.fillStyle = "rgba(5,5,5,0.82)"; roundRect(cxp - plateW / 2, r.y - 8, plateW, 16, 4); ctx.fill();
+          // padlock
+          var lx = cxp - plateW / 2 + 7, ly = r.y - 4;
+          ctx.strokeStyle = C["firewall-2"]; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(lx + 4, ly + 2, 3, Math.PI, 0); ctx.stroke();
+          ctx.fillStyle = C["firewall-2"]; ctx.fillRect(lx, ly + 2, 8, 6);
+          ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          ctx.fillText(label, lx + lockW + 2, r.y + 0.5);
+          ctx.textBaseline = "alphabetic";
+        } else {
+          // virus bug with legs, antennae and a MALWARE tag
+          var cx = laneX(bl.lane), rad = hb.w / 2, pulse = 1 + Math.sin(tsec * 6 + bl.seed) * 0.06;
+          var wig = Math.sin(tsec * 14 + bl.seed) * 0.25;
+          ctx.strokeStyle = C.malware; ctx.lineWidth = 2.5; ctx.lineCap = "round";
+          for (var side = -1; side <= 1; side += 2) {
+            for (var leg = -1; leg <= 1; leg++) {
+              var ly2 = r.y + leg * rad * 0.32, sx = cx + side * rad * 0.42;
+              ctx.beginPath(); ctx.moveTo(sx, ly2);
+              ctx.lineTo(cx + side * rad * 0.9, ly2 + rad * 0.12 + (leg === 0 ? wig : -wig) * rad * side * 0.4); ctx.stroke();
+            }
+            ctx.beginPath(); ctx.moveTo(cx + side * rad * 0.15, r.y - rad * 0.48);
+            ctx.lineTo(cx + side * rad * 0.42, r.y - rad * 0.95 + wig * 3); ctx.stroke();
+          }
+          ctx.shadowColor = C.malware; ctx.shadowBlur = 18;
+          ctx.fillStyle = C.malware;
+          ctx.beginPath(); ctx.ellipse(cx, r.y + rad * 0.05, rad * 0.46 * pulse, rad * 0.58 * pulse, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = "rgba(5,5,5,0.35)";
+          ctx.fillRect(cx - rad * 0.4, r.y + rad * 0.05, rad * 0.8, 1.5);
+          ctx.fillStyle = C.bg;
+          ctx.beginPath(); ctx.arc(cx - rad * 0.17, r.y - rad * 0.2, rad * 0.1, 0, Math.PI * 2); ctx.arc(cx + rad * 0.17, r.y - rad * 0.2, rad * 0.1, 0, Math.PI * 2); ctx.fill();
+          ctx.font = "700 9px " + FONT_DISPLAY; ctx.textAlign = "center"; ctx.fillStyle = C.malware;
+          ctx.fillText("MALWARE", cx, r.y + rad + 12);
+        }
+      });
+      if (r.bit >= 0 && !r.bitTaken) {
+        var bx = laneX(r.bit), by = r.y - laneW * 0.6, sz = 10 + Math.sin(tsec * 5 + r.y) * 1.5;
+        ctx.save(); ctx.translate(bx, by); ctx.rotate(Math.PI / 4 + tsec * 2.5);
+        ctx.shadowColor = C.bit; ctx.shadowBlur = C.light ? 0 : 14; ctx.fillStyle = C.bit; ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
+        ctx.restore();
+      }
+    });
+
+    // packet trail
+    if (mode !== "crash" && mode !== "over") {
+      for (var t = trail.length - 1; t >= 1; t--) {
+        var tr = trail[t], f = 1 - t / trail.length;
+        ctx.fillStyle = "rgba(" + PK + "," + (0.22 * f).toFixed(3) + ")";
+        var ts = pSize * 0.55 * f;
+        ctx.beginPath(); ctx.arc(tr.x, tr.y + pSize * 0.3, ts / 2, 0, Math.PI * 2); ctx.fill();
+      }
+      // packet
+      var px = packetX || laneX(1);
+      ctx.save(); ctx.translate(px, packetY); ctx.rotate(Math.PI / 4);
+      ctx.shadowColor = C.packet; ctx.shadowBlur = 26;
+      ctx.fillStyle = C.packet; roundRect(-pSize / 2, -pSize / 2, pSize, pSize, 7); ctx.fill();
+      ctx.shadowBlur = 0; ctx.fillStyle = C["packet-core"];
+      roundRect(-pSize / 4, -pSize / 4, pSize / 2, pSize / 2, 4); ctx.fill();
+      ctx.restore();
+      // shield ring
+      if (shields > 0) {
+        ctx.strokeStyle = "rgba(61,220,151,0.55)"; ctx.lineWidth = 2;
+        ctx.setLineDash([6, 5]); ctx.lineDashOffset = -tsec * 20;
+        ctx.beginPath(); ctx.arc(px, packetY, pSize * 1.05, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      var sh = shieldUntil - performance.now();
+      if (sh > 0) {
+        ctx.strokeStyle = "rgba(61,220,151," + Math.min(0.9, sh / 600).toFixed(3) + ")"; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(px, packetY, pSize * 0.95 + Math.sin(tsec * 10) * 2, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+
+    // particles + popups
+    particles.forEach(function (p) {
+      ctx.globalAlpha = Math.max(0, 1 - p.life / p.max); ctx.fillStyle = p.color;
+      ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);
+    });
+    ctx.globalAlpha = 1;
+    ctx.font = "700 18px " + FONT_DISPLAY;
+    ctx.textAlign = "center";
+    popups.forEach(function (p) {
+      ctx.globalAlpha = Math.max(0, 1 - p.life / 0.8); ctx.fillStyle = p.color; ctx.fillText(p.text, p.x, p.y);
+    });
+    ctx.globalAlpha = 1;
+
+    // vignette
+    var vg = ctx.createRadialGradient(W / 2, H * 0.55, Math.min(W, H) * 0.3, W / 2, H * 0.55, Math.max(W, H) * 0.75);
+    vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0," + (C.vig || 0.55) + ")");
+    ctx.fillStyle = vg; ctx.fillRect(-20, -20, W + 40, H + 40);
+    ctx.restore();
+  }
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  // ---------- loop ----------
+  function frame(t) {
+    if (!running) return;
+    var dt = Math.min(0.05, (t - lastT) / 1000 || 0); lastT = t;
+    if (mode === "play") update(dt);
+    if (mode === "demo") demoUpdate(dt);
+    if (mode === "crash") { crashTimer -= dt; if (crashTimer <= 0) { lives = Math.max(0, lives - 1); renderLives(); round = { need: gameMode, step: 0 }; openQuestion(gameMode); } }
+    stepEffects(dt);
+    draw(dt);
+    requestAnimationFrame(frame);
+  }
+
+  function startRun() {
+    startScreen.hidden = true; overScreen.hidden = true; qScreen.hidden = true;
+    var wasRunning = running;
+    reset(); running = true; mode = "play"; lastT = performance.now();
+    if (!wasRunning) requestAnimationFrame(frame);
+  }
+
+  // ---------- questions ----------
+  var CRASH_TEXT = {
+    fw: { title: "Burned by the firewall", icon: "FW", lines: [
+      "Your packet hit a firewall rule with no matching allow, so implicit deny dropped it at the perimeter.",
+      "Access denied. The firewall reset your connection before it reached the server.",
+      "The firewall flagged your traffic as unauthorized and logged the attempt. Your packet never made it through."
+    ] },
+    mw: { title: "Infected by malware", icon: "BUG", lines: [
+      "Malware latched onto your packet. An attacker could now read or steal the data inside it.",
+      "A trojan hitched a ride. If it reaches the server, it could open a backdoor for an attacker.",
+      "Ransomware got in. Left alone, it could encrypt the server's files and hold them for ransom.",
+      "A worm infected your packet. It could spread to every system on the network."
+    ] }
+  };
+
+
+  function pickQuestion(tier) {
+    var pool = QUESTIONS.filter(function (q, i) { return q.t === tier && !asked[i]; });
+    if (!pool.length) pool = QUESTIONS.filter(function (q, i) { return !asked[i]; });
+    if (!pool.length) { asked = {}; pool = QUESTIONS.slice(); }
+    var q = pool[Math.floor(Math.random() * pool.length)];
+    asked[QUESTIONS.indexOf(q)] = true;
+    return q;
+  }
+
+  var currentQ = null, currentTier = 1, answered = false, pendingOutcome = null;
+  var round = { need: 1, step: 0 };
+  function openQuestion(tier) {
+    mode = "question";
+    answered = false;
+    currentTier = tier || gameMode;
+    currentQ = pickQuestion(currentTier);
+    var card = document.getElementById("q-card"), steps = document.getElementById("q-steps");
+    var showCrash = !lastChance && round.step === 0;
+    document.getElementById("crash-head").hidden = !showCrash;
+    document.getElementById("crash-text").hidden = !showCrash;
+    if (showCrash) {
+      var ct = CRASH_TEXT[crashType] || CRASH_TEXT.fw;
+      var icon = document.getElementById("crash-icon"), title = document.getElementById("crash-title");
+      icon.className = "crash-icon " + crashType; icon.textContent = ct.icon;
+      title.className = "crash-title " + crashType; title.textContent = ct.title;
+      document.getElementById("crash-text").textContent = ct.lines[Math.floor(Math.random() * ct.lines.length)];
+    }
+    if (lastChance) {
+      card.classList.add("danger");
+      document.getElementById("q-label").innerHTML = '<span class="lc">Last chance &middot; ' + (lastChance.step + 1) + " of 3</span>";
+      steps.hidden = false;
+      steps.innerHTML = [0, 1, 2].map(function (i) {
+        return '<span class="' + (i < lastChance.step ? (lastChance.results[i] ? "ok" : "miss") : i === lastChance.step ? "now" : "") + '"></span>';
+      }).join("");
+    } else {
+      card.classList.remove("danger");
+      var goal = currentTier === 1 ? "Right answer restores the life" : currentTier === 2 ? "Get both right for half a life and a shield" : "Go 3 for 3 for a full life, a shield and +10 bonus";
+      document.getElementById("q-label").textContent = round.need > 1 ? "Question " + (round.step + 1) + " of " + round.need + " \u00b7 " + goal : goal;
+      if (round.need > 1) {
+        steps.hidden = false;
+        var html = "";
+        for (var si = 0; si < round.need; si++) html += '<span class="' + (si < round.step ? "ok" : si === round.step ? "now" : "") + '"></span>';
+        steps.innerHTML = html;
+      } else steps.hidden = true;
+    }
+    var tierEl = document.getElementById("q-tier");
+    tierEl.textContent = MODES[gameMode];
+    tierEl.style.color = gameMode === 1 ? "var(--good)" : gameMode === 2 ? "var(--firewall-2)" : "var(--bad)";
+    document.getElementById("q-text").textContent = currentQ.q;
+    var box = document.getElementById("q-opts"); box.innerHTML = "";
+    var order = [0, 1, 2, 3].sort(function () { return Math.random() - 0.5; });
+    order.forEach(function (oi, k) {
+      var b = document.createElement("button");
+      b.className = "opt"; b.type = "button"; b.dataset.oi = oi;
+      b.innerHTML = "<b>" + (k + 1) + "</b><span></span>";
+      b.querySelector("span").textContent = currentQ.o[oi];
+      b.addEventListener("click", function () { answer(oi); });
+      box.appendChild(b);
+    });
+    document.getElementById("q-result").hidden = true;
+    document.getElementById("q-continue").hidden = true;
+    qScreen.hidden = false;
+    var first = box.querySelector(".opt"); if (first) first.focus({ preventScroll: true });
+  }
+
+  function answer(oi) {
+    if (answered) return;
+    answered = true;
+    qTotal++;
+    var right = oi === currentQ.a;
+    if (right) { qRight++; bonus += 10; score += 10; elScore.textContent = score; }
+    history.push({ q: currentQ.q, yours: currentQ.o[oi], answer: currentQ.o[currentQ.a], right: right, e: currentQ.e, last: !!lastChance });
+    document.querySelectorAll("#q-opts .opt").forEach(function (b) {
+      b.disabled = true;
+      var bi = +b.dataset.oi;
+      if (bi === currentQ.a) b.classList.add("right");
+      else if (bi === oi) b.classList.add("wrong");
+    });
+
+    var res = document.getElementById("q-result"), head, good;
+    if (lastChance) {
+      lastChance.results.push(right);
+      lastChance.step++;
+      var nRight = lastChance.results.filter(Boolean).length, nWrong = lastChance.step - nRight;
+      good = right;
+      if (nRight >= 2) { head = nRight + " of " + lastChance.step + ". You're back with 1 life"; pendingOutcome = "revive"; lives = 1; renderLives(); }
+      else if (nWrong >= 2) { head = "Wrong. That's 2 misses, connection lost"; pendingOutcome = "over"; }
+      else { head = (right ? "Correct" : "Wrong") + ". One more right brings you back"; pendingOutcome = "next"; }
+    } else {
+      round.step++;
+      if (right && round.step < round.need) {
+        good = true;
+        head = "Correct, +10 points. " + (round.need - round.step) + " more to go";
+        pendingOutcome = "nextround";
+        res.className = "result good";
+        res.innerHTML = "<strong></strong><span></span>";
+        res.querySelector("strong").textContent = head;
+        res.querySelector("span").textContent = currentQ.e;
+        res.hidden = false;
+        var contBtn = document.getElementById("q-continue");
+        contBtn.textContent = "Next question"; contBtn.hidden = false; contBtn.focus({ preventScroll: true });
+        return;
+      }
+      var refund = right ? (currentTier === 2 ? 0.5 : 1) : 0;
+      if (right && currentTier === 3) { bonus += 10; score += 10; elScore.textContent = score; }
+      lives = Math.min(3, Math.round((lives + refund) * 2) / 2);
+      renderLives();
+      var gotShield = right && currentTier >= 2 && shields < MAX_SHIELDS;
+      if (gotShield) { shields++; renderShields(); }
+      good = right;
+      var what = !right ? (round.need > 1 ? "Wrong. No reward this time, life lost" : "Wrong. Life lost")
+        : currentTier === 1 ? "Correct. Life restored, +10 points"
+        : currentTier === 2 ? (gotShield ? "2 for 2. Half a life back plus a firewall shield, +10 points" : "2 for 2. Half a life back (shields full), +10 points")
+        : gotShield ? "3 for 3. Full life back plus a firewall shield, +10 bonus points"
+        : "3 for 3. Full life back (shields full), +10 bonus points";
+      if (lives > 0) { head = what; pendingOutcome = "resume"; }
+      else if (!lastChanceUsed) { head = (right ? "Correct, but" : "Wrong, and") + " you're out of lives. Last chance: get 2 of 3 right"; pendingOutcome = "lastchance"; }
+      else { head = "Out of lives"; pendingOutcome = "over"; }
+    }
+    res.className = "result " + (good ? "good" : "bad");
+    res.innerHTML = "<strong></strong><span></span>";
+    res.querySelector("strong").textContent = head;
+    res.querySelector("span").textContent = currentQ.e;
+    res.hidden = false;
+    var cont = document.getElementById("q-continue");
+    cont.textContent = pendingOutcome === "over" ? "See results" : pendingOutcome === "lastchance" ? "Start last chance" : pendingOutcome === "next" ? "Next question" : "Continue";
+    cont.hidden = false; cont.focus({ preventScroll: true });
+  }
+
+  function proceed() {
+    var o = pendingOutcome; pendingOutcome = null;
+    if (o === "lastchance") { lastChanceUsed = true; lastChance = { step: 0, results: [] }; openQuestion(gameMode); return; }
+    if (o === "next") { openQuestion(gameMode); return; }
+    if (o === "nextround") { openQuestion(gameMode); return; }
+    qScreen.hidden = true;
+    if (o === "over") { gameOver(); return; }
+    // resume or revive
+    lastChance = null;
+    rows = rows.filter(function (r) { return r.y < packetY - H * 0.45 || r.y > packetY + 40; });
+    shieldUntil = performance.now() + 1600;
+    burst(packetX, packetY, C.good, 18, 180);
+    mode = "play"; lastT = performance.now();
+  }
+
+  function renderReview(list, items) {
+    list.innerHTML = "";
+    items.forEach(function (h, i) {
+      var li = document.createElement("li");
+      li.className = "review-item " + (h.right ? "ok" : "no");
+      li.innerHTML = '<div class="review-q"></div><div class="review-a"><span class="yours"></span><span class="right"></span></div><div class="review-e"></div>';
+      li.querySelector(".review-q").textContent = (i + 1) + ". " + h.q + (h.last ? " (last chance)" : "");
+      var y = li.querySelector(".yours"); y.className = "yours " + (h.right ? "ok" : "no");
+      y.textContent = (h.right ? "\u2713 You answered: " : "\u2717 You answered: ") + h.yours;
+      var r = li.querySelector(".right");
+      if (h.right) r.remove(); else r.textContent = "Correct answer: " + h.answer;
+      li.querySelector(".review-e").textContent = h.e;
+      list.appendChild(li);
+    });
+  }
+
+  // ---------- practice tests ----------
+  var DOMAINS = {
+    1: { name: "General Security Concepts", w: 12 },
+    2: { name: "Threats, Vulnerabilities & Mitigations", w: 22 },
+    3: { name: "Security Architecture", w: 18 },
+    4: { name: "Security Operations", w: 28 },
+    5: { name: "Security Program Management & Oversight", w: 20 }
+  };
+  var FULL_MIX = { 1: 6, 2: 11, 3: 9, 4: 14, 5: 10 }; // 50 questions, matching the exam's domain weights
+  var testScreen = document.getElementById("test-screen");
+  var test = null; // {key, label, qs, i, picks}
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function loadTestBest(key) { try { return localStorage.getItem("pd-test-" + key); } catch (e) { return null; } }
+  function saveTestBest(key, v) { try { localStorage.setItem("pd-test-" + key, String(v)); } catch (e) {} }
+
+  function renderTestList() {
+    function btn(key, num, name, meta) {
+      var b = loadTestBest(key);
+      return '<button class="test-btn' + (key === "full" ? " full" : "") + '" type="button" data-test="' + key + '">' +
+        '<span class="num">' + num + '</span><span class="nm">' + name + '</span><span class="mt">' + meta + '</span>' +
+        '<span class="bs">Best<b>' + (b != null ? b + "%" : "\u2014") + "</b></span></button>";
+    }
+    document.getElementById("tests-full").innerHTML = btn("full", "\u2605", "Full practice exam", "50 questions across all 5 domains, weighted like the real exam");
+    var h = "";
+    Object.keys(DOMAINS).forEach(function (d) {
+      var n = QUESTIONS.filter(function (q) { return q.d === +d; }).length;
+      h += btn(d, d, DOMAINS[d].name, n + " questions \u00b7 " + DOMAINS[d].w + "% of the exam");
+    });
+    document.getElementById("tests-domains").innerHTML = h;
+  }
+
+  function startTest(key) {
+    var qs;
+    if (key === "full") {
+      qs = [];
+      Object.keys(FULL_MIX).forEach(function (d) {
+        qs = qs.concat(shuffle(QUESTIONS.filter(function (q) { return q.d === +d; })).slice(0, FULL_MIX[d]));
+      });
+      qs = shuffle(qs);
+    } else {
+      qs = shuffle(QUESTIONS.filter(function (q) { return q.d === +key; }));
+    }
+    qs.forEach(function (q) { delete q._order; });
+    test = { key: key, label: key === "full" ? "Full practice exam" : "Domain " + key + " \u00b7 " + DOMAINS[key].name, qs: qs, i: 0, picks: [] };
+    startScreen.hidden = true; testScreen.hidden = false;
+    document.getElementById("t-run").hidden = false; document.getElementById("t-done").hidden = true;
+    showTestQ();
+  }
+
+  function showTestQ() {
+    var q = test.qs[test.i];
+    document.getElementById("t-domain").textContent = test.label;
+    document.getElementById("t-count").textContent = "Question " + (test.i + 1) + " of " + test.qs.length;
+    document.getElementById("t-bar").style.width = (test.i / test.qs.length * 100) + "%";
+    document.getElementById("t-text").textContent = q.q;
+    var box = document.getElementById("t-opts"); box.innerHTML = "";
+    if (!q._order) q._order = shuffle([0, 1, 2, 3]);
+    q._order.forEach(function (oi, k) {
+      var b = document.createElement("button");
+      b.className = "opt"; b.type = "button"; b.dataset.oi = oi;
+      b.innerHTML = "<b>" + String.fromCharCode(65 + k) + "</b><span></span>";
+      b.querySelector("span").textContent = q.o[oi];
+      if (test.picks[test.i] === oi) b.classList.add("sel");
+      b.addEventListener("click", function () {
+        test.picks[test.i] = oi;
+        box.querySelectorAll(".opt").forEach(function (x) { x.classList.toggle("sel", x === b); });
+        document.getElementById("t-next").disabled = false;
+      });
+      box.appendChild(b);
+    });
+    var next = document.getElementById("t-next");
+    next.textContent = test.i === test.qs.length - 1 ? "Finish test" : "Next";
+    next.disabled = test.picks[test.i] == null;
+  }
+
+  function finishTest() {
+    var items = test.qs.map(function (q, i) {
+      var pick = test.picks[i];
+      return { q: q.q, yours: q.o[pick], answer: q.o[q.a], right: pick === q.a, e: q.e, d: q.d };
+    });
+    var right = items.filter(function (x) { return x.right; }).length;
+    var pct = Math.round(right / items.length * 100);
+    var prev = loadTestBest(test.key);
+    if (prev == null || pct > +prev) saveTestBest(test.key, pct);
+    document.getElementById("t-run").hidden = true; document.getElementById("t-done").hidden = false;
+    document.getElementById("t-done-domain").textContent = test.label;
+    var pctEl = document.getElementById("t-pct");
+    pctEl.textContent = pct + "%";
+    pctEl.style.color = pct >= 85 ? "var(--good)" : pct >= 70 ? "var(--firewall-2)" : "var(--bad)";
+    document.getElementById("t-frac").textContent = right + " of " + items.length + " correct";
+    document.getElementById("t-verdict").textContent = pct >= 85
+      ? "Exam ready on this material. Keep it sharp with a retake in a few days."
+      : pct >= 70 ? "Close. Review the misses below, then retake it."
+      : "Keep studying this area. Read every explanation below, then try again.";
+    var bd = document.getElementById("t-breakdown");
+    if (test.key === "full") {
+      var h = "";
+      Object.keys(DOMAINS).forEach(function (d) {
+        var di = items.filter(function (x) { return x.d === +d; }), dr = di.filter(function (x) { return x.right; }).length;
+        var dp = di.length ? Math.round(dr / di.length * 100) : 0;
+        var col = dp >= 85 ? "var(--good)" : dp >= 70 ? "var(--firewall-2)" : "var(--bad)";
+        h += '<div class="t-row"><span>' + d + ". " + DOMAINS[d].name + "</span><span>" + dr + "/" + di.length + '</span><div class="bar"><span style="width:' + dp + "%;background:" + col + '"></span></div></div>';
+      });
+      bd.innerHTML = h; bd.hidden = false;
+    } else bd.hidden = true;
+    renderReview(document.getElementById("t-review"), items);
+    document.getElementById("t-retry").focus({ preventScroll: true });
+  }
+
+  function exitTest() {
+    test = null; testScreen.hidden = true; startScreen.hidden = false;
+    renderTestList(); setSeg("practice");
+  }
+
+  function setSeg(which) {
+    var play = which === "play";
+    document.getElementById("seg-play").setAttribute("aria-selected", String(play));
+    document.getElementById("seg-practice").setAttribute("aria-selected", String(!play));
+    document.getElementById("panel-play").hidden = !play;
+    document.getElementById("panel-practice").hidden = play;
+    if (!play) renderTestList();
+  }
+  document.getElementById("seg-play").addEventListener("click", function () { setSeg("play"); });
+  document.getElementById("seg-practice").addEventListener("click", function () { setSeg("practice"); });
+  document.getElementById("panel-practice").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-test]"); if (b) startTest(b.dataset.test);
+  });
+  document.getElementById("t-next").addEventListener("click", function () {
+    if (!test || test.picks[test.i] == null) return;
+    if (test.i < test.qs.length - 1) { test.i++; showTestQ(); } else finishTest();
+  });
+  document.getElementById("t-exit").addEventListener("click", exitTest);
+  document.getElementById("t-back").addEventListener("click", exitTest);
+  document.getElementById("t-retry").addEventListener("click", function () {
+    var k = test.key; test.qs.forEach(function (q) { delete q._order; }); startTest(k);
+  });
+
+  function gameOver() {
+    mode = "over"; lastChance = null;
+    var isBest = score > best;
+    if (isBest) { best = score; saveBest(gameMode, best); elBest.textContent = best; }
+    document.getElementById("o-score").textContent = score;
+    document.getElementById("o-best").textContent = best;
+    document.getElementById("o-correct").textContent = qRight + "/" + qTotal;
+    document.getElementById("newbest").hidden = !isBest;
+    document.getElementById("o-tip").textContent = qTotal && qRight < qTotal
+      ? "Every right answer saves half a life. Review the ones you missed and run it back."
+      : "Perfect on the questions. Push the speed and chase a higher score.";
+    renderReview(document.getElementById("review-list"), history);
+    document.getElementById("review").hidden = !history.length;
+    document.getElementById("review-label").textContent = "Review your " + history.length + " question" + (history.length === 1 ? "" : "s");
+    overScreen.hidden = false;
+    setTimeout(function () { if (mode === "over") running = false; }, 900);
+    document.getElementById("again-btn").focus({ preventScroll: true });
+  }
+
+  // ---------- input ----------
+  function move(dir) {
+    if (mode !== "play") return;
+    lane = Math.max(0, Math.min(2, lane + dir));
+  }
+  var touch = null, SWIPE = 40;
+  cv.addEventListener("pointerdown", function (e) {
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+    touch = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false };
+  });
+  cv.addEventListener("pointermove", function (e) {
+    if (!touch || touch.moved || e.pointerId !== touch.id) return;
+    var dx = e.clientX - touch.x;
+    if (Math.abs(dx) >= SWIPE && Math.abs(dx) > Math.abs(e.clientY - touch.y) * 1.5) { move(dx < 0 ? -1 : 1); touch.moved = true; }
+  });
+  cv.addEventListener("pointerup", function (e) {
+    if (!touch || e.pointerId !== touch.id) return;
+    var drift = Math.hypot(e.clientX - touch.x, e.clientY - touch.y);
+    if (!touch.moved && drift < 12) { var r = cv.getBoundingClientRect(); move(e.clientX - r.left < r.width / 2 ? -1 : 1); }
+    touch = null;
+  });
+  cv.addEventListener("pointercancel", function () { touch = null; });
+  document.addEventListener("keydown", function (e) {
+    var k = e.key;
+    if (!testScreen.hidden) {
+      if (test && !document.getElementById("t-run").hidden) {
+        var map = { "1": 0, "2": 1, "3": 2, "4": 3, a: 0, b: 1, c: 2, d: 3 };
+        var ix = map[k.toLowerCase()];
+        if (ix != null) { var ob = document.querySelectorAll("#t-opts .opt")[ix]; if (ob) ob.click(); }
+        else if (k === "Enter") document.getElementById("t-next").click();
+      }
+      return;
+    }
+    if (!qScreen.hidden) {
+      if (!answered && k >= "1" && k <= "4") { var btn = document.querySelectorAll("#q-opts .opt")[+k - 1]; if (btn) btn.click(); }
+      return;
+    }
+    if (k === "ArrowLeft" || k === "a" || k === "A") { e.preventDefault(); move(-1); }
+    else if (k === "ArrowRight" || k === "d" || k === "D") { e.preventDefault(); move(1); }
+  });
+  document.getElementById("again-btn").addEventListener("click", startRun);
+  document.getElementById("menu-btn").addEventListener("click", function () {
+    overScreen.hidden = true; startScreen.hidden = false;
+    var wasRunning = running;
+    reset(); showModeUI(); running = true; mode = "demo"; lastT = performance.now();
+    if (!wasRunning) requestAnimationFrame(frame);
+  });
+  document.getElementById("q-continue").addEventListener("click", proceed);
+  var pausedByHide = false;
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden && mode === "play") { mode = "paused"; pausedByHide = true; }
+    else if (!document.hidden && pausedByHide) { pausedByHide = false; mode = "play"; lastT = performance.now(); }
+  });
+
+  resize();
+  renderLives();
+  packetX = laneX(1);
+  // start the attract loop behind the start screen
+  running = true; mode = "demo"; lastT = performance.now();
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
