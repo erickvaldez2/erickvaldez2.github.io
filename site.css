@@ -314,3 +314,23 @@ sup a { color: var(--dim); text-decoration: none; font-size: 0.6em; margin-left:
 .lnav nav a { display: inline-flex; align-items: center; min-height: 32px; }
 .lnav .name { display: inline-flex; align-items: center; min-height: 32px; }
 .service sup a, .compare sup a { color: #b2440d; font-weight: 700; }
+
+/* ---------- site footer: name + year ---------- */
+.site-foot { background: var(--ink); border-top: 1px solid rgba(243,241,234,0.12); padding-block: 26px calc(26px + env(safe-area-inset-bottom)); font-size: 14px; color: var(--dim); }
+.site-foot .max { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 28px; }
+.site-foot p { margin: 0; }
+.site-foot p b { color: var(--bone); font-weight: 600; }
+.site-foot nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.site-foot a { color: var(--dim); text-decoration: none; display: inline-flex; align-items: center; min-height: 32px; }
+.site-foot a:hover { color: var(--bone); }
+:root[data-theme="light"] .site-foot { background: var(--paper); border-top-color: rgba(23,22,19,0.12); color: var(--dim-paper); }
+:root[data-theme="light"] .site-foot p b { color: var(--paper-text); }
+:root[data-theme="light"] .site-foot a { color: var(--dim-paper); }
+:root[data-theme="light"] .site-foot a:hover { color: var(--paper-text); }
+
+/* ---------- small phones (320-360px) ---------- */
+.play .pl-x { white-space: pre; }
+@media (max-width: 360px) {
+  .play .pl-x { display: none; }
+  .page-head h1 { font-size: clamp(46px, 14.5vw, 64px); }
+}

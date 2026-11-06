@@ -1,5 +1,5 @@
 // Buddy Study offline cache. Bump VERSION whenever you upload a new index.html.
-const VERSION = "buddy-study-v5";
+const VERSION = "buddy-study-v6";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png",
   "/fonts/fonts.css", "/fonts/bricolage-grotesque.woff2", "/fonts/plus-jakarta-sans.woff2", "/fonts/dm-mono-400.woff2", "/fonts/dm-mono-500.woff2"];
 

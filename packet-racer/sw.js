@@ -1,5 +1,5 @@
 // Packet Racer offline cache. Bump VERSION whenever a game file changes so phones pick up the update.
-const VERSION = "packet-racer-v1";
+const VERSION = "packet-racer-v2";
 const CORE = [
   "/packet-racer/", "/packet-racer/cysa/", "/packet-racer/manifest.webmanifest",
   "/packet-racer/icon-192.png", "/packet-racer/icon-512.png", "/packet-racer/apple-touch-icon.png",
