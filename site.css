@@ -334,3 +334,8 @@ sup a { color: var(--dim); text-decoration: none; font-size: 0.6em; margin-left:
   .play .pl-x { display: none; }
   .page-head h1 { font-size: clamp(46px, 14.5vw, 64px); }
 }
+
+/* big stat: giant number with a small unit beside it, never wraps or overlaps its label */
+.stat-hero b { white-space: nowrap; }
+.stat-hero b small { font-size: 0.3em; font-stretch: 110%; letter-spacing: -0.03em; margin-left: 0.12em; color: var(--flare); }
+.stat-hero span { margin-top: 22px; }
