@@ -339,3 +339,10 @@ sup a { color: var(--dim); text-decoration: none; font-size: 0.6em; margin-left:
 .stat-hero b { white-space: nowrap; }
 .stat-hero b small { font-size: 0.3em; font-stretch: 110%; letter-spacing: -0.03em; margin-left: 0.12em; color: var(--flare); }
 .stat-hero span { margin-top: 22px; }
+
+/* hero "+1": two characters, so set it larger than the old three-character mark to keep the same weight */
+.hero-num.plus-one { font-size: clamp(260px, 50vw, 760px); letter-spacing: -0.08em; right: 2vw; }
+.hero-tag { margin: 18px 0 0; font-family: var(--display); font-weight: 700; font-size: clamp(17px, 1.6vw, 22px); color: #cfccc4; letter-spacing: -0.01em; }
+.hero-tag b { color: var(--flare); font-weight: 900; margin-right: 6px; }
+.hero-copy .hero-tag { opacity: calc(1 - var(--p, 0) * 3.4); }
+@media (max-width: 760px) { .hero-num.plus-one { font-size: clamp(220px, 70vw, 520px); right: -2vw; } }
